@@ -1,0 +1,13 @@
+{
+  "adapter": "snipping_tool",
+  "required_templates": [
+    "text_actions.png",
+    "copy_all_text.png"
+  ],
+  "localized_optional_templates": [
+    "text_actions_ja.png",
+    "copy_all_text_ja.png",
+    "copy_text.png"
+  ],
+  "usage": "Place cropped toolbar button images captured from the target Windows 11 environment in this directory. The adapter waits for these templates and clicks the first detected match."
+}

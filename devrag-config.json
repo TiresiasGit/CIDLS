@@ -1,0 +1,17 @@
+{
+  "document_patterns": [
+    "./documents",
+    "./.github/**/*.md"
+  ],
+  "db_path": "./.devrag/vectors.db",
+  "chunk_size": 500,
+  "search_top_k": 5,
+  "compute": {
+    "device": "auto",
+    "fallback_to_cpu": true
+  },
+  "model": {
+    "name": "multilingual-e5-small",
+    "dimensions": 384
+  }
+}

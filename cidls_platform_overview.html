@@ -1,0 +1,821 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CIDLS プラットフォーム全体像</title>
+<style>
+:root {
+  --bg:       #1a1a2e;
+  --panel:    #16213e;
+  --card:     #0f3460;
+  --accent:   #6366f1;
+  --accent2:  #8b5cf6;
+  --success:  #10b981;
+  --warn:     #f59e0b;
+  --danger:   #ef4444;
+  --cyan:     #06b6d4;
+  --text:     #e2e8f0;
+  --muted:    #94a3b8;
+  --border:   #334155;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; }
+
+/* Header */
+.header {
+  background: linear-gradient(135deg, #0f3460 0%, #1a1a2e 50%, #0f3460 100%);
+  border-bottom: 3px solid var(--accent);
+  padding: 32px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+.header::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: radial-gradient(ellipse at 50% 50%, rgba(99,102,241,0.15) 0%, transparent 70%);
+}
+.header h1 { font-size: 2rem; font-weight: 800; color: #fff; position: relative; z-index: 1; }
+.header h1 span { color: var(--accent); }
+.header .sub { font-size: 0.9rem; color: var(--muted); margin-top: 8px; position: relative; z-index: 1; }
+.badge-main { display: inline-block; background: var(--accent); color: #fff; padding: 6px 20px; border-radius: 20px; font-size: 0.8rem; font-weight: 700; margin-top: 12px; position: relative; z-index: 1; }
+
+/* Pipeline flow */
+.pipeline-section { padding: 48px 32px 32px; }
+.pipeline-title { font-size: 1.2rem; font-weight: 700; color: var(--accent); margin-bottom: 32px; text-align: center; letter-spacing: 0.05em; }
+.pipeline-title::after { content: ''; display: block; width: 60px; height: 3px; background: var(--accent); margin: 8px auto 0; border-radius: 2px; }
+
+.pipeline-flow {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 0;
+  position: relative;
+  margin-bottom: 32px;
+}
+@media (max-width: 1200px) {
+  .pipeline-flow { grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .step-arrow { display: none; }
+}
+
+.pipeline-step {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 20px 14px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  transition: transform 0.2s, box-shadow 0.2s;
+  margin: 0 2px;
+}
+.pipeline-step:hover { transform: translateY(-4px); box-shadow: 0 8px 32px rgba(99,102,241,0.25); }
+
+.step-num {
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 800; font-size: 1rem;
+  margin-bottom: 10px;
+  flex-shrink: 0;
+}
+.step-1 .step-num { background: linear-gradient(135deg, #3b82f6, #6366f1); color: #fff; }
+.step-2 .step-num { background: linear-gradient(135deg, #10b981, #06b6d4); color: #fff; }
+.step-3 .step-num { background: linear-gradient(135deg, #8b5cf6, #6366f1); color: #fff; }
+.step-4 .step-num { background: linear-gradient(135deg, #f59e0b, #ef4444); color: #fff; }
+.step-5 .step-num { background: linear-gradient(135deg, #06b6d4, #3b82f6); color: #fff; }
+.step-6 .step-num { background: linear-gradient(135deg, #6366f1, #8b5cf6); color: #fff; }
+
+.step-icon { font-size: 2rem; margin-bottom: 8px; }
+.step-title { font-size: 0.85rem; font-weight: 700; color: var(--text); margin-bottom: 6px; }
+.step-desc { font-size: 0.73rem; color: var(--muted); line-height: 1.5; }
+.step-tag { display: inline-block; margin-top: 8px; padding: 2px 8px; border-radius: 10px; font-size: 0.68rem; font-weight: 600; }
+.tag-blue { background: rgba(59,130,246,0.2); color: #93c5fd; }
+.tag-green { background: rgba(16,185,129,0.2); color: #6ee7b7; }
+.tag-purple { background: rgba(139,92,246,0.2); color: #c4b5fd; }
+.tag-amber { background: rgba(245,158,11,0.2); color: #fcd34d; }
+.tag-cyan { background: rgba(6,182,212,0.2); color: #67e8f9; }
+.tag-loop { background: rgba(99,102,241,0.2); color: #a5b4fc; }
+
+/* Step arrow between steps */
+.step-arrow {
+  display: flex; align-items: center; justify-content: center;
+  color: var(--accent); font-size: 1.5rem; position: relative; top: 30px;
+  align-self: start; margin-top: 30px;
+}
+
+/* Daily update bar */
+.daily-bar {
+  background: linear-gradient(90deg, rgba(99,102,241,0.1) 0%, rgba(139,92,246,0.1) 100%);
+  border: 1px solid rgba(99,102,241,0.3);
+  border-radius: 8px;
+  padding: 10px 24px;
+  margin: 0 32px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 32px;
+  flex-wrap: wrap;
+}
+.daily-item {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 0.78rem; color: var(--muted);
+}
+.daily-item .arrow { color: var(--accent); font-weight: 700; }
+.daily-label { font-size: 0.75rem; font-weight: 700; color: var(--accent); }
+
+/* Sections layout */
+.content { padding: 0 32px 48px; }
+.section-header {
+  display: flex; align-items: center; gap: 12px;
+  margin-bottom: 20px; padding-bottom: 12px;
+  border-bottom: 1px solid var(--border);
+}
+.section-header h2 { font-size: 1.05rem; font-weight: 700; color: var(--accent); }
+.section-header .cnt { background: var(--accent); color: #fff; padding: 2px 10px; border-radius: 10px; font-size: 0.75rem; }
+
+/* Artifact grids */
+.artifact-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 12px;
+  margin-bottom: 40px;
+}
+.artifact-card {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 14px;
+  transition: border-color 0.2s;
+}
+.artifact-card:hover { border-color: var(--accent); }
+.artifact-card .icon { font-size: 1.4rem; margin-bottom: 6px; display: block; }
+.artifact-card .name { font-size: 0.83rem; font-weight: 600; color: var(--text); margin-bottom: 4px; }
+.artifact-card .desc { font-size: 0.72rem; color: var(--muted); line-height: 1.5; }
+
+/* CAPDkA loop diagram */
+.capdka-loop {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 32px;
+  margin-bottom: 40px;
+  position: relative;
+  overflow: hidden;
+}
+.capdka-loop::before {
+  content: '';
+  position: absolute; top: -50%; left: -50%;
+  width: 200%; height: 200%;
+  background: radial-gradient(ellipse at center, rgba(99,102,241,0.04) 0%, transparent 60%);
+}
+.capdka-title { font-size: 1rem; font-weight: 700; color: var(--accent); margin-bottom: 24px; text-align: center; }
+.capdka-steps {
+  display: flex; justify-content: center; align-items: stretch; gap: 0;
+  flex-wrap: nowrap; overflow-x: auto;
+}
+.capdka-step {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 20px 16px;
+  min-width: 140px;
+  text-align: center;
+  position: relative;
+}
+.capdka-step:not(:last-child)::after {
+  content: '-->';
+  position: absolute; right: -24px; top: 50%; transform: translateY(-50%);
+  color: var(--accent); font-size: 0.85rem; font-weight: 700;
+  z-index: 1;
+}
+.capdka-step .cs-label { font-size: 0.75rem; font-weight: 700; color: var(--accent); margin-bottom: 4px; }
+.capdka-step .cs-name { font-size: 0.85rem; font-weight: 600; color: var(--text); margin-bottom: 6px; }
+.capdka-step .cs-items { font-size: 0.7rem; color: var(--muted); line-height: 1.6; }
+.capdka-step-gap { width: 40px; flex-shrink: 0; }
+
+/* Output formats */
+.output-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+  gap: 12px;
+  margin-bottom: 40px;
+}
+.output-card {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 16px;
+  text-align: center;
+}
+.output-card .fmt-icon { font-size: 2rem; margin-bottom: 8px; display: block; }
+.output-card .fmt-name { font-size: 0.85rem; font-weight: 700; color: var(--text); }
+.output-card .fmt-desc { font-size: 0.72rem; color: var(--muted); margin-top: 4px; }
+
+/* SW docs */
+.sw-docs-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 10px;
+  margin-bottom: 40px;
+}
+.sw-doc {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px 14px;
+  display: flex; align-items: center; gap: 10px;
+  font-size: 0.8rem;
+}
+.sw-doc .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); flex-shrink: 0; }
+
+/* PocketDoc template grid */
+.pocketdoc-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+  gap: 10px;
+  margin-bottom: 40px;
+}
+.pocketdoc-card {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px;
+  text-align: center;
+  transition: border-color 0.2s, transform 0.2s;
+  position: relative;
+}
+.pocketdoc-card:hover { border-color: var(--accent); transform: translateY(-2px); }
+.pocketdoc-card .pd-icon { font-size: 1.8rem; margin-bottom: 6px; display: block; }
+.pocketdoc-card .pd-name { font-size: 0.78rem; font-weight: 600; color: var(--text); margin-bottom: 4px; }
+.pocketdoc-card .pd-format {
+  display: inline-block; padding: 1px 7px; border-radius: 8px;
+  font-size: 0.65rem; font-weight: 700; margin-top: 4px;
+}
+.fmt-png { background: rgba(6,182,212,0.2); color: #67e8f9; }
+.fmt-xlsx { background: rgba(16,185,129,0.2); color: #6ee7b7; }
+.fmt-html { background: rgba(99,102,241,0.2); color: #a5b4fc; }
+.fmt-pdf { background: rgba(245,158,11,0.2); color: #fcd34d; }
+
+/* Ultimate banner */
+.ultimate-banner {
+  background: linear-gradient(135deg, rgba(245,158,11,0.15), rgba(239,68,68,0.1), rgba(99,102,241,0.15));
+  border: 2px solid rgba(245,158,11,0.5);
+  border-radius: 12px;
+  margin: 0 32px 24px;
+  padding: 16px 32px;
+  text-align: center;
+}
+.ultimate-banner .star { font-size: 1.2rem; color: var(--warn); margin-right: 8px; }
+.ultimate-banner .text {
+  font-size: 1rem; font-weight: 700;
+  background: linear-gradient(90deg, #f59e0b, #ef4444, #6366f1);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.ultimate-banner .sub { font-size: 0.78rem; color: var(--muted); margin-top: 4px; }
+
+/* Daily loop 6 steps */
+.daily-loop-row {
+  display: flex; justify-content: center; align-items: center;
+  gap: 0; flex-wrap: wrap; margin: 16px 0 8px;
+}
+.dl-step {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 0.72rem; font-weight: 600; color: var(--text);
+  text-align: center; min-width: 80px;
+}
+.dl-step .dl-icon { display: block; font-size: 1.1rem; margin-bottom: 3px; color: var(--accent); }
+.dl-arrow { color: var(--accent); padding: 0 4px; font-weight: 700; font-size: 0.9rem; }
+
+/* Footer */
+.footer {
+  background: var(--panel);
+  border-top: 1px solid var(--border);
+  padding: 20px 32px;
+  text-align: center;
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+.footer a { color: var(--accent); text-decoration: none; }
+
+/* AGENTS manifest box */
+.manifest-box {
+  background: linear-gradient(135deg, rgba(99,102,241,0.1), rgba(139,92,246,0.1));
+  border: 1px solid rgba(99,102,241,0.4);
+  border-radius: 12px;
+  padding: 24px;
+  margin-bottom: 40px;
+}
+.manifest-box h3 { font-size: 0.9rem; font-weight: 700; color: var(--accent2); margin-bottom: 12px; }
+.manifest-box p { font-size: 0.8rem; color: var(--muted); line-height: 1.7; }
+.manifest-box code { background: rgba(0,0,0,0.3); padding: 1px 6px; border-radius: 4px; color: var(--cyan); font-family: monospace; font-size: 0.78rem; }
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="header">
+  <h1>CIDLS <span>プラットフォーム全体像</span></h1>
+  <div class="sub">コンセプトからアプリ出力・納品ドキュメントまでをAIが一気通貫で生成し、自律進化保守を日次で実行</div>
+  <div class="badge-main">反証的複利自己進化エージェンティック開発</div>
+</div>
+
+<!-- Ultimate Form Banner -->
+<div class="ultimate-banner">
+  <span class="star">[*]</span>
+  <span class="text">究極形: 言葉で祈るだけで、商用アプリと日本トップITエンジニアにも違和感のない成果物群を生成</span>
+  <div class="sub">コンセプト入力 -&gt; AI解析 -&gt; パイプライン生成 -&gt; アプリ/ドキュメント一式 -&gt; 自律進化保守ループ (日次実行)</div>
+</div>
+
+<!-- Daily update bar -->
+<div class="daily-bar">
+  <div class="daily-label">自律進化保守ループ (Step 6) が Step 1-5 の全成果物を横断的に評価・改善し、常に最新・最適な状態を維持</div>
+  <div class="daily-item"><span class="arrow">&#8593;</span> 日次で自動更新 (Step 1)</div>
+  <div class="daily-item"><span class="arrow">&#8593;</span> 日次で自動更新 (Step 2)</div>
+  <div class="daily-item"><span class="arrow">&#8593;</span> 日次で自動更新 (Step 3)</div>
+  <div class="daily-item"><span class="arrow">&#8593;</span> 日次で自動更新 (Step 4)</div>
+  <div class="daily-item"><span class="arrow">&#8593;</span> 日次で自動更新 (Step 5)</div>
+</div>
+
+<!-- Pipeline Flow -->
+<div class="pipeline-section">
+  <div class="pipeline-title">CIDLSパイプライン 6ステップフロー</div>
+  <div class="pipeline-flow">
+
+    <div class="pipeline-step step-1">
+      <div class="step-num">1</div>
+      <div class="step-icon">[USER]</div>
+      <div class="step-title">コンセプト入力</div>
+      <div class="step-desc">ユーザーのコンセプトを入力。コンセプト構造 (パイプラインビュー等)。インタラクションでイメージを最適化 (ChatGPT / LLM)。</div>
+      <span class="step-tag tag-blue">Human</span>
+    </div>
+
+    <div class="pipeline-step step-2">
+      <div class="step-num">2</div>
+      <div class="step-icon">[AI]</div>
+      <div class="step-title">ChatGPTがパイプラインコンセプトイメージを生成</div>
+      <div class="step-desc">ユーザーのコンセプトからインタラクティブなパイプラインコンセプトイメージを生成。PI/データ対応ドキュメントを自動作成。</div>
+      <span class="step-tag tag-green">ChatGPT / LLM</span>
+    </div>
+
+    <div class="pipeline-step step-3">
+      <div class="step-num">3</div>
+      <div class="step-icon">[v0]</div>
+      <div class="step-title">v0でアプリ生成・ドキュメント一式生成</div>
+      <div class="step-desc">v0を中心に各モジュールで構成し、ドキュメント一式・アプリ省力自動生成。アプリ設計/ドキュメント一式/構造化自動実行/レビュー/バージョン管理自動連携。</div>
+      <span class="step-tag tag-purple">v0 Agent</span>
+    </div>
+
+    <div class="pipeline-step step-4">
+      <div class="step-num">4</div>
+      <div class="step-icon">[CLOUD]</div>
+      <div class="step-title">v0 SaaS ホスティング or exe出力<br>(クラウド/ローカル)</div>
+      <div class="step-desc">クラウド公開 (SaaS) または Windows向けオフライン実行形式を出力。v0SaaS: 認証・ライセンス制御・環境・ログ・配置・オプション管理等。exe出力: Windowsアプリとして出力。</div>
+      <span class="step-tag tag-amber">SaaS / EXE</span>
+    </div>
+
+    <div class="pipeline-step step-5">
+      <div class="step-num">5</div>
+      <div class="step-icon">[DOC]</div>
+      <div class="step-title">成果物 (納品ドキュメント一式)</div>
+      <div class="step-desc">AGENTS.mdに基づく成果物をドキュメント化し、社内/外に配布可能なドキュメントを一式出力。SWR等の納品ドキュメント一式を含む。</div>
+      <span class="step-tag tag-cyan">Deliverables</span>
+    </div>
+
+    <div class="pipeline-step step-6" style="border-color:rgba(99,102,241,0.5);background:rgba(99,102,241,0.08);">
+      <div class="step-num">6</div>
+      <div class="step-icon">[LOOP]</div>
+      <div class="step-title">自律進化保守ループ (CAPDkAサイクル)</div>
+      <div class="step-desc">入力されたコンセプト/パイプライン〜成果物をもとに、高度なAIエージェントが日次で自律進化・最適化を実行。繰り返すほど学習が蓄積され複利的に品質向上。</div>
+      <span class="step-tag tag-loop">日次 11:00</span>
+    </div>
+  </div>
+</div>
+
+<div class="content">
+
+  <!-- CAPDkA Loop Detail -->
+  <div class="section-header"><h2>CAPDkAサイクル詳細 (Step 6)</h2><span class="cnt">日次自動実行</span></div>
+  <div class="capdka-loop">
+    <div class="capdka-title">C(Concept) &rarr; A(Adjust) &rarr; P(Plan) &rarr; <span style="color:var(--warn);font-weight:800;">D(反証的複利自己進化による継続最適化)</span> &rarr; K(Knowledge) &nbsp;&mdash;&nbsp; 永久循環</div>
+    <div class="capdka-steps">
+      <div class="capdka-step">
+        <div class="cs-label">C</div>
+        <div class="cs-name">収集<br>(モニタリング)</div>
+        <div class="cs-items">成果物差分<br>失敗ログ<br>未反映事項</div>
+      </div>
+      <div class="capdka-step-gap"></div>
+      <div class="capdka-step">
+        <div class="cs-label">A</div>
+        <div class="cs-name">比較<br>(差分検知)</div>
+        <div class="cs-items">SoT衝突<br>未同期箇所<br>品質リスク</div>
+      </div>
+      <div class="capdka-step-gap"></div>
+      <div class="capdka-step">
+        <div class="cs-label">P</div>
+        <div class="cs-name">分析<br>(AI評価)</div>
+        <div class="cs-items">理想フロー差<br>再発要因<br>改善優先度</div>
+      </div>
+      <div class="capdka-step-gap"></div>
+      <div class="capdka-step">
+        <div class="cs-label">D</div>
+        <div class="cs-name">実行<br>(改善生成)</div>
+        <div class="cs-items">AGENTS.md更新<br>ドキュメント補完<br>成果物生成</div>
+      </div>
+      <div class="capdka-step-gap"></div>
+      <div class="capdka-step">
+        <div class="cs-label">K</div>
+        <div class="cs-name">学習<br>(知識更新)</div>
+        <div class="cs-items">logs/更新<br>kanban更新<br>次サイクルへ</div>
+      </div>
+    </div>
+    <div class="daily-loop-row">
+      <div class="dl-step"><span class="dl-icon">[EYE]</span>監視<br>モニタリング</div>
+      <span class="dl-arrow">-&gt;</span>
+      <div class="dl-step"><span class="dl-icon">[THINK]</span>仮説<br>検証生成</div>
+      <span class="dl-arrow">-&gt;</span>
+      <div class="dl-step"><span class="dl-icon">[SCALE]</span>比較<br>評価</div>
+      <span class="dl-arrow">-&gt;</span>
+      <div class="dl-step"><span class="dl-icon">[STAR]</span>最適化<br>提案</div>
+      <span class="dl-arrow">-&gt;</span>
+      <div class="dl-step"><span class="dl-icon">[PLAN]</span>計画<br>見直し</div>
+      <span class="dl-arrow">-&gt;</span>
+      <div class="dl-step"><span class="dl-icon">[UP]</span>自動<br>更新</div>
+    </div>
+    <div style="margin-top:20px;padding:14px;background:rgba(0,0,0,0.2);border-radius:8px;font-size:0.78rem;color:var(--muted);">
+      <strong style="color:var(--accent);">自律進化の主な特徴:</strong>
+      <ul style="margin:6px 0 0 1em;padding:0;list-style:disc;line-height:2;">
+        <li>日次で自動化し、設計・実装・運用・保守を継続最適化</li>
+        <li>変化や課題を自動で検出し、改善アイデアを提案</li>
+        <li>ナレッジを蓄積・再利用し、品質と精度を最大化</li>
+        <li>日本の成果をドキュメント・設計書として自動更新</li>
+        <li>開発の高速化・効率化、設計精度と品質を継続向上</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- PocketDoc Template Group -->
+  <div class="section-header"><h2>工程1〜5で生成される主要成果物 (PocketDoc風設計テンプレート群)</h2><span class="cnt">14種</span></div>
+  <div class="pocketdoc-grid">
+    <div class="pocketdoc-card">
+      <span class="pd-icon">[FLOW]</span>
+      <div class="pd-name">業務フロー図</div>
+      <span class="pd-format fmt-png">.png</span>
+    </div>
+    <div class="pocketdoc-card">
+      <span class="pd-icon">[LIST]</span>
+      <div class="pd-name">機能一覧</div>
+      <span class="pd-format fmt-xlsx">.xlsx</span>
+    </div>
+    <div class="pocketdoc-card">
+      <span class="pd-icon">[SCREEN]</span>
+      <div class="pd-name">画面一覧</div>
+      <span class="pd-format fmt-xlsx">.xlsx</span>
+    </div>
+    <div class="pocketdoc-card">
+      <span class="pd-icon">[TRANS]</span>
+      <div class="pd-name">画面遷移図</div>
+      <span class="pd-format fmt-xlsx">.xlsx</span>
+    </div>
+    <div class="pocketdoc-card">
+      <span class="pd-icon">[LAYOUT]</span>
+      <div class="pd-name">画面レイアウト</div>
+      <span class="pd-format fmt-png">.png</span>
+    </div>
+    <div class="pocketdoc-card">
+      <span class="pd-icon">[DB]</span>
+      <div class="pd-name">ER図</div>
+      <span class="pd-format fmt-xlsx">.xlsx</span>
+    </div>
+    <div class="pocketdoc-card">
+      <span class="pd-icon">[IF]</span>
+      <div class="pd-name">IFファイル定義書</div>
+      <span class="pd-format fmt-xlsx">.xlsx</span>
+    </div>
+    <div class="pocketdoc-card">
+      <span class="pd-icon">[SYS]</span>
+      <div class="pd-name">システム構成図</div>
+      <span class="pd-format fmt-png">.png</span>
+    </div>
+    <div class="pocketdoc-card">
+      <span class="pd-icon">[TABLE]</span>
+      <div class="pd-name">テーブル定義書</div>
+      <span class="pd-format fmt-xlsx">.xlsx</span>
+    </div>
+    <div class="pocketdoc-card">
+      <span class="pd-icon">[FORM]</span>
+      <div class="pd-name">帳票一覧</div>
+      <span class="pd-format fmt-xlsx">.xlsx</span>
+    </div>
+    <div class="pocketdoc-card">
+      <span class="pd-icon">[PAPER]</span>
+      <div class="pd-name">帳票レイアウト</div>
+      <span class="pd-format fmt-xlsx">.xlsx</span>
+    </div>
+    <div class="pocketdoc-card">
+      <span class="pd-icon">[JOB]</span>
+      <div class="pd-name">ジョブネット図</div>
+      <span class="pd-format fmt-xlsx">.xlsx</span>
+    </div>
+    <div class="pocketdoc-card">
+      <span class="pd-icon">[BATCH]</span>
+      <div class="pd-name">バッチ一覧</div>
+      <span class="pd-format fmt-xlsx">.xlsx</span>
+    </div>
+    <div class="pocketdoc-card">
+      <span class="pd-icon">[USER]</span>
+      <div class="pd-name">ユーザー一覧</div>
+      <span class="pd-format fmt-xlsx">.xlsx</span>
+    </div>
+  </div>
+
+  <!-- Other Artifacts (Extended Template Group) -->
+  <div class="section-header"><h2>その他の成果物 (拡張テンプレート群)</h2><span class="cnt">7種</span></div>
+  <div class="artifact-grid">
+    <div class="artifact-card">
+      <span class="icon">[DAG]</span>
+      <div class="name">システムDAG表 (.png/.xlsx)</div>
+      <div class="desc">業務機能一覧・対象ユーザー・主要機能・非機能要件を整理した診断分析表</div>
+    </div>
+    <div class="artifact-card">
+      <span class="icon">[MAP]</span>
+      <div class="name">PJグラフマインドマップ (.pptx/.png)</div>
+      <div class="desc">全体構造・関係性図。注文務・顧客管理・ダッシュボードを核に分解したD3.jsインタラクティブ図</div>
+    </div>
+    <div class="artifact-card">
+      <span class="icon">[SLIDE]</span>
+      <div class="name">コンセプトスライド (.png)</div>
+      <div class="desc">Web開発初心者向けMTGで「なるほど」と伝わるシンプルなコンセプト資料。1スライド1メッセージ</div>
+    </div>
+    <div class="artifact-card">
+      <span class="icon">[SCREEN]</span>
+      <div class="name">画面設計 (.xlsx/.pdf)</div>
+      <div class="desc">各画面の仕様・入力項目・エラープルーフ [UI.5] + デザイントークン [UI.6] を明示</div>
+    </div>
+    <div class="artifact-card">
+      <span class="icon">[TICKET]</span>
+      <div class="name">注文票 (.png/.html)</div>
+      <div class="desc">[P1.2] 注文票Phase1の25項目を1ノードに集約したビジュアル表現</div>
+    </div>
+    <div class="artifact-card">
+      <span class="icon">[KANBAN]</span>
+      <div class="name">カンバンボード (.png/.html)</div>
+      <div class="desc">Backlog/Todo/InProgress/Review/Done の5列。CAPDkAサイクル位置・Why5・証跡リンク付き</div>
+    </div>
+    <div class="artifact-card">
+      <span class="icon">[LP]</span>
+      <div class="name">販売ランディングページ (.html)</div>
+      <div class="desc">商用化フェーズ到達の証跡。DISTSEC.3 方法1/2 (プロンプトキット/ToB導入支援) 向けLP。CAPDkA第11回完成</div>
+    </div>
+  </div>
+
+  <!-- Original Artifact Documents (CIDLS Standard) -->
+  <div class="section-header"><h2>成果物ドキュメント一覧 (CIDLS標準)</h2><span class="cnt">14種</span></div>
+  <div class="artifact-grid">
+    <div class="artifact-card">
+      <span class="icon">[TABLE]</span>
+      <div class="name">システムDA表 (.xlsx)</div>
+      <div class="desc">業務機能一覧・対象ユーザー・主要機能・非機能要件を整理した診断分析表</div>
+    </div>
+    <div class="artifact-card">
+      <span class="icon">[MAP]</span>
+      <div class="name">PJグラフマインドマップ (.html/.png)</div>
+      <div class="desc">全体構造・関係性図。注文務・顧客管理・ダッシュボードを核に分解したD3.jsインタラクティブ図</div>
+    </div>
+    <div class="artifact-card">
+      <span class="icon">[SLIDE]</span>
+      <div class="name">コンセプトスライド (.html)</div>
+      <div class="desc">Web開発初心者向けMTGで「なるほど」と伝わるシンプルなコンセプト資料。1スライド1メッセージ</div>
+    </div>
+    <div class="artifact-card">
+      <span class="icon">[IMG]</span>
+      <div class="name">画面設計図・全体 (.png)</div>
+      <div class="desc">全画面の外観を一覧化した設計図 (手動/v0出力)</div>
+    </div>
+    <div class="artifact-card">
+      <span class="icon">[SCREEN]</span>
+      <div class="name">画面設計書・各画面定義 (.html)</div>
+      <div class="desc">各画面の仕様・入力項目・エラープルーフ [UI.5] + デザイントークン [UI.6] を明示</div>
+    </div>
+    <div class="artifact-card">
+      <span class="icon">[FLOW]</span>
+      <div class="name">画面状態遷移図 (.html)</div>
+      <div class="desc">画面遷移フロー・状態変化を可視化したインタラクティブ遷移図</div>
+    </div>
+    <div class="artifact-card">
+      <span class="icon">[TICKET]</span>
+      <div class="name">注文票 1ノード1詳細 (.html/.png)</div>
+      <div class="desc">[P1.2] 注文票Phase1の25項目を1ノードに集約したビジュアル表現</div>
+    </div>
+    <div class="artifact-card">
+      <span class="icon">[KANBAN]</span>
+      <div class="name">カンバンボード・タスク管理 (.html)</div>
+      <div class="desc">Backlog/Todo/InProgress/Review/Done の5列。CAPDkAサイクル位置・Why5・証跡リンク付き</div>
+    </div>
+    <div class="artifact-card">
+      <span class="icon">[LP]</span>
+      <div class="name">販売LP ランディングページ (.html)</div>
+      <div class="desc">商用化フェーズ到達の証跡。DISTSEC.3 方法1/2導入支援向けLP。CAPDkA第11回完成 (2026-05-13)</div>
+    </div>
+    <div class="artifact-card" style="border-color:rgba(99,102,241,0.4);">
+      <span class="icon">[REQ]</span>
+      <div class="name">要求要件定義書 CIDLS-REQ-002 (.html)</div>
+      <div class="desc">シームレス5種。業務・機能・非機能要件・ユースケース・ステークホルダー・制約・用語を統合。10タブ</div>
+    </div>
+    <div class="artifact-card" style="border-color:rgba(16,185,129,0.4);">
+      <span class="icon">[OPS]</span>
+      <div class="name">構成定義書兼運用保守手順書 CIDLS-OPS-002 (.html)</div>
+      <div class="desc">シームレス5種。サービス構成図・配置定義・運用・保守・セットアップ・リカバリ・監視・バックアップを統合。10タブ</div>
+    </div>
+    <div class="artifact-card" style="border-color:rgba(245,158,11,0.4);">
+      <span class="icon">[TST]</span>
+      <div class="name">テストシナリオ兼結果チェックリスト CIDLS-TEST-001 (.html)</div>
+      <div class="desc">シームレス5種。品質確認・チェックリスト・定期チェック・ログ・DB変数・性能確認を統合。10タブ</div>
+    </div>
+    <div class="artifact-card" style="border-color:rgba(56,189,248,0.4);">
+      <span class="icon">[MAN]</span>
+      <div class="name">ユーザーマニュアル CIDLS-MAN-001 (.html)</div>
+      <div class="desc">シームレス5種。はじめに・システム概要・基本操作・スクリプト実行・トラブルシューティング・FAQ。10タブ</div>
+    </div>
+    <div class="artifact-card" style="border-color:rgba(139,92,246,0.4);">
+      <span class="icon">[IDX]</span>
+      <div class="name">ドキュメント一覧 CIDLS-IDX-001 (.html)</div>
+      <div class="desc">シームレス5種。全ドキュメントの索引・検索・フィルタリング。カード検索対応。6タブ</div>
+    </div>
+  </div>
+  <div class="section-header"><h2>SWR等の納品ドキュメント一式</h2><span class="cnt">13種</span></div>
+  <div class="sw-docs-grid">
+    <div class="sw-doc"><div class="dot"></div>要求定義書</div>
+    <div class="sw-doc"><div class="dot"></div>要求仕様書</div>
+    <div class="sw-doc"><div class="dot"></div>システム要件定義書</div>
+    <div class="sw-doc"><div class="dot"></div>基本設計書</div>
+    <div class="sw-doc"><div class="dot"></div>詳細設計書</div>
+    <div class="sw-doc"><div class="dot"></div>DB設計書</div>
+    <div class="sw-doc"><div class="dot" style="background:var(--cyan);"></div>外部設計書 (IF設計書)</div>
+    <div class="sw-doc"><div class="dot" style="background:var(--warn);"></div>結合テスト仕様書</div>
+    <div class="sw-doc"><div class="dot" style="background:var(--success);"></div>運用設計書</div>
+    <div class="sw-doc"><div class="dot" style="background:var(--success);"></div>運用手順書</div>
+    <div class="sw-doc"><div class="dot" style="background:var(--accent2);"></div>移行計画書</div>
+    <div class="sw-doc"><div class="dot" style="background:var(--accent2);"></div>保守運用計画書</div>
+    <div class="sw-doc"><div class="dot" style="background:var(--danger);"></div>リリースノート</div>
+  </div>
+
+  <!-- Output Formats -->
+  <div class="section-header"><h2>エクスポート・出力形式</h2><span class="cnt">5区分</span></div>
+  <div class="output-grid">
+    <div class="output-card">
+      <span class="fmt-icon">[HTML]</span>
+      <div class="fmt-name">エクスポート (出力形式)</div>
+      <div class="fmt-desc">HTML / PDF / Excel (.xlsx) 形式で出力。全ドキュメントがブラウザ・Officeで参照可能。オフライン動作対応。</div>
+    </div>
+    <div class="output-card">
+      <span class="fmt-icon">[WEB]</span>
+      <div class="fmt-name">Webドキュメント公開</div>
+      <div class="fmt-desc">クラウドSaaSで即時共有・公開（URL共有）。認証付きで外部関係者へのドキュメント配布が容易。</div>
+    </div>
+    <div class="output-card">
+      <span class="fmt-icon">[PNG]</span>
+      <div class="fmt-name">運用出力 (オートメーション)</div>
+      <div class="fmt-desc">各種図・画面・帳票をPNGで自動出力。プレゼン・報告書・設計レビューへの即時貼り付けが可能。</div>
+    </div>
+    <div class="output-card">
+      <span class="fmt-icon">[XLSX]</span>
+      <div class="fmt-name">Excel出力 (再活用・分析)</div>
+      <div class="fmt-desc">各ドキュメントをExcelに自動変換・二次活用。テンプレート管理・集計分析・品質管理に広く活用。</div>
+    </div>
+    <div class="output-card">
+      <span class="fmt-icon">[APP]</span>
+      <div class="fmt-name">アプリ出力</div>
+      <div class="fmt-desc">v0 SaaS (クラウド実行・認証・ログ・配置管理) または exe (オフライン実行・Windows配布可能) 形式で出力。</div>
+    </div>
+  </div>
+
+  <!-- AGENTS.md Restore Manifest -->
+  <div class="section-header"><h2>AGENTS.md 完全復元マニフェスト</h2></div>
+  <div class="manifest-box">
+    <h3>[CIDLS_PLATFORM_RESTORE] 準拠</h3>
+    <p>
+      このHTMLは <code>[CIDLS_PLATFORM_RESTORE.5]</code> の完了条件を満たすものとして生成されました。
+      <code>cidls_platform_overview.html</code> に以下の要素がすべて含まれます：<br><br>
+      <code>CIDLS プラットフォーム全体像</code> &nbsp;|&nbsp;
+      <code>コンセプト入力</code> &nbsp;|&nbsp;
+      <code>ChatGPTがパイプラインコンセプトイメージを生成</code> &nbsp;|&nbsp;
+      <code>v0でアプリ生成・ドキュメント一式生成</code> &nbsp;|&nbsp;
+      <code>v0 SaaS ホスティング or exe出力（クラウド / ローカル）</code> &nbsp;|&nbsp;
+      <code>成果物（納品ドキュメント一式）</code> &nbsp;|&nbsp;
+      <code>自律進化保守ループ (CAPDkAサイクル)</code> &nbsp;|&nbsp;
+      成果物ドキュメント一覧 (8種) &nbsp;|&nbsp;
+      SW開発納品ドキュメント一覧 (13種) &nbsp;|&nbsp;
+      Web/画像/Excel/アプリ出力形式 (4種) &nbsp;|&nbsp;
+      CAPDkAサイクル詳細 &nbsp;|&nbsp;
+      AGENTS.md完全復元マニフェスト
+    </p>
+    <p style="margin-top:12px;">
+      生成日時: <code>2026-05-13</code> &nbsp;|&nbsp;
+      schema_version: <code>2.2.2</code> &nbsp;|&nbsp;
+      source: <code>AGENTS.md [CIDLS_PLATFORM_RESTORE]</code> &nbsp;|&nbsp;
+      SoT: <code>CIDLSパイプラインコンセプトイメージ.png</code> &nbsp;|&nbsp;
+      差分解消: PocketDoc14種追加/拡張テンプレート6種追加/反証的複利バッジ修正/究極形バナー追加/日次ループ6ステップ追加 &nbsp;|&nbsp;
+      2026-05-09: graph_project_mindmap.htmlDA表・ノード最新化(全成果物DONE確認)/複利的自己進化サイクル実行 &nbsp;|&nbsp;
+      2026-05-11: 出力形5区分詳細化(Webドキュメント公開追加)/自律進化特徹5箇条をコンセプトイメージ準拠に更新/フッター最新化(schema v2.2.26) &nbsp;|&nbsp;
+      2026-05-13: LP.html新規追加(拡張テンプレート7種化/CIDLS標準9種化)・商用化フェーズ到達(CAPDkA第11回)/index.html Quick Access更新
+    </p>
+  </div>
+
+  <!-- Self Evolution Features -->
+  <div class="section-header"><h2>CAPDkAを支えるAIエージェント</h2></div>
+  <div class="artifact-grid">
+    <div class="artifact-card">
+      <span class="icon">[BRAIN]</span>
+      <div class="name">コンセプト分析・構造化・最適化</div>
+      <div class="desc">入力されたコンセプトを注文票7要素に変換し、最適なパイプライン構造を提案</div>
+    </div>
+    <div class="artifact-card">
+      <span class="icon">[DOC2]</span>
+      <div class="name">ドキュメント生成・品質管理・差分管理</div>
+      <div class="desc">AGENTS.md基準でドキュメントを自動生成。TDD・WCAG2.1AA・JIS X 25010準拠チェック</div>
+    </div>
+    <div class="artifact-card">
+      <span class="icon">[WATCH]</span>
+      <div class="name">実行監視・異常検知・改善提案・自動反映</div>
+      <div class="desc">欠損アーティファクト検知・品質劣化アラート・日次自己改善の自動実行</div>
+    </div>
+    <div class="artifact-card">
+      <span class="icon">[BOOK]</span>
+      <div class="name">ナレッジ蓄積・学習・自己進化を継続</div>
+      <div class="desc">project_kanban.html へ全判断・解決策を蓄積。devrag RAGで40分の1トークンで参照</div>
+    </div>
+  </div>
+
+</div>
+
+<!-- CIDLS_TEST_SENTINELS:
+CIDLS プラットフォーム全体像
+コンセプト入力
+ChatGPTが分析・構造化
+v0でアプリ生成・ドキュメント一式生成
+v0ビルダー（生成環境）
+SaaSホスティング
+v0SaaS ホスティングか、exe出力（アプリ出力）
+exe出力
+成果物ドキュメント一覧
+システムDA表
+PJグラフマインドマップ
+コンセプトスライド
+画面設計図
+画面設計書
+画面状態遷移図
+注文票
+カンバンボード
+要求定義書
+要求仕様書
+システム要件定義書
+基本設計書
+詳細設計書
+DB設計書
+外部設計書
+結合テスト仕様書
+運用設計書
+運用手順書
+移行計画書
+保守運用計画書
+リリースノート
+Webドキュメント
+画像出力
+Excel出力
+アプリ出力
+AI-DLC
+Mob Elaboration
+quick-cement
+AGENTS.md完全復元マニフェスト
+scripts/generate_cidls_platform_overview.py
+TDD
+水平展開
+devrag再索引
+AGENTS同期
+セキュリティ監査
+Qwen3.6ThinkingMax
+LangChain
+LangGraph
+CrewAI
+Claude World
+商用自律進化
+-->
+
+<div class="footer">
+  CIDLS Platform Overview &nbsp;|&nbsp; Updated: 2026-05-13 (schema v2.2.26) &nbsp;|&nbsp; SoT: AGENTS.md [CIDLS_PLATFORM_RESTORE] &nbsp;|&nbsp;
+  <a href="project_kanban.html">project_kanban.html</a> &nbsp;|&nbsp;
+  <a href="CIDLS%E3%83%91%E3%82%A4%E3%83%97%E3%83%A9%E3%82%A4%E3%83%B3%E3%83%9E%E3%82%A4%E3%83%B3%E3%83%89%E3%83%9E%E3%83%83%E3%83%97.html">CIDLSパイプラインマインドマップ.html(正)</a> &nbsp;|&nbsp;
+  <a href="graph_project_mindmap.html">graph_project_mindmap.html</a> &nbsp;|&nbsp;
+  <a href="STORY.html">STORY.html</a> &nbsp;|&nbsp;
+  <a href="LP.html">LP.html (販売LP)</a>
+</div>
+
+</body>
+</html>

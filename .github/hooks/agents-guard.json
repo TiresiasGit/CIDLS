@@ -1,0 +1,25 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "type": "command",
+        "command": "powershell -Command \"$file = $env:TOOL_INPUT_FILE_PATH; if ($file -match '\\.(py)$') { Write-Host '[HOOK] Python file edited: ' + $file; if (Get-Command flake8 -ErrorAction SilentlyContinue) { flake8 $file --max-line-length=120 --exclude=.venv } }; if ($file -match '\\.md$') { $devrag = if ($env:LOCALAPPDATA) { Join-Path $env:LOCALAPPDATA 'devrag\\devrag.exe' } else { 'C:\\Program Files\\devrag\\devrag.exe' }; if (Test-Path $devrag) { $eRoot = if ($env:COPILOT_ENH_ROOT -and (Test-Path $env:COPILOT_ENH_ROOT)) { $env:COPILOT_ENH_ROOT } else { @('C:\\','D:\\','E:\\','F:\\','G:\\') | ForEach-Object { Join-Path $_ 'GithubCopilot_enhancement' } | Where-Object { Test-Path $_ } | Select-Object -First 1 }; $cfg = if ($eRoot) { Join-Path $eRoot 'devrag-config.json' } else { $null }; if ($cfg -and (Test-Path $cfg)) { Write-Host '[HOOK] devrag: Markdown edited, re-indexing: ' + $file; & $devrag reindex $file --config $cfg 2>$null; Write-Host '[HOOK] devrag: re-index complete' } } }\"",
+        "timeout": 60
+      }
+    ],
+    "PreToolUse": [
+      {
+        "type": "command",
+        "command": "powershell -Command \"$input = $env:TOOL_INPUT; $forbidden = @('SimpleFallback', '_generate_simple_prediction', 'generate_dummy', 'dummy_data'); foreach ($f in $forbidden) { if ($input -match $f) { Write-Error '[GUARD] AGENTS.md G1違反: フォールバック処理が検出されました: ' + $f; exit 1 } }; Write-Host '[GUARD] G1チェック: OK'\"",
+        "timeout": 10
+      }
+    ],
+    "SessionStart": [
+      {
+        "type": "command",
+        "command": "powershell -Command \"Write-Host '[SESSION] GitHub Copilot AGENTS.md強化版 + devrag RAG 起動'; Write-Host '[SESSION] 適用ルール: CAPDkA / 禁止事項G1 / 水平展開HS / TDD必須 / devrag RAG'; Write-Host '[SESSION] 絶対禁止: フォールバック処理 / エラー握り潰し / pip使用 / Unicode絵文字'; $devrag = if ($env:LOCALAPPDATA) { Join-Path $env:LOCALAPPDATA 'devrag\\devrag.exe' } else { 'C:\\Program Files\\devrag\\devrag.exe' }; if (Test-Path $devrag) { Write-Host '[SESSION] devrag: バイナリ確認OK'; $eRoot = if ($env:COPILOT_ENH_ROOT -and (Test-Path $env:COPILOT_ENH_ROOT)) { $env:COPILOT_ENH_ROOT } else { @('C:\\','D:\\','E:\\','F:\\','G:\\') | ForEach-Object { Join-Path $_ 'GithubCopilot_enhancement' } | Where-Object { Test-Path $_ } | Select-Object -First 1 }; $cfg = if ($eRoot) { Join-Path $eRoot 'devrag-config.json' } else { $null }; if ($cfg -and (Test-Path $cfg)) { & $devrag list --config $cfg 2>$null | Out-Null; Write-Host '[SESSION] devrag: インデックス確認完了' } else { Write-Host '[SESSION] devrag: config未検出。setup_devrag.ps1 を実行してください' } } else { Write-Host '[SESSION] devrag: バイナリ未配置 - https://github.com/tomohiro-owada/devrag/releases からダウンロードしてください' }\"",
+        "timeout": 30
+      }
+    ]
+  }
+}

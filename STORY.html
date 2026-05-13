@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CIDLS STORY - 業務ストーリー</title>
+<style>
+:root {
+  --bg:      #1a1a2e;
+  --panel:   #16213e;
+  --card:    #0f3460;
+  --accent:  #6366f1;
+  --accent2: #8b5cf6;
+  --success: #10b981;
+  --warn:    #f59e0b;
+  --danger:  #ef4444;
+  --cyan:    #06b6d4;
+  --text:    #e2e8f0;
+  --muted:   #94a3b8;
+  --border:  #334155;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); }
+
+/* Header */
+.header {
+  background: linear-gradient(135deg, #0f3460 0%, var(--bg) 60%);
+  border-bottom: 3px solid var(--accent);
+  padding: 28px 32px;
+  text-align: center;
+}
+.header h1 { font-size: 1.8rem; font-weight: 800; }
+.header h1 span { color: var(--accent); }
+.header p { font-size: 0.88rem; color: var(--muted); margin-top: 8px; }
+
+/* Actors */
+.actors-section { padding: 32px 32px 0; }
+.actors-title { font-size: 0.95rem; font-weight: 700; color: var(--accent); margin-bottom: 20px; text-align: center; }
+.actors-grid {
+  display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; margin-bottom: 32px;
+}
+.actor-card {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px 20px;
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+  min-width: 130px; text-align: center;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.actor-card:hover { transform: translateY(-3px); box-shadow: 0 6px 24px rgba(99,102,241,0.2); }
+.actor-icon { font-size: 2rem; }
+.actor-name { font-size: 0.82rem; font-weight: 700; color: var(--text); }
+.actor-role { font-size: 0.7rem; color: var(--muted); }
+.actor-badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 0.68rem; font-weight: 600; margin-top: 4px; }
+
+/* Story Sections */
+.story-section { padding: 0 32px 40px; }
+.story-h { font-size: 1rem; font-weight: 700; color: var(--accent2); margin: 32px 0 16px; padding-left: 12px; border-left: 3px solid var(--accent2); }
+
+/* Sequence */
+.sequence { display: flex; flex-direction: column; gap: 0; }
+.seq-row {
+  display: grid;
+  grid-template-columns: 110px 1fr;
+  min-height: 64px;
+  position: relative;
+}
+.seq-row:last-child .seq-line { display: none; }
+
+.seq-meta {
+  padding: 8px 12px 8px 0;
+  display: flex; flex-direction: column; align-items: flex-end; justify-content: flex-start;
+  gap: 4px; position: relative;
+}
+.seq-meta::after {
+  content: '';
+  position: absolute; right: -1px; top: 20px; bottom: 0;
+  width: 2px; background: var(--border);
+}
+.seq-actor {
+  font-size: 0.72rem; font-weight: 700; padding: 2px 8px; border-radius: 10px;
+  white-space: nowrap; text-align: center;
+}
+.seq-time { font-size: 0.65rem; color: var(--muted); }
+
+.seq-body {
+  padding: 8px 0 8px 20px;
+  position: relative;
+}
+.seq-body::before {
+  content: '';
+  position: absolute; left: 0; top: 18px;
+  width: 18px; height: 2px; background: var(--border);
+}
+.seq-arrow {
+  position: absolute; left: 16px; top: 14px;
+  width: 0; height: 0;
+  border-top: 5px solid transparent;
+  border-bottom: 5px solid transparent;
+  border-left: 6px solid var(--border);
+}
+
+.seq-card {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 14px;
+  display: inline-block; max-width: 100%;
+}
+.seq-card.highlight { border-color: var(--accent); background: rgba(99,102,241,0.08); }
+.seq-card.success { border-color: var(--success); background: rgba(16,185,129,0.08); }
+.seq-card.warn { border-color: var(--warn); background: rgba(245,158,11,0.08); }
+.seq-card.danger { border-color: var(--danger); background: rgba(239,68,68,0.08); }
+.seq-event { font-size: 0.82rem; font-weight: 600; color: var(--text); }
+.seq-detail { font-size: 0.72rem; color: var(--muted); margin-top: 3px; line-height: 1.5; }
+.seq-arrow-right {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 0.72rem; color: var(--muted); margin-top: 4px;
+}
+.seq-arrow-right::before { content: '-->'; color: var(--accent); font-weight: 700; }
+
+/* Story chapters */
+.story-box {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 20px 24px;
+  margin-bottom: 20px;
+}
+.story-box h3 { font-size: 0.9rem; font-weight: 700; color: var(--accent); margin-bottom: 12px; }
+.story-steps { display: flex; flex-direction: column; gap: 12px; }
+.story-step {
+  display: flex; gap: 14px; align-items: flex-start;
+}
+.step-num-sm {
+  width: 28px; height: 28px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.75rem; font-weight: 700; flex-shrink: 0;
+}
+.step-body { flex: 1; }
+.step-event { font-size: 0.85rem; font-weight: 600; color: var(--text); }
+.step-actors { font-size: 0.72rem; color: var(--muted); margin-top: 2px; }
+.step-tech { font-size: 0.7rem; margin-top: 4px; }
+.tech-tag { display: inline-block; background: rgba(99,102,241,0.15); color: #a5b4fc; padding: 1px 6px; border-radius: 4px; font-size: 0.68rem; margin-right: 4px; }
+
+/* Security box */
+.sec-box {
+  background: rgba(239,68,68,0.05);
+  border: 1px solid rgba(239,68,68,0.3);
+  border-radius: 8px;
+  padding: 14px 18px;
+  margin-top: 12px;
+}
+.sec-box h4 { font-size: 0.8rem; font-weight: 700; color: var(--danger); margin-bottom: 8px; }
+.sec-item { font-size: 0.73rem; color: var(--muted); padding: 3px 0; }
+.sec-item::before { content: '[SEC] '; color: var(--danger); font-weight: 700; }
+
+/* Story narrative */
+.narrative {
+  background: linear-gradient(135deg, rgba(99,102,241,0.05), rgba(139,92,246,0.05));
+  border: 1px solid rgba(99,102,241,0.2);
+  border-radius: 12px;
+  padding: 24px;
+  margin-bottom: 24px;
+}
+.narrative-name { font-size: 0.75rem; font-weight: 700; color: var(--accent2); margin-bottom: 6px; }
+.narrative-text { font-size: 0.82rem; color: var(--text); line-height: 1.8; }
+
+/* Footer */
+.footer {
+  background: var(--panel);
+  border-top: 1px solid var(--border);
+  padding: 18px 32px;
+  text-align: center;
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+.footer a { color: var(--accent); text-decoration: none; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>CIDLS <span>業務ストーリー</span></h1>
+  <p>決済・契約・Webhook・キャンセル・入金の全フローを6登場人物で可視化 | AGENTS.md [D1.1] 準拠</p>
+</div>
+
+<!-- Actors -->
+<div class="actors-section">
+  <div class="actors-title">登場人物 (6キャラクター)</div>
+  <div class="actors-grid">
+    <div class="actor-card">
+      <div class="actor-icon">[USER]</div>
+      <div class="actor-name">ユーザー</div>
+      <div class="actor-role">サービス利用者</div>
+      <span class="actor-badge" style="background:rgba(16,185,129,0.2);color:#6ee7b7;">顧客</span>
+    </div>
+    <div class="actor-card">
+      <div class="actor-icon">[DEVICE]</div>
+      <div class="actor-name">ユーザー端末</div>
+      <div class="actor-role">ブラウザ/アプリ</div>
+      <span class="actor-badge" style="background:rgba(6,182,212,0.2);color:#67e8f9;">Frontend</span>
+    </div>
+    <div class="actor-card">
+      <div class="actor-icon">[APP]</div>
+      <div class="actor-name">本アプリ</div>
+      <div class="actor-role">CIDLSプラットフォーム</div>
+      <span class="actor-badge" style="background:rgba(99,102,241,0.2);color:#a5b4fc;">BFF/API</span>
+    </div>
+    <div class="actor-card">
+      <div class="actor-icon">[SERVER]</div>
+      <div class="actor-name">バックエンドサーバー</div>
+      <div class="actor-role">認証・権限・ビジネスロジック</div>
+      <span class="actor-badge" style="background:rgba(139,92,246,0.2);color:#c4b5fd;">Backend</span>
+    </div>
+    <div class="actor-card">
+      <div class="actor-icon">[STRIPE]</div>
+      <div class="actor-name">決済サービス</div>
+      <div class="actor-role">Stripe / 外部決済</div>
+      <span class="actor-badge" style="background:rgba(245,158,11,0.2);color:#fcd34d;">Stripe</span>
+    </div>
+    <div class="actor-card">
+      <div class="actor-icon">[OWNER]</div>
+      <div class="actor-name">プロダクトオーナー</div>
+      <div class="actor-role">事業者・管理者</div>
+      <span class="actor-badge" style="background:rgba(239,68,68,0.2);color:#fca5a5;">Admin</span>
+    </div>
+  </div>
+</div>
+
+<div class="story-section">
+
+  <!-- Story 1: 契約・サブスク申込 -->
+  <div class="story-h">Story 1 : サブスクリプション契約フロー</div>
+  <div class="story-box">
+    <h3>-- ユーザーがプランを選択し決済するまでの全手順 --</h3>
+    <div class="story-steps">
+
+      <div class="story-step">
+        <div class="step-num-sm" style="background:rgba(16,185,129,0.2);color:#6ee7b7;">1</div>
+        <div class="step-body">
+          <div class="step-event">[USER] がプラン選択画面でプロプランを選択</div>
+          <div class="step-actors">登場: ユーザー → ユーザー端末 → 本アプリ</div>
+          <div class="step-tech"><span class="tech-tag">GET /plans</span><span class="tech-tag">UI: プランカード</span></div>
+        </div>
+      </div>
+
+      <div class="story-step">
+        <div class="step-num-sm" style="background:rgba(6,182,212,0.2);color:#67e8f9;">2</div>
+        <div class="step-body">
+          <div class="step-event">[APP] がバックエンドサーバーへ購入セッション作成を依頼</div>
+          <div class="step-actors">本アプリ → バックエンドサーバー</div>
+          <div class="step-tech"><span class="tech-tag">POST /checkout/session</span><span class="tech-tag">plan_id (サーバー検証)</span></div>
+        </div>
+      </div>
+
+      <div class="story-step">
+        <div class="step-num-sm" style="background:rgba(139,92,246,0.2);color:#c4b5fd;">3</div>
+        <div class="step-body">
+          <div class="step-event">[BACKEND] が Stripe CheckoutSession を生成しURLを返却</div>
+          <div class="step-actors">バックエンドサーバー → 決済サービス (Stripe)</div>
+          <div class="step-tech"><span class="tech-tag">Stripe API: CreateCheckoutSession</span><span class="tech-tag">price_id: サーバー側マスタ参照</span></div>
+          <div class="tech-tag" style="margin-top:4px;display:inline-block;">SEC: クライアント申告の price 値は使用禁止</div>
+        </div>
+      </div>
+
+      <div class="story-step">
+        <div class="step-num-sm" style="background:rgba(245,158,11,0.2);color:#fcd34d;">4</div>
+        <div class="step-body">
+          <div class="step-event">[DEVICE] が Stripe ホステッドページにリダイレクト</div>
+          <div class="step-actors">ユーザー端末 → 決済サービス (Stripe)</div>
+          <div class="step-tech"><span class="tech-tag">Stripe Checkout UI</span><span class="tech-tag">カード情報入力</span></div>
+        </div>
+      </div>
+
+      <div class="story-step">
+        <div class="step-num-sm" style="background:rgba(99,102,241,0.2);color:#a5b4fc;">5</div>
+        <div class="step-body">
+          <div class="step-event">[STRIPE] が決済完了後 success_url へリダイレクト + Webhook送信</div>
+          <div class="step-actors">決済サービス → ユーザー端末、決済サービス → バックエンドサーバー</div>
+          <div class="step-tech"><span class="tech-tag">checkout.session.completed</span><span class="tech-tag">customer.subscription.created</span></div>
+        </div>
+      </div>
+
+      <div class="story-step">
+        <div class="step-num-sm" style="background:rgba(239,68,68,0.2);color:#fca5a5;">6</div>
+        <div class="step-body">
+          <div class="step-event">[BACKEND] が Webhook署名を検証しサブスク有効化 → DBを更新</div>
+          <div class="step-actors">バックエンドサーバー → DB</div>
+          <div class="step-tech"><span class="tech-tag">stripe.webhooks.constructEvent</span><span class="tech-tag">subscriptions.status = active</span></div>
+          <div class="step-tech"><span class="tech-tag" style="background:rgba(16,185,129,0.15);color:#6ee7b7;">[SEC.VERIFY_INTEGRITY] Webhook署名なしは即拒否</span></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- SEC warnings -->
+  <div class="sec-box" style="margin-bottom:24px;">
+    <h4>[CRITICAL] ガバコンリスク Story 1 セキュリティチェック</h4>
+    <div class="sec-item">[SEC.BILLING_ENFORCE] price_id・金額はサーバーマスタのみから取得。クライアント送信値は全て破棄</div>
+    <div class="sec-item">[SEC.NEVER_TRUST_CLIENT] is_premium / role / plan をクライアントから受け取り直接DBに保存することは禁止</div>
+    <div class="sec-item">[SEC.VERIFY_INTEGRITY] Stripe Webhook署名検証必須。署名なしのリクエストはHTTP 400で拒否</div>
+    <div class="sec-item">[SEC.PII_AUTH_GATE] 決済情報はStripeが管理。本サーバーはカード番号・CVVを一切保持しない</div>
+  </div>
+
+  <!-- Story 2: Webhook受信・入金確認 -->
+  <div class="story-h">Story 2 : Webhook受信・入金確認・有効期限管理フロー</div>
+  <div class="story-box">
+    <h3>-- 入金確認からサービス有効化・更新・失敗処理まで --</h3>
+    <div class="story-steps">
+
+      <div class="story-step">
+        <div class="step-num-sm" style="background:rgba(245,158,11,0.2);color:#fcd34d;">1</div>
+        <div class="step-body">
+          <div class="step-event">[STRIPE] が月次自動課金を実行しinvoice.payment_succeededを送信</div>
+          <div class="step-actors">決済サービス → バックエンドサーバー (/webhook)</div>
+          <div class="step-tech"><span class="tech-tag">invoice.payment_succeeded</span><span class="tech-tag">customer_id, subscription_id</span></div>
+        </div>
+      </div>
+
+      <div class="story-step">
+        <div class="step-num-sm" style="background:rgba(139,92,246,0.2);color:#c4b5fd;">2</div>
+        <div class="step-body">
+          <div class="step-event">[BACKEND] がWebhook署名を検証 → 入金確認 → サブスク期限を+1ヶ月延長</div>
+          <div class="step-actors">バックエンドサーバー → DB</div>
+          <div class="step-tech"><span class="tech-tag">current_period_end更新</span><span class="tech-tag">immutableログ記録</span></div>
+        </div>
+      </div>
+
+      <div class="story-step">
+        <div class="step-num-sm" style="background:rgba(239,68,68,0.2);color:#fca5a5;">3</div>
+        <div class="step-body">
+          <div class="step-event">[STRIPE] が課金失敗時にinvoice.payment_failedを送信 (3回リトライ後)</div>
+          <div class="step-actors">決済サービス → バックエンドサーバー</div>
+          <div class="step-tech"><span class="tech-tag">invoice.payment_failed</span><span class="tech-tag">customer.subscription.deleted</span></div>
+        </div>
+      </div>
+
+      <div class="story-step">
+        <div class="step-num-sm" style="background:rgba(99,102,241,0.2);color:#a5b4fc;">4</div>
+        <div class="step-body">
+          <div class="step-event">[BACKEND] がサブスク状態をpast_dueに変更。ユーザーに更新催促メール送信</div>
+          <div class="step-actors">バックエンドサーバー → DB、バックエンドサーバー → ユーザー</div>
+          <div class="step-tech"><span class="tech-tag">subscriptions.status = past_due</span><span class="tech-tag">email: 支払情報更新依頼</span></div>
+        </div>
+      </div>
+
+      <div class="story-step">
+        <div class="step-num-sm" style="background:rgba(16,185,129,0.2);color:#6ee7b7;">5</div>
+        <div class="step-body">
+          <div class="step-event">[OWNER] がダッシュボードで入金履歴・サブスク状況をリアルタイム確認</div>
+          <div class="step-actors">プロダクトオーナー → 本アプリ管理画面 → バックエンドサーバー</div>
+          <div class="step-tech"><span class="tech-tag">GET /admin/subscriptions</span><span class="tech-tag">認証: admin role必須</span></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Story 3: キャンセル・解約 -->
+  <div class="story-h">Story 3 : キャンセル・解約フロー</div>
+  <div class="story-box">
+    <h3>-- ユーザーが解約を申請し、期末まで利用継続するフロー --</h3>
+    <div class="story-steps">
+
+      <div class="story-step">
+        <div class="step-num-sm" style="background:rgba(16,185,129,0.2);color:#6ee7b7;">1</div>
+        <div class="step-body">
+          <div class="step-event">[USER] がアカウント設定からサブスクリプション解約を申請</div>
+          <div class="step-actors">ユーザー → ユーザー端末 → 本アプリ</div>
+          <div class="step-tech"><span class="tech-tag">POST /subscriptions/cancel</span><span class="tech-tag">at_period_end: true</span></div>
+        </div>
+      </div>
+
+      <div class="story-step">
+        <div class="step-num-sm" style="background:rgba(139,92,246,0.2);color:#c4b5fd;">2</div>
+        <div class="step-body">
+          <div class="step-event">[BACKEND] がStripe APIでサブスク解約スケジュール(cancel_at_period_end)を設定</div>
+          <div class="step-actors">バックエンドサーバー → 決済サービス</div>
+          <div class="step-tech"><span class="tech-tag">stripe.subscriptions.update</span><span class="tech-tag">cancel_at_period_end: true</span></div>
+        </div>
+      </div>
+
+      <div class="story-step">
+        <div class="step-num-sm" style="background:rgba(6,182,212,0.2);color:#67e8f9;">3</div>
+        <div class="step-body">
+          <div class="step-event">[APP] がユーザーに「期末まで利用可能」の確認画面を表示</div>
+          <div class="step-actors">本アプリ → ユーザー端末</div>
+          <div class="step-tech"><span class="tech-tag">有効期限: current_period_end まで</span></div>
+        </div>
+      </div>
+
+      <div class="story-step">
+        <div class="step-num-sm" style="background:rgba(245,158,11,0.2);color:#fcd34d;">4</div>
+        <div class="step-body">
+          <div class="step-event">[STRIPE] が解約日(current_period_end)に customer.subscription.deleted Webhook送信</div>
+          <div class="step-actors">決済サービス → バックエンドサーバー</div>
+          <div class="step-tech"><span class="tech-tag">customer.subscription.deleted</span></div>
+        </div>
+      </div>
+
+      <div class="story-step">
+        <div class="step-num-sm" style="background:rgba(99,102,241,0.2);color:#a5b4fc;">5</div>
+        <div class="step-body">
+          <div class="step-event">[BACKEND] がDB上のsubscription.statusをcanceledに更新。アクセス権限を即時剥奪</div>
+          <div class="step-actors">バックエンドサーバー → DB</div>
+          <div class="step-tech"><span class="tech-tag">status = canceled</span><span class="tech-tag">access_level = free</span><span class="tech-tag">immutableログ</span></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Narrative -->
+  <div class="story-h">Story 4 : n8n 外部発報オーケストレーターフロー</div>
+  <div class="swimlane">
+    <div class="swimlane-label">Step 1<br>バッチ完了</div>
+    <div class="swimlane-content">
+      <div class="step-actors">バックエンドサーバー → n8n Webhook</div>
+      <div class="step-event">[APP] 日次ドキュメント生成バッチが完了。httpx で N8N_WEBHOOK_URL に POST</div>
+      <div class="step-tech"><span class="tech-tag">X-Idempotency-Key: {run_id}</span><span class="tech-tag">event: batch_complete</span></div>
+      <div class="step-tech"><span class="tech-tag" style="background:rgba(99,102,241,0.15);color:#a5b4fc;">[N8N.2] Secret はコードに混入しない。n8n Credentials のみで管理</span></div>
+    </div>
+  </div>
+  <div class="swimlane">
+    <div class="swimlane-label">Step 2<br>n8n受信</div>
+    <div class="swimlane-content">
+      <div class="step-actors">n8n (localhost:5678) → Slack / メール / Teams</div>
+      <div class="step-event">[N8N] Webhook トリガーがイベントを受信。ワークフロー定義に従い発報先へ分岐・配信</div>
+      <div class="step-tech"><span class="tech-tag">Slack通知</span><span class="tech-tag">メール送信(SMTP)</span><span class="tech-tag">Teams Webhook</span></div>
+      <div class="step-tech"><span class="tech-tag" style="background:rgba(99,102,241,0.15);color:#a5b4fc;">[N8N.3] ワークフロー定義は n8n_workflows/ に JSON で管理</span></div>
+    </div>
+  </div>
+  <div class="swimlane">
+    <div class="swimlane-label">Step 3<br>冪等性保証</div>
+    <div class="swimlane-content">
+      <div class="step-actors">n8n → バックエンドサーバー (ログ確認)</div>
+      <div class="step-event">[N8N] 同一 X-Idempotency-Key の重複リクエストを検知してスキップ。重複通知ゼロを保証</div>
+      <div class="step-tech"><span class="tech-tag">実行履歴でべき等制御</span><span class="tech-tag">重複スキップ</span></div>
+    </div>
+  </div>
+  <div class="swimlane">
+    <div class="swimlane-label">Step 4<br>例外対応</div>
+    <div class="swimlane-content">
+      <div class="step-actors">バックエンドサーバー (n8n停止時)</div>
+      <div class="step-event">[APP] n8n が停止中の場合は [WARNING] ログを出力して処理を継続。発報失敗は後から手動再実行</div>
+      <div class="step-tech"><span class="tech-tag">フェイルクローズ設計</span><span class="tech-tag">[N8N.5] 停止時挙動明示</span></div>
+    </div>
+  </div>
+  <div class="sec-items" style="margin-top:12px;">
+    <div class="sec-item">[N8N.2] アプリからは n8n Webhook へのみ発報。発報先切替は n8n ワークフローが担う</div>
+    <div class="sec-item">[N8N.2] SMTP/API Key は n8n Credentials に集約。アプリコード・配布物への混入禁止</div>
+    <div class="sec-item">[N8N.4] Serverless環境等でn8n利用不能な場合は例外記録をkanban_project.htmlに残す</div>
+  </div>
+
+  <!-- Narrative -->
+  <div class="story-h">各キャラクターの視点ナラティブ</div>
+  <div class="narrative">
+    <div class="narrative-name">[USER] ユーザーの視点</div>
+    <div class="narrative-text">
+      AIアシスタントの助けを借りながら、今日もCIDLSに開発のコンセプトを入力した。
+      プロプランに申し込めば1日で仕様書が完成すると聞いて決済ページへ進む。
+      カード情報はStripeの画面で入力したから安心だ。支払い完了後すぐにアプリに戻り、
+      ドキュメント一式が生成され始めた。翌日にはHTML・Excel形式の納品ドキュメントが揃っていた。
+      毎月自動更新されているので期限切れを心配しなくてもいい。
+      今後は解約したくなったら「解約」ボタン1つで期末まで使える状態になる。
+    </div>
+  </div>
+
+  <div class="narrative">
+    <div class="narrative-name">[BACKEND] バックエンドサーバーの視点</div>
+    <div class="narrative-text">
+      私はすべての決済情報をStripeのみから受け取る。クライアントが「金額」「プラン」を
+      送ってきても一切信用しない。サーバー側で定義したpriceマスタを参照し、
+      Stripe APIを呼び出すのは私の役割だ。Webhookが届いたらまず署名を検証する。
+      verified=trueや role=adminをユーザーが自分で送信してきても、DBには絶対に反映しない。
+      すべての課金イベントはimmutableなログに残す。これが信頼の境界だ。
+    </div>
+  </div>
+
+  <div class="narrative">
+    <div class="narrative-name">[STRIPE] 決済サービスの視点</div>
+    <div class="narrative-text">
+      私はCheckoutSessionを生成し、カード情報を安全に処理する。
+      決済完了・失敗・解約・更新のすべてのイベントをWebhookで通知する。
+      署名キーで署名された正規のWebhookだけが本物だ。
+      バックエンドサーバーはこの署名を必ず検証してほしい。
+      私が送るイベントを受け取り、DBを更新するまでがStripeとの連携の全体だ。
+    </div>
+  </div>
+
+  <div class="narrative">
+    <div class="narrative-name">[OWNER] プロダクトオーナーの視点</div>
+    <div class="narrative-text">
+      ダッシュボードでリアルタイムに全ユーザーのサブスク状況・入金履歴が見える。
+      月次レポートは自動でExcelが生成される。課金失敗が出たら即アラートが来る。
+      インシデントが起きれば1時間以内に停止判断を下す体制がある。
+      CIDLSのおかげでドキュメント作成工数が87%削減された。
+      その余裕を使って事業の改善に集中できている。
+    </div>
+  </div>
+
+  <div class="narrative">
+    <div class="narrative-name">[N8N] 外部発報オーケストレーターの視点</div>
+    <div class="narrative-text">
+      私はアプリから届くイベントをただ受け取り、Slack・メール・Teamsへ振り分ける。
+      アプリはAPIキーもSMTPパスワードも知る必要がない。
+      Credentialsは私の中だけに閉じていて、アプリコードには一切流れない。
+      発報先を追加・変更したくなれば私のワークフローを修正するだけだ。アプリのリリースは不要。
+      重複送信は X-Idempotency-Key で防ぐ。リトライと実行ログは標準装備されている。
+      私が止まってもアプリは [WARNING] を出しながら動き続ける。それが疎結合の力だ。
+    </div>
+  </div>
+
+</div>
+
+<div class="footer">
+  CIDLS STORY &nbsp;|&nbsp; Generated: 2026-05-13 (v2.4.0 n8n外部発報フロー追加) &nbsp;|&nbsp; SoT: AGENTS.md [D1.1]-11 [N8N] &nbsp;|&nbsp;
+  登場人物7名: [USER] [DEVICE] [APP] [SERVER] [STRIPE] [OWNER] [N8N] &nbsp;|&nbsp;
+  <a href="cidls_platform_overview.html">cidls_platform_overview.html</a> &nbsp;|&nbsp;
+  <a href="project_kanban.html">project_kanban.html</a> &nbsp;|&nbsp;
+  <a href="要求定義書.html">要求定義書.html</a>
+</div>
+
+</body>
+</html>

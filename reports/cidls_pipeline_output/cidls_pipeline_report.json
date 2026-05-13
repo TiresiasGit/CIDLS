@@ -1,0 +1,68 @@
+{
+  "ok": true,
+  "generated_at_utc": "2026-05-06T00:33:28+00:00",
+  "concept_title": "CIDLS商用請負納品パッケージ",
+  "source_image_summary": "人のアイデアを起点に、概念画像、AGENTS標準成果物、Codexローカル実装、商用請負納品文書へ順番に変換する一気通貫フロー。",
+  "deployment_performed": false,
+  "output_dir": "<CIDLS_REPO>\\reports\\cidls_pipeline_output",
+  "stage_count": 5,
+  "deliverable_count": 8,
+  "files": [
+    {
+      "path": "<CIDLS_REPO>\\reports\\cidls_pipeline_output\\cidls_pipeline_spec.md",
+      "action": "updated"
+    },
+    {
+      "path": "<CIDLS_REPO>\\reports\\cidls_pipeline_output\\app_blueprint.html",
+      "action": "updated"
+    },
+    {
+      "path": "<CIDLS_REPO>\\reports\\cidls_pipeline_output\\system_da_table.html",
+      "action": "updated"
+    },
+    {
+      "path": "<CIDLS_REPO>\\reports\\cidls_pipeline_output\\graph_project_mindmap.html",
+      "action": "updated"
+    },
+    {
+      "path": "<CIDLS_REPO>\\reports\\cidls_pipeline_output\\screen_overview.svg",
+      "action": "updated"
+    },
+    {
+      "path": "<CIDLS_REPO>\\reports\\cidls_pipeline_output\\screen_state_design.html",
+      "action": "updated"
+    },
+    {
+      "path": "<CIDLS_REPO>\\reports\\cidls_pipeline_output\\concept_slide.html",
+      "action": "updated"
+    },
+    {
+      "path": "<CIDLS_REPO>\\reports\\cidls_pipeline_output\\STORY.html",
+      "action": "updated"
+    },
+    {
+      "path": "<CIDLS_REPO>\\reports\\cidls_pipeline_output\\delivery_docs\\requirements_definition.md",
+      "action": "updated"
+    },
+    {
+      "path": "<CIDLS_REPO>\\reports\\cidls_pipeline_output\\delivery_docs\\basic_design.md",
+      "action": "updated"
+    },
+    {
+      "path": "<CIDLS_REPO>\\reports\\cidls_pipeline_output\\delivery_docs\\detailed_design.md",
+      "action": "updated"
+    },
+    {
+      "path": "<CIDLS_REPO>\\reports\\cidls_pipeline_output\\delivery_docs\\test_specification.md",
+      "action": "updated"
+    },
+    {
+      "path": "<CIDLS_REPO>\\reports\\cidls_pipeline_output\\delivery_docs\\operations_runbook.md",
+      "action": "updated"
+    },
+    {
+      "path": "<CIDLS_REPO>\\reports\\cidls_pipeline_output\\delivery_docs\\acceptance_checklist.md",
+      "action": "updated"
+    }
+  ]
+}

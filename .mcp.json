@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "devrag": {
+      "type": "stdio",
+      "command": "%CODEX_HOME%\\mcp\\cidls_global\\launch-devrag.cmd"
+    }
+  }
+}

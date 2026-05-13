@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CIDLS 運用手順書 CIDLS-OPS-001 v1.0.0</title>
+<style>
+:root {
+  --bg:      #1a1a2e;
+  --panel:   #16213e;
+  --accent:  #6366f1;
+  --success: #10b981;
+  --warn:    #f59e0b;
+  --danger:  #ef4444;
+  --cyan:    #06b6d4;
+  --text:    #e2e8f0;
+  --muted:   #94a3b8;
+  --border:  #334155;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+.page-header {
+  background: var(--panel); border-bottom: 3px solid var(--success); padding: 20px 40px;
+}
+.page-header h1 { font-size: 1.35rem; font-weight: 800; color: var(--success); }
+.page-header .meta { font-size: 0.78rem; color: var(--muted); margin-top: 4px; }
+
+.nav-tabs {
+  display: flex; background: var(--panel);
+  border-bottom: 1px solid var(--border); padding: 0 40px; overflow-x: auto;
+}
+.tab-btn {
+  padding: 10px 18px; font-size: 0.82rem; font-weight: 600;
+  color: var(--muted); background: transparent; border: none;
+  border-bottom: 3px solid transparent; cursor: pointer; white-space: nowrap;
+}
+.tab-btn:hover { color: var(--text); }
+.tab-btn.active { color: var(--success); border-bottom-color: var(--success); }
+
+.content { max-width: 1100px; margin: 0 auto; padding: 32px 40px; }
+.section { display: none; }
+.section.active { display: block; }
+
+.card {
+  background: var(--panel); border: 1px solid var(--border);
+  border-radius: 10px; padding: 20px 24px; margin-bottom: 20px;
+}
+.card h2 { font-size: 1.1rem; color: var(--success); margin-bottom: 14px; border-bottom: 1px solid var(--border); padding-bottom: 8px; }
+.card h3 { font-size: 0.95rem; color: var(--accent); margin: 14px 0 8px; }
+
+table { width: 100%; border-collapse: collapse; font-size: 0.82rem; margin: 10px 0; }
+th { background: rgba(16,185,129,0.12); color: var(--success); padding: 8px 10px; text-align: left; border: 1px solid var(--border); }
+td { padding: 7px 10px; border: 1px solid var(--border); vertical-align: top; line-height: 1.5; }
+tr:hover td { background: rgba(255,255,255,0.03); }
+
+.step-block {
+  background: rgba(99,102,241,0.06); border-left: 3px solid var(--accent);
+  border-radius: 0 8px 8px 0; padding: 14px 18px; margin: 10px 0;
+}
+.step-title { font-size: 0.9rem; font-weight: 700; color: var(--accent); margin-bottom: 6px; }
+.step-cmd {
+  background: #0d1117; border: 1px solid var(--border); border-radius: 6px;
+  padding: 10px 14px; font-family: monospace; font-size: 0.82rem; color: var(--cyan);
+  margin: 8px 0; white-space: pre-wrap; word-break: break-all;
+}
+.step-note { font-size: 0.8rem; color: var(--muted); margin-top: 4px; }
+
+.alert {
+  padding: 12px 16px; border-radius: 8px; margin: 10px 0; font-size: 0.85rem;
+}
+.alert-warn  { background: rgba(245,158,11,0.1); border: 1px solid rgba(245,158,11,0.3); color: var(--warn); }
+.alert-danger{ background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3); color: var(--danger); }
+.alert-ok    { background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.3); color: var(--success); }
+
+.badge {
+  display: inline-block; padding: 2px 8px; border-radius: 10px;
+  font-size: 0.72rem; font-weight: 700;
+}
+.b-ok   { background: rgba(16,185,129,0.2); color: var(--success); }
+.b-warn { background: rgba(245,158,11,0.2); color: var(--warn); }
+.b-ng   { background: rgba(239,68,68,0.2); color: var(--danger); }
+
+p { line-height: 1.7; font-size: 0.87rem; color: var(--muted); margin: 6px 0; }
+ul,ol { margin: 8px 0 8px 20px; }
+li { margin: 4px 0; font-size: 0.87rem; color: var(--muted); line-height: 1.6; }
+code { background: rgba(255,255,255,0.07); padding: 2px 6px; border-radius: 4px; font-size: 0.82rem; color: var(--cyan); }
+strong { color: var(--text); }
+</style>
+<style>
+
+.diagram-section { background: var(--panel,#16213e); border: 1px solid var(--border,#334155); border-radius: 10px; padding: 24px; margin-bottom: 20px; }
+.diagram-section h2 { font-size: 1.0rem; color: var(--accent,#6366f1); margin-bottom: 16px; border-bottom: 1px solid var(--border,#334155); padding-bottom: 8px; }
+.diagram-section h3 { font-size: 0.9rem; color: var(--cyan,#06b6d4); margin: 16px 0 10px; }
+.mermaid-wrap { background: #0d1527; border-radius: 8px; padding: 20px; overflow-x: auto; margin-bottom: 16px; }
+.mermaid-wrap .mermaid { max-width: 100%; }
+
+</style>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<script>mermaid.initialize({startOnLoad:true,theme:"dark",themeVariables:{primaryColor:"#1a2040",primaryTextColor:"#e2e8f0",primaryBorderColor:"#6366f1",lineColor:"#6366f1",secondaryColor:"#16213e",tertiaryColor:"#0f1535"}});</script>
+</head>
+<body>
+
+<div class="page-header">
+  <h1>CIDLS 運用手順書</h1>
+  <div class="meta">
+    文書ID: CIDLS-OPS-001 &#124; バージョン: 1.0.0 &#124; 作成日: 2026-05-12 &#124;
+    担当: CIDLS開発チーム &#124; ステータス: <span style="color:var(--success)">承認済み</span>
+  </div>
+</div>
+
+<nav class="nav-tabs">
+  <button class="tab-btn active" onclick="showTab(this,'startup')">01 起動・準備</button>
+  <button class="tab-btn" onclick="showTab(this,'devrag')">02 devrag 操作</button>
+  <button class="tab-btn" onclick="showTab(this,'generate')">03 成果物生成</button>
+  <button class="tab-btn" onclick="showTab(this,'kanban')">04 カンバン更新</button>
+  <button class="tab-btn" onclick="showTab(this,'daily')">05 日次ループ</button>
+  <button class="tab-btn" onclick="showTab(this,'trouble')">06 トラブルシューティング</button>
+    <button class="tab-btn" onclick="showTab(this,'diagram')">フロー図</button>
+</nav>
+
+<div class="content">
+
+  <!-- 01 起動・準備 -->
+  <div id="tab-startup" class="section active">
+    <div class="card">
+      <h2>作業環境の準備</h2>
+
+      <div class="alert alert-ok">
+        <strong>前提条件:</strong> D:\CIDLS が CIDLS リポジトリルート。D:\production\.venv に Python 3.11 仮想環境。devrag.exe が %LOCALAPPDATA%\devrag\devrag.exe に存在すること。
+      </div>
+
+      <h3>環境変数の設定 (セッション開始時)</h3>
+      <div class="step-block">
+        <div class="step-title">PowerShell セッション変数</div>
+        <div class="step-cmd">$BIN = "C:\Users\JP324334\AppData\Local\devrag\devrag.exe"
+$CFG = "D:\CIDLS\devrag-config.json"
+$PY  = "D:\production\.venv\Scripts\python.exe"
+cd D:\CIDLS</div>
+        <div class="step-note">以降のコマンドはこれらの変数を前提とする</div>
+      </div>
+
+      <h3>環境確認コマンド</h3>
+      <div class="step-block">
+        <div class="step-title">devrag 動作確認</div>
+        <div class="step-cmd">& $BIN search --top-k 2 --config $CFG "CAPDkA"</div>
+        <div class="step-note">count=3 以上・similarity=0.90 以上が返れば正常</div>
+      </div>
+
+      <div class="step-block">
+        <div class="step-title">Python 環境確認</div>
+        <div class="step-cmd">& $PY --version</div>
+        <div class="step-note">Python 3.11.x が表示されれば正常</div>
+      </div>
+
+      <div class="step-block">
+        <div class="step-title">索引件数確認</div>
+        <div class="step-cmd">& $BIN list --config $CFG</div>
+        <div class="step-note">count=38 前後が正常。0 ならインデックス再構築が必要</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 02 devrag 操作 -->
+  <div id="tab-devrag" class="section">
+    <div class="card">
+      <h2>devrag 操作手順</h2>
+
+      <div class="alert alert-danger">
+        <strong>[禁止]</strong> <code>devrag index-code *.py</code> は使用禁止。
+        Python ファイルでゼロベクトルが発生し、ベクトル検索が全件 count=0 になる。
+      </div>
+
+      <h3>クリーン再インデックス (DB 破損時・定期メンテ)</h3>
+      <div class="step-block">
+        <div class="step-title">Step 1: DB 削除</div>
+        <div class="step-cmd">Remove-Item D:\CIDLS\.devrag\vectors.db -Force</div>
+      </div>
+      <div class="step-block">
+        <div class="step-title">Step 2: AGENTS.md 索引</div>
+        <div class="step-cmd">& $BIN index D:\CIDLS\AGENTS.md --config $CFG</div>
+        <div class="step-note">283 チャンク。"Successfully indexed" が表示されれば OK</div>
+      </div>
+      <div class="step-block">
+        <div class="step-title">Step 3: documents/*.md 一括索引</div>
+        <div class="step-cmd">Get-ChildItem D:\CIDLS\documents -Filter "*.md" | ForEach-Object {
+    & $BIN index $_.FullName --config $CFG 2>&amp;1 | Where-Object { $_ -match "Successfully" }
+}</div>
+      </div>
+      <div class="step-block">
+        <div class="step-title">Step 4: .github/**/*.md 一括索引</div>
+        <div class="step-cmd">Get-ChildItem D:\CIDLS\.github -Recurse -Filter "*.md" | ForEach-Object {
+    & $BIN index $_.FullName --config $CFG 2>&amp;1 | Where-Object { $_ -match "Successfully" }
+}</div>
+      </div>
+      <div class="step-block">
+        <div class="step-title">Step 5: 索引確認</div>
+        <div class="step-cmd">& $BIN list --config $CFG</div>
+        <div class="step-note">count=38 前後が正常</div>
+      </div>
+      <div class="step-block">
+        <div class="step-title">Step 6: 検索テスト</div>
+        <div class="step-cmd">& $BIN search --top-k 3 --config $CFG "CAPDkA cycle"
+# 期待: count=3, similarity >= 0.90</div>
+      </div>
+
+      <h3>新規 md ファイル追加時</h3>
+      <div class="step-block">
+        <div class="step-title">単一ファイル追加索引</div>
+        <div class="step-cmd">& $BIN index D:\CIDLS\documents\新規ファイル.md --config $CFG</div>
+        <div class="step-note">既存 DB を消さずに追記。ただし index-code は使わないこと。</div>
+      </div>
+
+      <h3>注意事項</h3>
+      <table>
+        <tr><th>項目</th><th>正しい方法</th><th>間違い (禁止)</th></tr>
+        <tr>
+          <td>引数順序</td>
+          <td><code>search --top-k 5 --config $CFG "クエリ"</code></td>
+          <td><code>search "クエリ" --config $CFG --top-k 5</code></td>
+        </tr>
+        <tr>
+          <td>Python 索引</td>
+          <td>使用しない</td>
+          <td><code>index-code *.py</code> (ゼロベクトル汚染)</td>
+        </tr>
+        <tr>
+          <td>設定ファイル</td>
+          <td><code>devrag-config.json</code> (--config 明示)</td>
+          <td><code>config.json</code> (旧設定、参照不可)</td>
+        </tr>
+        <tr>
+          <td>code_patterns キー</td>
+          <td>devrag-config.json に含めない</td>
+          <td>記述すると警告・動作不安定</td>
+        </tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- 03 成果物生成 -->
+  <div id="tab-generate" class="section">
+    <div class="card">
+      <h2>成果物生成手順</h2>
+
+      <h3>cidls_platform_overview.html 再生成</h3>
+      <div class="step-block">
+        <div class="step-title">コマンド</div>
+        <div class="step-cmd">cd D:\CIDLS
+& $PY scripts\generate_cidls_platform_overview.py</div>
+        <div class="step-note">reports\cidls_pipeline_output\cidls_platform_overview.html も同時更新される</div>
+      </div>
+
+      <h3>商用請負納品文書パック.xlsx 生成</h3>
+      <div class="step-block">
+        <div class="step-title">コマンド</div>
+        <div class="step-cmd">& $PY scripts\generate_commercial_delivery_pack.py</div>
+        <div class="step-note">reports\commercial_delivery\ に日付付きで出力される</div>
+      </div>
+
+      <h3>graph_project_mindmap.html DA 表エントリ追加</h3>
+      <div class="step-block">
+        <div class="step-title">コマンド (例: DA-017 追加)</div>
+        <div class="step-cmd">& $PY scripts\generate_graph_project_mindmap.py `
+    --add-entry `
+    --cycle 10 `
+    --summary "実装内容の概要" `
+    --axis "軸1 機能維持" `
+    --priority "P1" `
+    --update-date</div>
+        <div class="step-note">--axis: 軸1〜軸5 から選択。--priority: P1/P2/P3</div>
+      </div>
+
+      <h3>サマリ確認</h3>
+      <div class="step-block">
+        <div class="step-title">DA 表サマリ表示</div>
+        <div class="step-cmd">& $PY scripts\generate_graph_project_mindmap.py --show-summary</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 04 カンバン更新 -->
+  <div id="tab-kanban" class="section">
+    <div class="card">
+      <h2>project_kanban.html カンバン更新手順</h2>
+
+      <h3>タスクカード追加 (Done カラム)</h3>
+      <p>
+        project_kanban.html の Done カラム末尾に以下のパターンで手動追記する。
+        文書エディタまたは replace_string_in_file で挿入する。
+      </p>
+      <div class="step-block">
+        <div class="step-title">カードテンプレート</div>
+        <div class="step-cmd">&lt;div class="card" style="border-left:3px solid #10b981;"&gt;
+  &lt;small&gt;P[優先度] | [フェーズ] | [日付] (第N回)&lt;/small&gt;
+  &lt;strong&gt;DA-[ID]: [タスク名]&lt;/strong&gt;
+  &lt;p&gt;[実装内容・成果物の説明]&lt;br&gt;
+  成果物: [ファイルパス]&lt;/p&gt;
+&lt;/div&gt;</div>
+      </div>
+
+      <h3>DA表カラム定義</h3>
+      <table>
+        <tr><th>カラム</th><th>意味</th><th>例</th></tr>
+        <tr><td>Backlog</td><td>未着手 (要検討)</td><td>将来の改善候補</td></tr>
+        <tr><td>Todo</td><td>次スプリントで着手予定</td><td>P1 タスク待機中</td></tr>
+        <tr><td>InProgress</td><td>現在作業中 (最大1件推奨)</td><td>実装中</td></tr>
+        <tr><td>Review</td><td>レビュー待ち</td><td>DUAL_VERIFY 待ち</td></tr>
+        <tr><td>Done</td><td>完了 (ユーザー検証済み)</td><td>DA-016 devrag 復旧</td></tr>
+      </table>
+
+      <div class="alert alert-warn">
+        <strong>[注意]</strong> Done への移行は「no issues 自己申告のみ」では禁止。
+        客観データ + 実動作確認 + 定量指標でゼロ確認後に移行すること。
+      </div>
+    </div>
+  </div>
+
+  <!-- 05 日次ループ -->
+  <div id="tab-daily" class="section">
+    <div class="card">
+      <h2>日次自律進化ループ (11:00) 運用</h2>
+
+      <h3>Task Scheduler 登録</h3>
+      <div class="step-block">
+        <div class="step-title">初回登録 (管理者 PowerShell)</div>
+        <div class="step-cmd">cd D:\CIDLS
+powershell -File scripts\register_daily_self_evolution_task.ps1</div>
+        <div class="step-note">タスク名: CIDLS_Daily_Self_Evolution_1100 が登録される</div>
+      </div>
+
+      <h3>手動実行 (テスト用)</h3>
+      <div class="step-block">
+        <div class="step-title">PowerShell から手動実行</div>
+        <div class="step-cmd">powershell -File D:\CIDLS\scripts\run_daily_self_evolution.ps1</div>
+        <div class="step-note">ログは logs\daily_self_evolution\ に出力される</div>
+      </div>
+
+      <h3>実行ステップ</h3>
+      <table>
+        <tr><th>STEP</th><th>処理内容</th><th>成功判定</th></tr>
+        <tr><td>STEP-0</td><td>前提チェック (devrag / Python 存在確認)</td><td>exit 0</td></tr>
+        <tr><td>STEP-1</td><td>devrag 索引確認 + 0件なら再索引</td><td>count &ge; 30</td></tr>
+        <tr><td>STEP-2</td><td>generate_cidls_platform_overview.py 実行</td><td>ファイル更新</td></tr>
+        <tr><td>STEP-3</td><td>generate_commercial_delivery_pack.py 実行</td><td>xlsx 生成</td></tr>
+        <tr><td>STEP-4</td><td>ログ出力</td><td>daily_context 更新</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- 06 トラブルシューティング -->
+  <div id="tab-trouble" class="section">
+    <div class="card">
+      <h2>トラブルシューティング</h2>
+
+      <h3>devrag 検索が count=0 を返す</h3>
+      <div class="alert alert-danger">
+        <strong>根本原因:</strong> <code>index-code</code> (Python ファイル) でゼロベクトルが混入し、ベクトル検索が破壊される。
+      </div>
+      <table>
+        <tr><th>確認項目</th><th>コマンド</th><th>期待値</th></tr>
+        <tr>
+          <td>DB 存在確認</td>
+          <td><code>Test-Path D:\CIDLS\.devrag\vectors.db</code></td>
+          <td>True</td>
+        </tr>
+        <tr>
+          <td>索引件数確認</td>
+          <td><code>& $BIN list --config $CFG</code></td>
+          <td>count=38 前後</td>
+        </tr>
+        <tr>
+          <td>単語検索テスト</td>
+          <td><code>& $BIN search --top-k 2 --config $CFG "CAPDkA"</code></td>
+          <td>count &ge; 3</td>
+        </tr>
+      </table>
+      <p><strong>解決手順:</strong> 上記「クリーン再インデックス (02 devrag 操作)」を実施する。</p>
+
+      <h3>generate_*.py が失敗する</h3>
+      <table>
+        <tr><th>症状</th><th>原因</th><th>対処</th></tr>
+        <tr>
+          <td>ModuleNotFoundError</td>
+          <td>仮想環境が有効化されていない</td>
+          <td><code>$PY = "D:\production\.venv\Scripts\python.exe"</code> を明示して実行</td>
+        </tr>
+        <tr>
+          <td>FileNotFoundError</td>
+          <td>CWD が D:\CIDLS でない</td>
+          <td><code>cd D:\CIDLS</code> してから実行</td>
+        </tr>
+        <tr>
+          <td>openpyxl 未インストール</td>
+          <td>依存ライブラリなし</td>
+          <td><code>uv add openpyxl</code> (pip 禁止)</td>
+        </tr>
+      </table>
+
+      <h3>Unicode エラー (cp932)</h3>
+      <div class="alert alert-warn">
+        <strong>症状:</strong> <code>UnicodeEncodeError: 'cp932' codec can't encode character</code>
+      </div>
+      <p>
+        <strong>原因:</strong> コード・バッチ・ログに Unicode 絵文字 (絵文字系文字) が含まれている。<br>
+        <strong>対処:</strong> 絵文字を削除し ASCII 文字のみ使用する。バッチファイルは <code>chcp 932</code> を先頭に追加する。
+      </p>
+
+      <h3>インシデント対応 SLA</h3>
+      <table>
+        <tr><th>レベル</th><th>種別</th><th>対応期限</th><th>内容</th></tr>
+        <tr>
+          <td><span class="badge b-warn">Level 1</span></td>
+          <td>軽微なバグ</td>
+          <td>72時間以内</td>
+          <td>パッチ適用</td>
+        </tr>
+        <tr>
+          <td><span class="badge b-ng">Level 2</span></td>
+          <td>機能停止・流出疑い</td>
+          <td>4時間以内</td>
+          <td>調査開始 + 関係者通知</td>
+        </tr>
+        <tr>
+          <td><span class="badge b-ng">Level 3</span></td>
+          <td>情報漏洩確定</td>
+          <td>1時間以内</td>
+          <td>サービス停止検討 + 72時間以内当局報告</td>
+        </tr>
+      </table>
+
+      <h3>変更管理履歴</h3>
+      <table>
+        <tr><th>バージョン</th><th>日付</th><th>変更内容</th></tr>
+        <tr><td>1.0.0</td><td>2026-05-12</td><td>初版作成。第9回CAPDkA kAフェーズにて生成。devrag index-code 禁止事項を重点記載。</td></tr>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<script>
+function showTab(btn, id) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('tab-' + id).classList.add('active');
+}
+</script>
+</body>
+</html>

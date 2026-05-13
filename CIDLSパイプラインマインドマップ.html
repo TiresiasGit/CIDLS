@@ -1,0 +1,834 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CIDLS パイプラインマインドマップ v2.0</title>
+<script src="https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js"></script>
+<style>
+:root {
+  --bg:      #0f172a;
+  --panel:   #1e293b;
+  --border:  #334155;
+  --text:    #e2e8f0;
+  --muted:   #94a3b8;
+  --c1: #f97316; /* Step1: Input      */
+  --c2: #a855f7; /* Step2: GPT        */
+  --c3: #06b6d4; /* Step3: Req/Design */
+  --c4: #3b82f6; /* Step4: ClaudeCowork   */
+  --c5: #10b981; /* Step5: Output     */
+  --c6: #ef4444; /* Step6: Evolution  */
+  --cc: #6366f1; /* Center: CIDLS     */
+  --cs: #f59e0b; /* Sub/Leaf          */
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Segoe UI', 'Meiryo', sans-serif;
+  background: var(--bg); color: var(--text);
+  height: 100vh; display: flex; flex-direction: column; overflow: hidden;
+}
+
+/* ── Header ── */
+.header {
+  background: var(--panel);
+  border-bottom: 2px solid var(--cc);
+  padding: 10px 20px;
+  display: flex; align-items: center; justify-content: space-between; flex-shrink: 0;
+  gap: 12px;
+}
+.header-left { display: flex; align-items: center; gap: 12px; }
+.header h1 { font-size: 1.05rem; font-weight: 700; white-space: nowrap; }
+.header h1 span { color: var(--cc); }
+.badge {
+  font-size: 0.65rem; padding: 2px 8px; border-radius: 12px;
+  background: rgba(99,102,241,0.2); color: #a5b4fc; border: 1px solid rgba(99,102,241,0.4);
+  white-space: nowrap;
+}
+.controls { display: flex; gap: 6px; flex-wrap: wrap; }
+.btn {
+  padding: 5px 12px; border-radius: 6px; border: 1px solid var(--border);
+  background: rgba(99,102,241,0.1); color: var(--text); cursor: pointer;
+  font-size: 0.75rem; transition: all 0.15s; white-space: nowrap;
+}
+.btn:hover { background: rgba(99,102,241,0.3); border-color: var(--cc); }
+.btn.active { background: var(--cc); border-color: var(--cc); }
+
+/* ── Info Panel ── */
+.info-panel {
+  background: var(--panel);
+  border-bottom: 1px solid var(--border);
+  padding: 0 20px;
+  max-height: 0; overflow: hidden;
+  transition: max-height 0.3s ease, padding 0.3s ease;
+  flex-shrink: 0;
+}
+.info-panel.open { max-height: 220px; padding: 12px 20px; overflow-y: auto; }
+.info-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 8px;
+}
+.info-card {
+  background: var(--bg); border-radius: 8px; padding: 8px 12px;
+  border-left: 3px solid;
+  font-size: 0.73rem;
+}
+.info-card .ic-title { font-weight: 700; margin-bottom: 3px; }
+.info-card .ic-body  { color: var(--muted); line-height: 1.5; }
+
+/* ── Legend Bar ── */
+.legend-bar {
+  display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+  padding: 6px 20px; background: var(--panel); border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.li { display: flex; align-items: center; gap: 5px; font-size: 0.7rem; color: var(--muted); }
+.ld { width: 10px; height: 10px; border-radius: 50%; }
+
+/* ── SVG Container ── */
+#graph-wrap { flex: 1; position: relative; overflow: hidden; }
+#mm-svg { width: 100%; height: 100%; }
+
+/* ── Node Styles (SVG) ── */
+.node-circle { stroke-width: 2; cursor: pointer; filter: drop-shadow(0 2px 6px rgba(0,0,0,0.5)); }
+.node-circle:hover { stroke-width: 3; }
+.node-label { pointer-events: none; text-anchor: middle; dominant-baseline: middle;
+  fill: #e2e8f0; font-family: 'Segoe UI','Meiryo',sans-serif; }
+.link-line { fill: none; stroke-width: 1.5; opacity: 0.5; }
+.link-arrow { fill: var(--border); }
+
+/* ── Tooltip ── */
+.tooltip {
+  position: absolute; pointer-events: none;
+  background: rgba(15,23,42,0.96); border: 1px solid var(--cc);
+  border-radius: 10px; padding: 10px 14px;
+  font-size: 0.78rem; color: var(--text); max-width: 280px;
+  display: none; z-index: 200; line-height: 1.55;
+}
+.tooltip .tt-title { font-weight: 700; margin-bottom: 5px; color: #a5b4fc; }
+
+/* ── Hint ── */
+.hint {
+  position: absolute; bottom: 12px; right: 14px;
+  font-size: 0.68rem; color: var(--muted);
+  background: rgba(30,41,59,0.85); padding: 5px 10px; border-radius: 6px;
+}
+
+/* ── Step Number Badge (SVG foreign) ── */
+.step-num {
+  font-size: 0.7rem; font-weight: 800; fill: white; text-anchor: middle;
+}
+
+/* ── DA Table (merged from graph_project_mindmap.html) ── */
+.da-section {
+  background: var(--panel); border-bottom: 1px solid var(--border);
+  flex-shrink: 0; max-height: 0; overflow: hidden; transition: max-height 0.35s ease;
+}
+.da-section.open { max-height: 340px; overflow-y: auto; }
+.da-table { width: 100%; border-collapse: collapse; font-size: 0.74rem; }
+.da-table th { background: var(--bg); color: var(--muted); padding: 7px 12px; text-align: left;
+  border-bottom: 1px solid var(--border); position: sticky; top: 0; font-weight: 600; z-index: 1; }
+.da-table td { padding: 7px 12px; border-bottom: 1px solid var(--border); color: var(--text); vertical-align: top; }
+.da-table tr:hover td { background: rgba(99,102,241,0.06); }
+.tag-f { background: rgba(16,185,129,0.2); color: #6ee7b7; padding: 1px 6px; border-radius: 4px; font-size: 0.68rem; }
+.tag-a { background: rgba(245,158,11,0.2); color: #fcd34d; padding: 1px 6px; border-radius: 4px; font-size: 0.68rem; }
+.tag-u { background: rgba(99,102,241,0.2); color: #a5b4fc; padding: 1px 6px; border-radius: 4px; font-size: 0.68rem; }
+
+/* ── Swimlane (merged from graph_project_mindmap.html) ── */
+.swim-section { background: var(--bg); flex-shrink: 0; max-height: 0; overflow: hidden; transition: max-height 0.35s ease; }
+.swim-section.open { max-height: 240px; overflow-y: auto; padding: 14px 24px; }
+.swim-table { width: 100%; border-collapse: collapse; font-size: 0.73rem; }
+.swim-table th { background: var(--panel); color: var(--muted); padding: 6px 10px; text-align: center; border: 1px solid var(--border); font-weight: 600; }
+.swim-table td { border: 1px solid var(--border); padding: 6px 10px; vertical-align: top; }
+.swim-cell { background: var(--panel); border-radius: 6px; padding: 5px 8px; font-size: 0.71rem; color: var(--text); margin: 2px 0; }
+
+
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="header">
+  <div class="header-left">
+    <h1>CIDLS <span>パイプラインマインドマップ</span></h1>
+    <span class="badge">v2.0 · 6-Step Pipeline · 反証的複利自己進化</span>
+  </div>
+  <div class="controls">
+    <button class="btn" id="btn-info" onclick="toggleInfo()">概要パネル</button>
+    <button class="btn" id="btn-flow" onclick="toggleFlowMode()">フローモード</button>
+    <button class="btn" onclick="resetView()">リセット</button>
+    <button class="btn" onclick="expandAll()">全展開</button>
+    <button class="btn" onclick="collapseLeaves()">葉を折畳</button>
+    <button class="btn" id="btn-da"   onclick="toggleDA()">DA表</button>
+    <button class="btn" id="btn-swim" onclick="toggleSwim()">スイムレーン</button>
+
+  </div>
+</div>
+
+<!-- Info Panel -->
+<div class="info-panel" id="info-panel">
+  <div class="info-grid">
+    <div class="info-card" style="border-color:var(--c1)">
+      <div class="ic-title" style="color:var(--c1)">① インプット例 / 要望入力</div>
+      <div class="ic-body">経営・業務課題 / 要件・アイデア・企画 / 規則・業界標準・制約 / 過去システム・既存資産。熟考・整理(インプット整形ステップ)を経て次工程へ。</div>
+    </div>
+    <div class="info-card" style="border-color:var(--c2)">
+      <div class="ic-title" style="color:var(--c2)">② Web版 GPT-5.5 xhigh での加工</div>
+      <div class="ic-body">システムパイプライン・アプリ画面・業務フローの3コンセプトイメージを生成。コンセプト精緻化・反証的改善を行い、要件定義へ。</div>
+    </div>
+    <div class="info-card" style="border-color:var(--c3)">
+      <div class="ic-title" style="color:var(--c3)">③ 要件定義・ユースケース・設計管理</div>
+      <div class="ic-body">ユーザーストーリー / 業務フロー(BPMN) / データモデル・ER図 / 非機能要件 / 受入基準(AC)。受入基準AC1〜AC3の全件承認でゲート通過。</div>
+    </div>
+    <div class="info-card" style="border-color:var(--c4)">
+      <div class="ic-title" style="color:var(--c4)">④ ClaudeCowork sonnet4.6 で動く</div>
+      <div class="ic-body">アーキテクチャ/システム設計 → アプリ設計・コード生成 → 実装コード → 検証・テスト・ドキュメント検証。テスト自動化・静的解析・セキュリティ検査・ドキュメント自動統合。</div>
+    </div>
+    <div class="info-card" style="border-color:var(--c5)">
+      <div class="ic-title" style="color:var(--c5)">⑤ 成果物（ドキュメント/設計書）とアプリ出力</div>
+      <div class="ic-body">SW納品ドキュメント16種 / WebアプリSaaS(クラウド) / Windowsアプリ(exe) / PNG→Excel埋込 / コンセプトスライド・マインドマップ。全PNGはExcelへ埋め込み。</div>
+    </div>
+    <div class="info-card" style="border-color:var(--c6)">
+      <div class="ic-title" style="color:var(--c6)">⑥ 自律進化の実行ループ (CAPDkAサイクル)</div>
+      <div class="ic-body">C(Check)→P(Plan)→A(Adjust)→D(Do)→K(Knowledge)を日次で循環。6つの視点×成果メトリクス。反証的複利自己進化エンジンとして全体を駆動。</div>
+    </div>
+  </div>
+</div>
+
+<!-- DA Table (merged from graph_project_mindmap.html) -->
+<div class="da-section" id="da-section">
+  <table class="da-table">
+    <thead><tr><th>ID</th><th>種別</th><th>軸</th><th>内容</th><th>根拠・出典</th><th>優先度</th></tr></thead>
+    <tbody>
+      <tr><td>DA-001</td><td><span class="tag-f">F</span></td><td>軸1 機能維持</td><td>[DONE 2026-05-09] 必須成果物5件が全て生成済み: project_kanban.html / cidls_platform_overview.html / graph_project_mindmap.html / STORY.html / reports/cidls_pipeline_output/cidls_platform_overview.html</td><td>daily_self_evolution_context_latest.md + workspace確認</td><td>P1</td></tr>
+      <tr><td>DA-002</td><td><span class="tag-f">F</span></td><td>軸2 運用持続</td><td>run_daily_self_evolution.ps1 は存在し動作。HTML成果物の自動生成はCAPDkAサイクル(AIエージェント協働)で継続中。日次11:00実行ループ確立済み</td><td>logs/daily_self_evolution/ + scripts/</td><td>P2</td></tr>
+      <tr><td>DA-003</td><td><span class="tag-f">F</span></td><td>軸3 ユーザー有用性</td><td>[DONE 2026-05-09] project_kanban.html / cidls_platform_overview.html / graph_project_mindmap.html / STORY.html が全て存在し開ける状態</td><td>workspace確認 2026-05-09</td><td>P2</td></tr>
+      <tr><td>DA-004</td><td><span class="tag-f">F</span></td><td>軸4 セキュリティ</td><td>[BLOCKED] devrag global vectors DB ACL破損 → RAG検索不能 → 知識参照コスト40倍増大。repair_global_devrag_vectors_db_acl タスクで継続対応中</td><td>CIDLS kanban P1-Blocked</td><td>P1</td></tr>
+      <tr><td>DA-005</td><td><span class="tag-a">A</span></td><td>軸5 技術負債</td><td>SW納品ドキュメント13種 (要求定義書・要求仕様書・システム要件定義書・基本設計書等) が未作成 → 引き継ぎ不能リスク</td><td>AGENTS.md [D1.1] / cidls_platform_overview.html</td><td>P2</td></tr>
+      <tr><td>DA-006</td><td><span class="tag-u">U</span></td><td>軸5 将来リスク</td><td>タスクスケジューラ登録状況未確認 → 日次11:00自動実行の確実性不明。register_daily_self_evolution_task.ps1 実行要</td><td>scripts/register_daily_self_evolution_task.ps1</td><td>P2</td></tr>
+      <tr><td>DA-007</td><td><span class="tag-f">F</span></td><td>軸1 機能維持</td><td>[NEW 2026-05-09] 複利的自己進化サイクル実行: コンセプトイメージとの差分を特定し最高価値改善を実施。graph_project_mindmap.html / cidls_platform_overview.html を最新化</td><td>CAPDkAサイクル実行 2026-05-09</td><td>P1</td></tr>
+      <tr><td>DA-008</td><td><span class="tag-f">F</span></td><td>軸1 機能維持</td><td>[DONE 2026-05-12] 複利的自己進化第5回: cidls_platform_overview.html をschema v2.2.0に更新。エクスポート形式(5区分)・AGENTS.mdマニフェスト・AIエージェント役割の3セクション追加。project_kanban.html / graph_project_mindmap.html を同期。</td><td>CAPDkAサイクル実行 2026-05-12</td><td>P1</td></tr>
+      <tr><td>DA-009</td><td><span class="tag-f">F</span></td><td>軸1 機能維持</td><td>[DONE 2026-05-12] コンセプトイメージ精読差分解消: CAPDkAタイトルD強調・reports/cidls_pipeline_output同期(2026-05-08→v2.2.0)・project_kanban全成果物done 2026-05-12更新。</td><td>CAPDkAサイクル実行 2026-05-12 第6回</td><td>P1</td></tr>
+      <tr><td>DA-010</td><td><span class="tag-f">F</span></td><td>軸1 機能維持</td><td>[DONE 2026-05-12] 要求定義書.html 新規作成 (CIDLS-REQ-001 v1.0.0): 共通フレーム2007/[CF.7,PH.1,CS.6]準拠。機能要件11種・利害関係者6名・Why×5 L0-L5・リスク6種を網羅。レバレッジポイント=generate_*.py日次ループ組み込み特定。</td><td>D:\CIDLS\要求定義書.html 作成完了</td><td>P1</td></tr>
+      <tr><td>DA-011</td><td><span class="tag-f">F</span></td><td>軸2 運用持続</td><td>[DONE 2026-05-12] コンセプトスライド.html 新規作成 ([SLIDE]準拠 7枚SPA): DA-005第2弾+販売LP欠落補完。FDEヒアリング7要素・レバレッジ比較表・6Stepパイプライン・技術役割対応表・収益化STAR法を含む。キーボード操作・印刷CSS対応。</td><td>D:\CIDLS\コンセプトスライド.html 作成完了</td><td>P1</td></tr>
+      <tr><td>DA-004</td><td><span class="tag-f">F</span></td><td>軸1 機能維持</td><td>[DONE 2026-05-12] devrag v1.4.4 ACL=FullControl正常。ExitCode=0、検索結果5件返却。類似度0.94以上でフォールバック禁止・CAPDkA・TDD各ルールを正常捕捉。DA-004ブロッカー解消。</td><td>devrag.exe search 実行確認</td><td>P1</td></tr>
+      <tr><td>DA-006</td><td><span class="tag-f">F</span></td><td>軸5 将来リスク</td><td>[DONE 2026-05-12] タスクスケジューラ正常稼働確認: CIDLS_Daily_Self_Evolution_1100 State=Ready / LastRun=2026-05-11 11:00 / LastResult=0 / NextRun=2026-05-12 11:00。DA-006ブロッカー解消。</td><td>Get-ScheduledTask 確認済み</td><td>P2</td></tr>
+      <tr><td>DA-012</td><td><span class="tag-f">F</span></td><td>axis1_function</td><td>[DONE 2026-05-12] generate_graph_project_mindmap.py / generate_cidls_platform_overview.py / generate_commercial_delivery_pack.py 3本実装・動作確認完了。ExitCode=0 全件Pass。Excel 4シート(10.3KB)生成成功。</td><td>CAPDkAサイクル実行 2026-05-12 第8回</td><td>P1</td></tr>
+      <tr><td>DA-013</td><td><span class="tag-f">F</span></td><td>axis3_user_value</td><td>[DONE 2026-05-12] 要求仕様書.html (CIDLS-SPEC-001 v1.0.0) 新規作成。共通フレーム2007 [CF.7] 準拠。機能仕様(FS-001~FS-011)/IF仕様/データ仕様/非機能仕様/受入基準(TS-001~TS-006)/トレーサビリティ収録。</td><td>CAPDkAサイクル実行 2026-05-12 第8回</td><td>P1</td></tr>
+      <tr><td>DA-014</td><td><span class="tag-f">F</span></td><td>axis2_maintainability</td><td>[DONE 2026-05-12] index.html クイックアクセスカード7件追加(FS-011実現)。run_daily_self_evolution.ps1 STEP-1追加 (generate_*.py日次自動実行)。expectedArtifactsに要求仕様書.html/generate_*.py追加。</td><td>CAPDkAサイクル実行 2026-05-12 第8回</td><td>P1</td></tr>
+      <tr><td>DA-015</td><td><span class="tag-f">F</span></td><td>軸3 ユーザー有用性</td><td>[DONE 2026-05-12] devrag動作復旧+全ドキュメント再索引: index-code除外・mdのみ38件索引・5クエリ全件count>=3・similarity0.91-0.94確認</td><td>CAPDkAサイクル実行 2026-05-12 第9回</td><td>P1</td></tr>
+      <tr><td>DA-016</td><td><span class="tag-f">F</span></td><td>軸3 ユーザー有用性</td><td>[DONE 2026-05-12] index.html全ビューデータ駆動改良+クイックアクセスカード追加: renderDashboard/Analytics/Timeline/Search/Export実装・7件カードリンク追加</td><td>CAPDkAサイクル実行 2026-05-12 第8回</td><td>P2</td></tr>
+      <tr><td>DA-017</td><td><span class="tag-f">F</span></td><td>軸4 技術的負債(改善)</td><td>[DONE 2026-05-12] AGENTS.md 7箇所水平展開同期完了 D1.1/D1.3/CY.2/CIDLS.3/CIDLS.4/DOCSでxlsx統一</td><td>CAPDkAサイクル実行 2026-05-12 第11回</td><td>P1</td></tr>
+      <tr><td>DA-018</td><td><span class="tag-f">F</span></td><td>軸1 機能維持</td><td>[DONE 2026-05-12] SW納品xlsx16種一括生成完了 generate_sw_docs_xlsx.py 成功16/失敗0 要求定義書〜リリースノート+画面設計書</td><td>CAPDkAサイクル実行 2026-05-12 第11回</td><td>P1</td></tr>
+      <tr><td>DA-019</td><td><span class="tag-f">F</span></td><td>軸3 ユーザー有用性</td><td>[DONE 2026-05-12] FR-008/009 Done化: 要求定義書.html WBS.3工数計算式+AV.1 87%削減根拠追加完了 grep確認済み</td><td>CAPDkAサイクル実行 2026-05-12 第11回</td><td>P1</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- Swimlane (merged from graph_project_mindmap.html) -->
+<div class="swim-section" id="swim-section">
+  <table class="swim-table">
+    <thead>
+      <tr>
+        <th>ステークホルダー</th>
+        <th>C(Check)</th>
+        <th>A(ActionPlan)</th>
+        <th>D(Do)</th>
+        <th>kA(Knowledge)</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>AI エージェント</td>
+        <td><div class="swim-cell">欠損アーティファクト検知</div><div class="swim-cell">コンセプト画像分析</div></td>
+        <td><div class="swim-cell">優先順位判断</div><div class="swim-cell">多人格会議開催</div></td>
+        <td><div class="swim-cell">HTML成果物生成</div><div class="swim-cell">AGENTS.md更新</div></td>
+        <td><div class="swim-cell">ログ記録</div><div class="swim-cell">kanban更新</div></td>
+      </tr>
+      <tr>
+        <td>運用者 (保守担当)</td>
+        <td><div class="swim-cell">日次ログ確認</div></td>
+        <td><div class="swim-cell">ブロッカー解除判断</div></td>
+        <td><div class="swim-cell">devrag ACL修復</div></td>
+        <td><div class="swim-cell">品質レビュー</div></td>
+      </tr>
+      <tr>
+        <td>日次スケジューラ</td>
+        <td><div class="swim-cell">コンテキスト収集</div></td>
+        <td></td>
+        <td><div class="swim-cell">11:00 自動起動</div></td>
+        <td><div class="swim-cell">context_latest更新</div></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- Legend Bar -->
+<div class="legend-bar">
+  <div class="li"><div class="ld" style="background:var(--cc)"></div>CIDLSコア</div>
+  <div class="li"><div class="ld" style="background:var(--c1)"></div>①インプット</div>
+  <div class="li"><div class="ld" style="background:var(--c2)"></div>②GPT加工</div>
+  <div class="li"><div class="ld" style="background:var(--c3)"></div>③要件定義</div>
+  <div class="li"><div class="ld" style="background:var(--c4)"></div>④ClaudeCowork</div>
+  <div class="li"><div class="ld" style="background:var(--c5)"></div>⑤成果物出力</div>
+  <div class="li"><div class="ld" style="background:var(--c6)"></div>⑥自律進化ループ</div>
+  <div class="li"><div class="ld" style="background:var(--cs);opacity:0.7"></div>サブ要素</div>
+  <div style="flex:1"></div>
+  <div style="font-size:0.68rem;color:var(--muted)">ノード数: <span id="node-count">0</span> / エッジ数: <span id="edge-count">0</span></div>
+</div>
+
+<!-- Graph -->
+<div id="graph-wrap">
+  <svg id="mm-svg">
+    <defs>
+      <marker id="arrowhead" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+        <polygon points="0 0, 8 3, 0 6" fill="#475569"/>
+      </marker>
+    </defs>
+    <g id="graph-g"></g>
+  </svg>
+  <div class="tooltip" id="tooltip"></div>
+  <div class="hint">ドラッグ: 移動 | スクロール: ズーム | クリック: 詳細表示</div>
+</div>
+
+
+
+<script>
+/* ============================================================
+   DATA DEFINITION — CIDLSパイプラインコンセプトイメージ.png準拠
+   ============================================================ */
+const NODES = [
+  // ── Center ──
+  { id:'cidls', label:'CIDLS\nプラットフォーム', type:'core', r:52,
+    color:'#6366f1',
+    detail:'v2.0 CIDLS Platform\nコンセプト入力からアプリ出力・納品ドキュメント一式までをAIが一気通貫で生成し、自律的に保守・進化・最適化を実行する統合プラットフォーム\n\nCIDLS = CI/DL System\n反証的複利自己進化エージェンティック開発' },
+
+  // ── Step 1: Input ──
+  { id:'s1',    label:'① インプット例\n/要望入力',    type:'step', step:1, r:40, color:'#f97316',
+    detail:'ユーザーが要望・アイデア・課題をどんな形式でも入力するステップ。\n話し言葉・フリーライティング・画像・コード断片でも受け付ける。' },
+  { id:'s1_biz',  label:'経営・\n業務課題',   type:'leaf', step:1, r:22, color:'#f97316',
+    detail:'経営層・業務部門が抱える業務効率化・DX推進・コスト削減などの課題。' },
+  { id:'s1_req',  label:'要件・\nアイデア・企画', type:'leaf', step:1, r:22, color:'#f97316',
+    detail:'具体的な機能要件・サービスアイデア・企画書・注文票など。' },
+  { id:'s1_rule', label:'規則・\n業界標準・制約', type:'leaf', step:1, r:22, color:'#f97316',
+    detail:'法令・業界規制・社内規定・セキュリティ基準・ライセンス制約など。' },
+  { id:'s1_legacy',label:'過去システム\n・既存資産',  type:'leaf', step:1, r:22, color:'#f97316',
+    detail:'既存システム・ドキュメント・データ・コードベースなど再利用可能な資産。' },
+  { id:'s1_refine',label:'熟考・整理\n(整形ステップ)', type:'proc', step:1, r:26, color:'#fb923c',
+    detail:'注文票プロトコル[SUPRA.2]に従い、7要素「誰が/何の/何に困り/根拠/期限/理想/解」を自動補完。CAPDkA:Cフェーズの入口。' },
+
+  // ── Step 2: GPT Processing ──
+  { id:'s2',    label:'② Web版\nGPT-5.5 xhigh\nでの加工', type:'step', step:2, r:40, color:'#a855f7',
+    detail:'ユーザーの入力をもとに、データフロー・画面・処理・成果物・自己進化ループまで含むパイプラインコンセプトイメージを生成する。' },
+  { id:'s2_sys',  label:'システムパイプライン\nコンセプトイメージ.png', type:'leaf', step:2, r:24, color:'#a855f7',
+    detail:'CIDLSプラットフォーム全体の処理フロー・アーキテクチャを可視化したPNGファイル。' },
+  { id:'s2_app',  label:'アプリ画面\nコンセプトイメージ.png', type:'leaf', step:2, r:24, color:'#a855f7',
+    detail:'想定するWebアプリ・SaaS・ダッシュボードの画面設計コンセプトイメージ。' },
+  { id:'s2_flow', label:'業務フロー\nコンセプトイメージ.png', type:'leaf', step:2, r:24, color:'#a855f7',
+    detail:'業務フロー・BPMNを視覚化したコンセプトイメージ。' },
+  { id:'s2_refine',label:'コンセプト精緻化\n・反証的改善', type:'proc', step:2, r:26, color:'#c084fc',
+    detail:'[Phi1.8]五軸真実接近・[CT.2]逆論理思考で仮説を反証。精度を上げてStep3へ渡す。' },
+
+  // ── Step 3: Requirements ──
+  { id:'s3',    label:'③ 要件定義・\nユースケース\n・設計管理', type:'step', step:3, r:40, color:'#06b6d4',
+    detail:'[SUPRA.2]注文票→[PH.1]4×6課題階層への自動マッピング。ビジネス分析・設計管理フェーズ。' },
+  { id:'s3_story',label:'ユーザーストーリー', type:'leaf', step:3, r:22, color:'#06b6d4',
+    detail:'As a <Who>, I want <What>, so that <Why>の形式でユーザー価値を定義。' },
+  { id:'s3_flow', label:'業務フロー\n/BPMN',       type:'leaf', step:3, r:22, color:'#06b6d4',
+    detail:'業務フロー・BPMN・シーケンス図・クラス図で処理を明確化。' },
+  { id:'s3_er',   label:'データモデル\n/ER図',      type:'leaf', step:3, r:22, color:'#06b6d4',
+    detail:'エンティティ・属性・リレーション・インデックス設計。DuckDB/Parquet準拠。' },
+  { id:'s3_nfr',  label:'非機能要件',               type:'leaf', step:3, r:22, color:'#06b6d4',
+    detail:'JIS X 25010 8特性: 機能適合性・性能・互換性・使用性・信頼性・セキュリティ・保守性・移植性。' },
+  { id:'s3_ac',   label:'受入基準(AC)\n(ゲート管理)', type:'proc', step:3, r:26, color:'#22d3ee',
+    detail:'AC1: ログイン・ダッシュボードが表示される\nAC2: 業務登録ができて一覧に反映\nAC3: 権限に応じて操作が制限される' },
+
+  // ── Step 4: ClaudeCowork ──
+  { id:'s4',    label:'④ ClaudeCowork /\nsonnet4.6\nで動く', type:'step', step:4, r:40, color:'#3b82f6',
+    detail:'[CY.1]S8-S10(設計→実装→TDD)フェーズ。これら4つの工程はすべてClaudeCowork /sonnet4.6上で実行。' },
+  { id:'s4_arch', label:'アーキテクチャ\n/システム設計', type:'leaf', step:4, r:22, color:'#3b82f6',
+    detail:'マイクロサービス/SPA/APIアーキテクチャ設計。依存関係分離[DEP]・役割分指[T4.3]適用。' },
+  { id:'s4_codegen',label:'アプリ設計・\nコード生成',   type:'leaf', step:4, r:22, color:'#3b82f6',
+    detail:'[T1.3]PEP8/typing禁止/完全形ファイル単位。フロントエンド(Web/SPA)・バックエンド(API/サービス)・DB(DuckDB/Parquet)。' },
+  { id:'s4_impl', label:'実装コード\n(実装・自動化)',   type:'leaf', step:4, r:22, color:'#3b82f6',
+    detail:'Windows/macOS/Linux対応。IaC(Terraform等)・テストコード・自動テスト・Windowsアプリ(exe)生成。' },
+  { id:'s4_test', label:'検証・テスト・\nドキュメント検証', type:'leaf', step:4, r:22, color:'#3b82f6',
+    detail:'[Q1.2]TDD Red→Green→Refactor。カバレッジ≥90%。テスト自動化・静的解析・セキュリティ検査・ドキュメント自動統合。' },
+  { id:'s4_gen',  label:'コンセプトPNG\n生成スクリプト\n(可視化・反証成功)', type:'proc', step:4, r:26, color:'#60a5fa',
+    detail:'PNG画像を生成してExcelへ自動埋め込み。現覚的ドキュメント管理。[CIDLS.3]Dフェーズ成果物。' },
+
+  // ── Step 5: Deliverables ──
+  { id:'s5',    label:'⑤ 成果物\n(ドキュメント\n/設計書)\nとアプリ出力', type:'step', step:5, r:40, color:'#10b981',
+    detail:'[D1.1]最小セット11点+SW納品ドキュメント16種。全PNGはExcelに埋め込み、現覚的ドキュメントとしてExcelで一元管理。' },
+  { id:'s5_docs', label:'SW納品\nドキュメント16種',  type:'leaf', step:5, r:24, color:'#10b981',
+    detail:'要求定義書/要求仕様書/システム要件定義書/基本設計書/詳細設計書/DB設計書/外部設計書/結合テスト仕様書/運用設計書/運用手順書/移行計画書/保守運用計画書/リリースノート+画面設計書+コンセプトスライド+マインドマップ' },
+  { id:'s5_saas', label:'WebアプリSaaS\n(クラウド)',  type:'leaf', step:5, r:22, color:'#10b981',
+    detail:'認証・権限・課金・監査ログ・コスト上限・秘密情報境界を満たすSaaS公開形式。[DISTSEC.3]準拠。' },
+  { id:'s5_exe',  label:'Windowsアプリ\n(exe/ローカル)', type:'leaf', step:5, r:22, color:'#10b981',
+    detail:'オフライン動作・Secret不含・ローカル完結のexe形式。[DISTSEC.4]判断: Secret無しクラウド保存無し。' },
+  { id:'s5_slide',label:'コンセプトスライド\n/マインドマップ', type:'leaf', step:5, r:22, color:'#10b981',
+    detail:'[SLIDE]準拠のコンセプト資料HTML / D3.jsグラフマインドマップ / PJグラフマインドマップ。' },
+  { id:'s5_excel',label:'PNG→Excel埋込\n(現覚的ドキュメント)', type:'proc', step:5, r:26, color:'#34d399',
+    detail:'全PNG成果物をExcelシートへ自動埋め込み。[PORT.2]round-trip保証・メタデータ同梱。視覚的ドキュメントをExcelで一元管理。' },
+  { id:'s5_export',label:'エクスポート形式\nHTML/PDF/XLSX\n/PNG/SaaS/exe', type:'leaf', step:5, r:22, color:'#10b981',
+    detail:'5区分: HTML(静的)/PDF(報告書)/XLSX(データ)/PNG(画像)/SaaS+exe(実行)。[PORT.2]Parquet優先・round-trip必須。' },
+
+  // ── Step 6: Evolution Loop ──
+  { id:'s6',    label:'⑥ 自律進化\n実行ループ\n(CAPDkA)', type:'step', step:6, r:42, color:'#ef4444',
+    detail:'反証的複利自己進化エンジン。日次11:00に収集→比較→分析→実行→学習を自動実行。6つの視点×成果メトリクスで品質を監視・改善。' },
+  { id:'s6_c',  label:'C(Check)\n現状把握', type:'capdka', step:6, r:24, color:'#ef4444',
+    detail:'コンセプトイメージとの差分・SoT衝突・未同期箇所を収集。Why×5でAsIs L0-L5を全層埋め。[CY.2]C実行アクション適用。' },
+  { id:'s6_p',  label:'P(Plan)\n要件・実行計画', type:'capdka', step:6, r:24, color:'#ef4444',
+    detail:'MECE発散→ECRS収束→ToBe定義。多人格会議[TH.4]で計画審議。優先度マトリクス[MIN.2]適用。' },
+  { id:'s6_a',  label:'A(Adjust)\n計画・改善策', type:'capdka', step:6, r:24, color:'#ef4444',
+    detail:'AI評価で品質リスク・乖離根本原因・再発要因を特定。[DIFF]差分切り分け原則で最小変更を特定。' },
+  { id:'s6_d',  label:'D(Do)\n実行・検証', type:'capdka', step:6, r:24, color:'#ef4444',
+    detail:'TDD実装[Q1.2]。[VF.3]DUAL_VERIFY。AGENTS.md・スクリプト・成果物を最小差分で更新。[MO]4成果物必須出力。' },
+  { id:'s6_k',  label:'K(Knowledge)\n知識・蓄積・反映', type:'capdka', step:6, r:24, color:'#ef4444',
+    detail:'結果・失敗原因・再発防止策をlogs+kanban+devragへ反映。kA完了→即座にC(Check)回帰。永久停止なし。' },
+  { id:'s6_meta',label:'6つの視点\n×成果メトリクス', type:'proc', step:6, r:26, color:'#f87171',
+    detail:'6グループ1〜5を継続的に検証・改善・最適化・更新。価値・品質・コスト・ガバナンスを最適化。\n反証的複利自己進化エンジンとして全体を駆動。' },
+
+  // ── Model/Agent Layer ──
+  { id:'agent',   label:'モデル/\nエージェント構成', type:'agent', r:32, color:'#8b5cf6',
+    detail:'GPT-5.5 xhigh(Web ChatGPT): コンセプト生成・設計・文書生成・最終品質確認\nClaudeCowork / ClaudeCowork /sonnet4.6: コーディング・実装・デバッグ・ドキュメント統合\nGeminiCLI Max Preview: 補助エージェント(推論補助・複雑問題解析・改善提案)' },
+  { id:'ag_gpt',  label:'GPT-5.5\nxhigh\n(Web版)',   type:'leaf', r:20, color:'#8b5cf6',
+    detail:'役割: コンセプト生成・設計・文書生成・最終品質確認\n主な担当: ①②の支援とリファインメント' },
+  { id:'ag_codex',label:'ClaudeCowork /\nsonnet4.6',  type:'leaf', r:20, color:'#8b5cf6',
+    detail:'役割: コーディング・実装・デバッグ・ドキュメント統合\n主な担当: ③④の実装基盤・自動化' },
+  { id:'ag_qwen', label:'GeminiCLI',        type:'leaf', r:20, color:'#8b5cf6',
+    detail:'役割: 補助エージェント(推論補助・複雑問題の分析・改善提案)\n主な担当: ⑤⑥の支援・反証強化' },
+
+  // ── Seamless Docs ──
+  { id:'docs',    label:'シームレス\n生成ドキュメント\n(PocketDoc基本設計)', type:'agent', r:30, color:'#0ea5e9',
+    detail:'PocketDoc基本設計テンプレートを使ったシームレスなドキュメント自動生成。API仕様書(OpenAPI)・システム構成図・シーケンス図・クラス図・コード一覧・テスト仕様書等を一括生成。' },
+  { id:'doc_api', label:'API仕様書\n(OpenAPI)',         type:'leaf', r:19, color:'#0ea5e9',
+    detail:'OpenAPI 3.0形式のAPI仕様書自動生成。' },
+  { id:'doc_flow',label:'業務フロー\n/BPMN',            type:'leaf', r:19, color:'#0ea5e9',
+    detail:'業務フロー・BPMN形式のプロセス図。' },
+  { id:'doc_test',label:'テスト仕様書\n/レポート',       type:'leaf', r:19, color:'#0ea5e9',
+    detail:'Given-When-Then形式のテスト仕様書・実行結果レポート。' },
+  { id:'doc_infra',label:'インフラ設計書\n(IaC/Runbook)', type:'leaf', r:19, color:'#0ea5e9',
+    detail:'Terraform等IaC設計書・運用Runbook自動生成。' },
+
+  // ── PJ: 目的・ToBe ──
+  { id:'pj_tobe',   label:'目的・ToBe',              type:'pj', r:28, color:'#10b981', detail:'コンセプト入力から24時間以内に納品ドキュメント一式を自動生成し、日次CAPDkAサイクルで複利的に品質向上し続ける状態' },
+  { id:'pj_tobe1',  label:'一気通貫\n成果物生成',    type:'leaf', r:18, color:'#10b981', detail:'入力後30分以内にHTML/XLSXドキュメント一式を出力' },
+  { id:'pj_tobe2',  label:'日次複利\n自己進化',      type:'leaf', r:18, color:'#10b981', detail:'CAPDkAサイクル日次自動実行 (11:00)' },
+  { id:'pj_tobe3',  label:'工数87%削減\n品質劣化ゼロ',type:'leaf', r:18, color:'#10b981', detail:'AI活用で工数87%削減(15.5人日→1.5人日)' },
+  { id:'pj_tobe4',  label:'devrag RAG\n知識ベース',  type:'leaf', r:18, color:'#10b981', detail:'AGENTS.md知識をRAG検索。40分の1トークンで参照可能' },
+  // ── PJ: ペイン・AsIs ──
+  { id:'pj_pain',   label:'ペイン・AsIs',            type:'pj', r:28, color:'#f59e0b', detail:'手作業ドキュメント漏れ60%超・コンセプト-実装ギャップ3回/PJ・知識揮発70%再発' },
+  { id:'pj_pain1',  label:'手作業ドキュメント\n漏れ60%超', type:'leaf', r:18, color:'#f59e0b', detail:'作成工数40h/PJ。ドキュメント漏れ率60%以上' },
+  { id:'pj_pain2',  label:'ギャップ\n3回/PJ',        type:'leaf', r:18, color:'#f59e0b', detail:'コンセプトから実装まで継続性なし。手戻り平均3回/PJ' },
+  { id:'pj_pain3',  label:'知識揮発\n70%再発',       type:'leaf', r:18, color:'#f59e0b', detail:'同一ミス再発率70%。引き継ぎ工数20h/回' },
+  { id:'pj_pain4',  label:'devrag ACL\n[BLOCKED]',   type:'leaf', r:18, color:'#ef4444', detail:'[P1-Blocked] global devrag vectors DB ACL破損 → RAG検索不能' },
+  // ── PJ: ソリューション ──
+  { id:'pj_sol',    label:'ソリューション',           type:'pj', r:28, color:'#8b5cf6', detail:'CAPDkA永久サイクル + 6ステップパイプライン + devrag RAG知識ベース' },
+  { id:'pj_sol1',   label:'CAPDkA\n永久循環',        type:'leaf', r:18, color:'#8b5cf6', detail:'C→A→P→D→kA→C... 永久循環。停止条件なし' },
+  { id:'pj_sol2',   label:'6ステップ\nパイプライン', type:'leaf', r:18, color:'#8b5cf6', detail:'コンセプト→ChatGPT→v0生成→SaaS/exe→成果物→自律進化' },
+  { id:'pj_sol3',   label:'AGENTS.md\nSoT',          type:'leaf', r:18, color:'#8b5cf6', detail:'Single Source of Truth。全規約・禁止事項・品質基準の中核' },
+  { id:'pj_sol4',   label:'多人格会議\n品質保証',    type:'leaf', r:18, color:'#8b5cf6', detail:'PMO/PM/Architect/QA/ぽんぽんねこ4号による多角的検証' },
+  // ── PJ: 哲学・戦略 ──
+  { id:'pj_phil',   label:'哲学・戦略',              type:'pj', r:28, color:'#3b82f6', detail:'因果追跡を喜びとし、義利同時最適化し、最小コストで最大有用性を実現する' },
+  { id:'pj_phil1',  label:'因果追跡\nを喜びとする',  type:'leaf', r:18, color:'#3b82f6', detail:'[Phi1.1] データ源泉追跡・呼出関係解明・根本原因探求' },
+  { id:'pj_phil2',  label:'義利同時\n最適化',        type:'leaf', r:18, color:'#3b82f6', detail:'[Phi1.2] 技術=手段、人間幸福=目的' },
+  { id:'pj_phil3',  label:'最小コスト\n最大有用性',  type:'leaf', r:18, color:'#3b82f6', detail:'[MIN] 動く既存コードの全面書き直し禁止。段階的修正を優先' },
+  { id:'pj_phil4',  label:'決断主義\n判断責任',      type:'leaf', r:18, color:'#3b82f6', detail:'[Phi1.5] あいまい≠判断不能。禁止語: 未分類/要確認/TBD' },
+  // ── PJ: 成果物 ──
+  { id:'pj_art',    label:'PJ成果物',                type:'pj', r:28, color:'#06b6d4', detail:'CIDLS_PLATFORM_RESTORE.1が要求する必須HTML成果物5件+SW納品ドキュメント13種' },
+  { id:'pj_art1',   label:'project_kanban\n[DONE]',  type:'leaf', r:18, color:'#10b981', detail:'統合ハブ。かんばん/マインドマップ/要求要件定義書。EXISTS 2026-05-08' },
+  { id:'pj_art2',   label:'cidls_platform\n[DONE]',  type:'leaf', r:18, color:'#10b981', detail:'6ステップフロー・成果物一覧・SW納品ドキュメント。DONE 2026-05-12 v2.2.0' },
+  { id:'pj_art3',   label:'graph_mindmap\n[DONE]',   type:'leaf', r:18, color:'#10b981', detail:'DA表・スイムレーン・相互連関有向グラフ付き階層型マインドマップ。DONE 2026-05-12' },
+  { id:'pj_art4',   label:'STORY.html\n[DONE]',      type:'leaf', r:18, color:'#10b981', detail:'6登場人物による決済・契約・Webhook業務ストーリー。v2.3.0 DONE 2026-05-12' },
+  { id:'pj_art5',   label:'要求定義書\n[DONE]',      type:'leaf', r:18, color:'#10b981', detail:'CIDLS-REQ-001 v1.0.0。共通フレーム2007準拠。DONE 2026-05-12' },
+  { id:'pj_art6',   label:'コンセプト\nスライド[DONE]',type:'leaf', r:18, color:'#10b981', detail:'[SLIDE]準拠SPA 7枚。FDEヒアリング・レバレッジ比較・6Stepパイプライン。DONE 2026-05-12' },
+];
+
+/* ─ Edges ─ */
+const LINKS = [
+  /* メインフロー (Step 1→2→3→4→5) */
+  { source:'cidls', target:'s1',    type:'main' },
+  { source:'cidls', target:'s2',    type:'main' },
+  { source:'cidls', target:'s3',    type:'main' },
+  { source:'cidls', target:'s4',    type:'main' },
+  { source:'cidls', target:'s5',    type:'main' },
+  { source:'cidls', target:'s6',    type:'main' },
+  { source:'cidls', target:'agent', type:'sub' },
+  { source:'cidls', target:'docs',  type:'sub' },
+  /* Step フロー */
+  { source:'s1',    target:'s2',    type:'flow' },
+  { source:'s2',    target:'s3',    type:'flow' },
+  { source:'s3',    target:'s4',    type:'flow' },
+  { source:'s4',    target:'s5',    type:'flow' },
+  /* Step6: フィードバックループ */
+  { source:'s6',    target:'s1',    type:'loop' },
+  { source:'s6',    target:'s2',    type:'loop' },
+  { source:'s6',    target:'s3',    type:'loop' },
+  { source:'s6',    target:'s4',    type:'loop' },
+  { source:'s6',    target:'s5',    type:'loop' },
+  /* Step 1 children */
+  { source:'s1', target:'s1_biz',    type:'child' },
+  { source:'s1', target:'s1_req',    type:'child' },
+  { source:'s1', target:'s1_rule',   type:'child' },
+  { source:'s1', target:'s1_legacy', type:'child' },
+  { source:'s1', target:'s1_refine', type:'child' },
+  /* Step 2 children */
+  { source:'s2', target:'s2_sys',    type:'child' },
+  { source:'s2', target:'s2_app',    type:'child' },
+  { source:'s2', target:'s2_flow',   type:'child' },
+  { source:'s2', target:'s2_refine', type:'child' },
+  /* Step 3 children */
+  { source:'s3', target:'s3_story',  type:'child' },
+  { source:'s3', target:'s3_flow',   type:'child' },
+  { source:'s3', target:'s3_er',     type:'child' },
+  { source:'s3', target:'s3_nfr',    type:'child' },
+  { source:'s3', target:'s3_ac',     type:'child' },
+  /* Step 4 children */
+  { source:'s4', target:'s4_arch',   type:'child' },
+  { source:'s4', target:'s4_codegen',type:'child' },
+  { source:'s4', target:'s4_impl',   type:'child' },
+  { source:'s4', target:'s4_test',   type:'child' },
+  { source:'s4', target:'s4_gen',    type:'child' },
+  /* Step 5 children */
+  { source:'s5', target:'s5_docs',   type:'child' },
+  { source:'s5', target:'s5_saas',   type:'child' },
+  { source:'s5', target:'s5_exe',    type:'child' },
+  { source:'s5', target:'s5_slide',  type:'child' },
+  { source:'s5', target:'s5_excel',  type:'child' },
+  { source:'s5', target:'s5_export', type:'child' },
+  /* Step 6 children */
+  { source:'s6', target:'s6_c',      type:'child' },
+  { source:'s6', target:'s6_p',      type:'child' },
+  { source:'s6', target:'s6_a',      type:'child' },
+  { source:'s6', target:'s6_d',      type:'child' },
+  { source:'s6', target:'s6_k',      type:'child' },
+  { source:'s6', target:'s6_meta',   type:'child' },
+  /* CAPDkA cycle */
+  { source:'s6_c', target:'s6_p',    type:'capdka' },
+  { source:'s6_p', target:'s6_a',    type:'capdka' },
+  { source:'s6_a', target:'s6_d',    type:'capdka' },
+  { source:'s6_d', target:'s6_k',    type:'capdka' },
+  { source:'s6_k', target:'s6_c',    type:'capdka' },
+  /* Agent children */
+  { source:'agent', target:'ag_gpt',  type:'child' },
+  { source:'agent', target:'ag_codex',type:'child' },
+  { source:'agent', target:'ag_qwen', type:'child' },
+  /* Docs children */
+  { source:'docs', target:'doc_api',  type:'child' },
+  { source:'docs', target:'doc_flow', type:'child' },
+  { source:'docs', target:'doc_test', type:'child' },
+  { source:'docs', target:'doc_infra',type:'child' },
+  /* Cross-connections */
+  { source:'agent', target:'s4',      type:'sub' },
+  { source:'docs',  target:'s5',      type:'sub' },
+  { source:'s5_docs', target:'docs',  type:'sub' },
+  /* PJ nodes -- cidls center connections */
+  { source:'cidls', target:'pj_tobe', type:'sub' },
+  { source:'cidls', target:'pj_pain', type:'sub' },
+  { source:'cidls', target:'pj_sol',  type:'sub' },
+  { source:'cidls', target:'pj_phil', type:'sub' },
+  { source:'cidls', target:'pj_art',  type:'sub' },
+  /* PJ children */
+  { source:'pj_tobe', target:'pj_tobe1', type:'child' },
+  { source:'pj_tobe', target:'pj_tobe2', type:'child' },
+  { source:'pj_tobe', target:'pj_tobe3', type:'child' },
+  { source:'pj_tobe', target:'pj_tobe4', type:'child' },
+  { source:'pj_pain', target:'pj_pain1', type:'child' },
+  { source:'pj_pain', target:'pj_pain2', type:'child' },
+  { source:'pj_pain', target:'pj_pain3', type:'child' },
+  { source:'pj_pain', target:'pj_pain4', type:'child' },
+  { source:'pj_sol',  target:'pj_sol1',  type:'child' },
+  { source:'pj_sol',  target:'pj_sol2',  type:'child' },
+  { source:'pj_sol',  target:'pj_sol3',  type:'child' },
+  { source:'pj_sol',  target:'pj_sol4',  type:'child' },
+  { source:'pj_phil', target:'pj_phil1', type:'child' },
+  { source:'pj_phil', target:'pj_phil2', type:'child' },
+  { source:'pj_phil', target:'pj_phil3', type:'child' },
+  { source:'pj_phil', target:'pj_phil4', type:'child' },
+  { source:'pj_art',  target:'pj_art1',  type:'child' },
+  { source:'pj_art',  target:'pj_art2',  type:'child' },
+  { source:'pj_art',  target:'pj_art3',  type:'child' },
+  { source:'pj_art',  target:'pj_art4',  type:'child' },
+  { source:'pj_art',  target:'pj_art5',  type:'child' },
+  { source:'pj_art',  target:'pj_art6',  type:'child' },
+];
+
+/* ============================================================
+   D3 RENDERING
+   ============================================================ */
+const svg    = d3.select('#mm-svg');
+const g      = d3.select('#graph-g');
+const tooltip = document.getElementById('tooltip');
+
+let width  = 0;
+let height = 0;
+let collapsedNodes = new Set();
+
+function getSize() {
+  const wrap = document.getElementById('graph-wrap');
+  return { w: wrap.clientWidth, h: wrap.clientHeight };
+}
+
+/* Link color mapping */
+function linkColor(type) {
+  return { main:'#6366f1', flow:'#64748b', loop:'#ef4444', child:'#334155', sub:'#475569', capdka:'#ef4444' }[type] || '#475569';
+}
+function linkDash(type) {
+  return type === 'loop' ? '6,4' : type === 'sub' ? '4,3' : 'none';
+}
+function linkWidth(type) {
+  return { main:2, flow:2.5, loop:1.5, child:1, sub:1, capdka:1.5 }[type] || 1;
+}
+
+/* Force simulation */
+let simulation;
+
+function initGraph() {
+  const sz = getSize();
+  width = sz.w; height = sz.h;
+
+  svg.attr('viewBox', `0 0 ${width} ${height}`);
+
+  const nodes = NODES.map(d => ({ ...d }));
+  const links = LINKS.map(d => ({ ...d }));
+
+  document.getElementById('node-count').textContent = nodes.length;
+  document.getElementById('edge-count').textContent = links.length;
+
+  simulation = d3.forceSimulation(nodes)
+    .force('link', d3.forceLink(links).id(d => d.id)
+      .distance(d => {
+        if (d.type === 'main')   return 180;
+        if (d.type === 'flow')   return 120;
+        if (d.type === 'loop')   return 220;
+        if (d.type === 'child')  return 90;
+        if (d.type === 'capdka') return 70;
+        return 110;
+      })
+      .strength(d => {
+        if (d.type === 'child')  return 0.6;
+        if (d.type === 'main')   return 0.4;
+        if (d.type === 'flow')   return 0.3;
+        if (d.type === 'loop')   return 0.1;
+        return 0.2;
+      })
+    )
+    .force('charge', d3.forceManyBody()
+      .strength(d => d.type === 'core' ? -800 : d.type === 'step' ? -400 : -150)
+    )
+    .force('center', d3.forceCenter(width / 2, height / 2))
+    .force('collision', d3.forceCollide().radius(d => d.r + 14))
+    .force('x', d3.forceX(width / 2).strength(0.03))
+    .force('y', d3.forceY(height / 2).strength(0.03));
+
+  /* Links */
+  const linkSel = g.append('g').attr('class','links')
+    .selectAll('line')
+    .data(links)
+    .join('line')
+    .attr('class','link-line')
+    .attr('stroke',       d => linkColor(d.type))
+    .attr('stroke-width', d => linkWidth(d.type))
+    .attr('stroke-dasharray', d => linkDash(d.type))
+    .attr('marker-end', d => d.type === 'flow' || d.type === 'capdka' ? 'url(#arrowhead)' : null);
+
+  /* Node groups */
+  const nodeG = g.append('g').attr('class','nodes')
+    .selectAll('g')
+    .data(nodes)
+    .join('g')
+    .attr('class','node-g')
+    .call(d3.drag()
+      .on('start', (event, d) => {
+        if (!event.active) simulation.alphaTarget(0.3).restart();
+        d.fx = d.x; d.fy = d.y;
+      })
+      .on('drag', (event, d) => { d.fx = event.x; d.fy = event.y; })
+      .on('end', (event, d) => {
+        if (!event.active) simulation.alphaTarget(0);
+        d.fx = null; d.fy = null;
+      })
+    )
+    .on('click', onNodeClick)
+    .on('mouseover', onNodeHover)
+    .on('mouseout', () => { tooltip.style.display = 'none'; });
+
+  /* Glow filter per node */
+  const defs = svg.select('defs');
+  NODES.forEach(n => {
+    const f = defs.append('filter').attr('id', `glow-${n.id}`);
+    f.append('feGaussianBlur').attr('stdDeviation','3').attr('result','blur');
+    const fM = f.append('feMerge');
+    fM.append('feMergeNode').attr('in','blur');
+    fM.append('feMergeNode').attr('in','SourceGraphic');
+  });
+
+  /* Circles */
+  nodeG.append('circle')
+    .attr('class','node-circle')
+    .attr('r', d => d.r)
+    .attr('fill', d => d.color + (d.type === 'leaf' ? '55' : d.type === 'proc' ? '77' : 'cc'))
+    .attr('stroke', d => d.color)
+    .attr('filter', d => `url(#glow-${d.id})`);
+
+  /* Step number badge */
+  nodeG.filter(d => d.type === 'step' || d.type === 'core')
+    .append('circle')
+    .attr('r', d => d.type === 'core' ? 0 : 11)
+    .attr('cx', d => -d.r + 8)
+    .attr('cy', d => -d.r + 8)
+    .attr('fill', d => d.color)
+    .attr('stroke','#fff')
+    .attr('stroke-width', 1);
+
+  nodeG.filter(d => d.type === 'step')
+    .append('text')
+    .attr('class','step-num')
+    .attr('x', d => -d.r + 8)
+    .attr('y', d => -d.r + 8)
+    .attr('dy', '0.35em')
+    .text(d => d.step);
+
+  /* Labels (multi-line) */
+  nodeG.each(function(d) {
+    const el = d3.select(this);
+    const lines = d.label.split('\n');
+    const fs = d.r >= 40 ? '0.75rem' : d.r >= 26 ? '0.68rem' : '0.62rem';
+    const lh = d.r >= 40 ? 14 : 12;
+    const totalH = (lines.length - 1) * lh;
+
+    lines.forEach((line, i) => {
+      el.append('text')
+        .attr('class','node-label')
+        .attr('font-size', fs)
+        .attr('font-weight', d.type === 'core' || d.type === 'step' ? '700' : '400')
+        .attr('y', i * lh - totalH / 2)
+        .attr('dy', '0.35em')
+        .text(line);
+    });
+  });
+
+  simulation.on('tick', () => {
+    linkSel
+      .attr('x1', d => d.source.x)
+      .attr('y1', d => d.source.y)
+      .attr('x2', d => d.target.x)
+      .attr('y2', d => d.target.y);
+
+    nodeG.attr('transform', d => `translate(${d.x},${d.y})`);
+  });
+
+  /* Zoom */
+  const zoom = d3.zoom()
+    .scaleExtent([0.2, 4])
+    .on('zoom', e => g.attr('transform', e.transform));
+  svg.call(zoom);
+  svg._zoom = zoom;
+}
+
+/* ── Tooltip ── */
+function onNodeHover(event, d) {
+  const rect = document.getElementById('graph-wrap').getBoundingClientRect();
+  tooltip.style.display = 'block';
+  tooltip.style.left = (event.clientX - rect.left + 14) + 'px';
+  tooltip.style.top  = (event.clientY - rect.top  - 10) + 'px';
+  tooltip.innerHTML = `<div class="tt-title">${d.label.replace(/\n/g,' ')}</div>${(d.detail||'').replace(/\n/g,'<br>')}`;
+}
+
+function onNodeClick(event, d) {
+  event.stopPropagation();
+  /* Toggle highlight */
+  d3.selectAll('.node-circle')
+    .attr('stroke-width', nd => nd.id === d.id ? 4 : 2)
+    .attr('fill', nd => nd.id === d.id
+      ? nd.color + 'ff'
+      : nd.color + (nd.type === 'leaf' ? '55' : nd.type === 'proc' ? '77' : 'cc'));
+}
+
+/* ── Controls ── */
+function toggleInfo() {
+  const p = document.getElementById('info-panel');
+  const b = document.getElementById('btn-info');
+  p.classList.toggle('open');
+  b.classList.toggle('active');
+}
+
+let flowMode = false;
+function toggleFlowMode() {
+  flowMode = !flowMode;
+  const b = document.getElementById('btn-flow');
+  b.classList.toggle('active', flowMode);
+  if (flowMode) {
+    /* Fixed horizontal layout */
+    const positions = {
+      cidls:    { x: 0.5, y: 0.5 },
+      s1:       { x: 0.08, y: 0.5 },
+      s2:       { x: 0.26, y: 0.3 },
+      s3:       { x: 0.44, y: 0.5 },
+      s4:       { x: 0.62, y: 0.3 },
+      s5:       { x: 0.8,  y: 0.5 },
+      s6:       { x: 0.5,  y: 0.12 },
+      agent:    { x: 0.3,  y: 0.82 },
+      docs:     { x: 0.7,  y: 0.82 },
+    };
+    simulation.nodes().forEach(n => {
+      if (positions[n.id]) {
+        n.fx = positions[n.id].x * width;
+        n.fy = positions[n.id].y * height;
+      }
+    });
+    simulation.alpha(0.5).restart();
+  } else {
+    simulation.nodes().forEach(n => { n.fx = null; n.fy = null; });
+    simulation.alpha(0.5).restart();
+  }
+}
+
+function resetView() {
+  svg.transition().duration(500)
+    .call(svg._zoom.transform, d3.zoomIdentity.translate(0, 0).scale(1));
+  simulation.nodes().forEach(n => { n.fx = null; n.fy = null; });
+  simulation.alpha(0.4).restart();
+  flowMode = false;
+  document.getElementById('btn-flow').classList.remove('active');
+}
+
+function expandAll() {
+  d3.selectAll('.node-g').style('display', null);
+  d3.selectAll('.link-line').style('display', null);
+}
+
+function collapseLeaves() {
+  d3.selectAll('.node-g').filter(d => d.type === 'leaf').style('display','none');
+  d3.selectAll('.link-line').filter(d =>
+    d.type === 'child' && (d.target.type === 'leaf')
+  ).style('display','none');
+}
+
+/* ── Init ── */
+window.addEventListener('DOMContentLoaded', () => { initGraph(); });
+window.addEventListener('resize', () => {
+  const sz = getSize();
+  width = sz.w; height = sz.h;
+  svg.attr('viewBox', `0 0 ${width} ${height}`);
+  simulation.force('center', d3.forceCenter(width / 2, height / 2))
+    .alpha(0.3).restart();
+});
+
+/* ============================================================
+   MERGED FROM graph_project_mindmap.html
+   ============================================================ */
+function toggleDA() {
+  document.getElementById('da-section').classList.toggle('open');
+  document.getElementById('btn-da').classList.toggle('active');
+}
+function toggleSwim() {
+  document.getElementById('swim-section').classList.toggle('open');
+  document.getElementById('btn-swim').classList.toggle('active');
+}
+
+
+
+
+</script>
+</body>
+</html>

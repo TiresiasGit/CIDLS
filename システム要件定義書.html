@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CIDLS システム要件定義書 CIDLS-SRS-001 v1.0.0</title>
+<style>
+:root {
+  --bg:      #1a1a2e;
+  --panel:   #16213e;
+  --accent:  #6366f1;
+  --accent2: #8b5cf6;
+  --success: #10b981;
+  --warn:    #f59e0b;
+  --danger:  #ef4444;
+  --cyan:    #06b6d4;
+  --text:    #e2e8f0;
+  --muted:   #94a3b8;
+  --border:  #334155;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+.page-header {
+  background: var(--panel);
+  border-bottom: 3px solid var(--cyan);
+  padding: 20px 40px;
+}
+.page-header h1 { font-size: 1.35rem; font-weight: 800; color: var(--cyan); }
+.page-header .meta { font-size: 0.78rem; color: var(--muted); margin-top: 4px; }
+
+.nav-tabs {
+  display: flex; gap: 0; background: var(--panel);
+  border-bottom: 1px solid var(--border); padding: 0 40px; overflow-x: auto;
+}
+.tab-btn {
+  padding: 10px 18px; font-size: 0.82rem; font-weight: 600;
+  color: var(--muted); background: transparent; border: none;
+  border-bottom: 3px solid transparent; cursor: pointer; white-space: nowrap;
+  transition: color .2s;
+}
+.tab-btn:hover { color: var(--text); }
+.tab-btn.active { color: var(--cyan); border-bottom-color: var(--cyan); }
+
+.content { max-width: 1100px; margin: 0 auto; padding: 32px 40px; }
+.section { display: none; }
+.section.active { display: block; }
+
+.card {
+  background: var(--panel); border: 1px solid var(--border);
+  border-radius: 10px; padding: 20px 24px; margin-bottom: 20px;
+}
+.card h2 { font-size: 1.1rem; color: var(--cyan); margin-bottom: 14px; border-bottom: 1px solid var(--border); padding-bottom: 8px; }
+.card h3 { font-size: 0.95rem; color: var(--accent); margin: 14px 0 8px; }
+
+table { width: 100%; border-collapse: collapse; font-size: 0.82rem; margin: 10px 0; }
+th { background: rgba(99,102,241,0.15); color: var(--accent); padding: 8px 10px; text-align: left; border: 1px solid var(--border); }
+td { padding: 7px 10px; border: 1px solid var(--border); vertical-align: top; line-height: 1.5; }
+tr:hover td { background: rgba(255,255,255,0.03); }
+
+.badge {
+  display: inline-block; padding: 2px 8px; border-radius: 10px;
+  font-size: 0.72rem; font-weight: 700;
+}
+.b-must  { background: rgba(239,68,68,0.2); color: var(--danger); }
+.b-shal  { background: rgba(245,158,11,0.2); color: var(--warn); }
+.b-coul  { background: rgba(99,102,241,0.2); color: var(--accent); }
+.b-done  { background: rgba(16,185,129,0.2); color: var(--success); }
+.b-func  { background: rgba(6,182,212,0.2); color: var(--cyan); }
+.b-nfunc { background: rgba(139,92,246,0.2); color: var(--accent2); }
+
+.kpi-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; margin: 14px 0; }
+.kpi-card {
+  background: rgba(6,182,212,0.06); border: 1px solid rgba(6,182,212,0.2);
+  border-radius: 8px; padding: 14px;
+}
+.kpi-val { font-size: 1.4rem; font-weight: 800; color: var(--cyan); }
+.kpi-label { font-size: 0.78rem; color: var(--muted); margin-top: 4px; }
+
+.trace-row { display: flex; align-items: flex-start; gap: 8px; padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,0.04); }
+.trace-id { min-width: 70px; font-family: monospace; font-size: 0.78rem; color: var(--cyan); font-weight: 700; }
+.trace-arrow { color: var(--muted); padding: 0 4px; }
+
+p { line-height: 1.7; font-size: 0.87rem; color: var(--muted); margin: 6px 0; }
+ul { margin: 8px 0 8px 20px; }
+li { margin: 4px 0; font-size: 0.87rem; color: var(--muted); line-height: 1.6; }
+code { background: rgba(255,255,255,0.07); padding: 2px 6px; border-radius: 4px; font-size: 0.82rem; color: var(--cyan); }
+</style>
+<style>
+
+.diagram-section { background: var(--panel,#16213e); border: 1px solid var(--border,#334155); border-radius: 10px; padding: 24px; margin-bottom: 20px; }
+.diagram-section h2 { font-size: 1.0rem; color: var(--accent,#6366f1); margin-bottom: 16px; border-bottom: 1px solid var(--border,#334155); padding-bottom: 8px; }
+.diagram-section h3 { font-size: 0.9rem; color: var(--cyan,#06b6d4); margin: 16px 0 10px; }
+.mermaid-wrap { background: #0d1527; border-radius: 8px; padding: 20px; overflow-x: auto; margin-bottom: 16px; }
+.mermaid-wrap .mermaid { max-width: 100%; }
+
+</style>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<script>mermaid.initialize({startOnLoad:true,theme:"dark",themeVariables:{primaryColor:"#1a2040",primaryTextColor:"#e2e8f0",primaryBorderColor:"#6366f1",lineColor:"#6366f1",secondaryColor:"#16213e",tertiaryColor:"#0f1535"}});</script>
+</head>
+<body>
+
+<div class="page-header">
+  <h1>CIDLS システム要件定義書</h1>
+  <div class="meta">
+    文書ID: CIDLS-SRS-001 &#124; バージョン: 1.0.0 &#124; 作成日: 2026-05-12 &#124;
+    担当: CIDLS開発チーム &#124; ステータス: <span style="color:var(--success)">承認済み</span>
+  </div>
+</div>
+
+<nav class="nav-tabs">
+  <button class="tab-btn active" onclick="showTab(this,'overview')">01 概要</button>
+  <button class="tab-btn" onclick="showTab(this,'functional')">02 機能要件</button>
+  <button class="tab-btn" onclick="showTab(this,'nonfunctional')">03 非機能要件</button>
+  <button class="tab-btn" onclick="showTab(this,'constraints')">04 制約・前提</button>
+  <button class="tab-btn" onclick="showTab(this,'acceptance')">05 受入基準</button>
+  <button class="tab-btn" onclick="showTab(this,'traceability')">06 トレーサビリティ</button>
+    <button class="tab-btn" onclick="showTab(this,'diagram')">フロー図</button>
+</nav>
+
+<div class="content">
+
+  <!-- ======== 01 概要 ======== -->
+  <div id="tab-overview" class="section active">
+    <div class="card">
+      <h2>システム概要</h2>
+      <p>
+        CIDLSプラットフォームは、コンセプト入力からアプリ生成・ドキュメント一式生成・自律進化保守ループまでを
+        一気通貫で実現する<strong>自律型開発支援基盤</strong>である。
+        個人開発者・小規模チームが商用品質のSW開発成果物を最小工数で生み出し、
+        日次11:00の自律進化ループで継続的に品質・速度・精度を複利的に向上させる。
+      </p>
+
+      <div class="kpi-grid">
+        <div class="kpi-card">
+          <div class="kpi-val">87%</div>
+          <div class="kpi-label">工数削減目標 (AV.1)</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-val">&le;1s</div>
+          <div class="kpi-label">UI応答時間 (Q1)</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-val">&ge;90%</div>
+          <div class="kpi-label">ユニットテストカバレッジ</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-val">&le;3</div>
+          <div class="kpi-label">主機能到達クリック数</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-val">WCAG 2.1 AA</div>
+          <div class="kpi-label">アクセシビリティ準拠</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-val">38 docs</div>
+          <div class="kpi-label">devrag索引ドキュメント数</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>システム構成</h2>
+      <h3>コンポーネント一覧</h3>
+      <table>
+        <tr><th>コンポーネント</th><th>役割</th><th>技術</th><th>ステータス</th></tr>
+        <tr>
+          <td>cidls_platform_overview.html</td>
+          <td>プラットフォーム全体像表示 (SPA)</td>
+          <td>Vanilla HTML/CSS/JS</td>
+          <td><span class="badge b-done">稼働中</span></td>
+        </tr>
+        <tr>
+          <td>project_kanban.html</td>
+          <td>かんばんボード・DA表・要求要件定義書</td>
+          <td>Vanilla HTML/CSS/JS</td>
+          <td><span class="badge b-done">稼働中</span></td>
+        </tr>
+        <tr>
+          <td>graph_project_mindmap.html</td>
+          <td>D3.js グラフマインドマップ + DA表</td>
+          <td>D3.js v7, Vanilla JS</td>
+          <td><span class="badge b-done">稼働中</span></td>
+        </tr>
+        <tr>
+          <td>index.html</td>
+          <td>ナビゲーションハブ (SPA 5ビュー)</td>
+          <td>Vanilla HTML/CSS/JS</td>
+          <td><span class="badge b-done">稼働中</span></td>
+        </tr>
+        <tr>
+          <td>devrag RAG</td>
+          <td>AGENTS.md知識ベース RAG検索</td>
+          <td>devrag v1.4.4, multilingual-e5-small</td>
+          <td><span class="badge b-done">稼働中</span></td>
+        </tr>
+        <tr>
+          <td>generate_*.py</td>
+          <td>成果物生成スクリプト (3本)</td>
+          <td>Python 3.11, uv</td>
+          <td><span class="badge b-done">稼働中</span></td>
+        </tr>
+        <tr>
+          <td>日次自律進化ループ</td>
+          <td>11:00 自動実行・CAPDkA反証複利</td>
+          <td>PowerShell, Windows Task Scheduler</td>
+          <td><span class="badge b-shal">構成済み</span></td>
+        </tr>
+        <tr>
+          <td>商用請負納品文書パック.xlsx</td>
+          <td>SW開発標準ドキュメント一覧 (Excel)</td>
+          <td>openpyxl, Python</td>
+          <td><span class="badge b-done">稼働中</span></td>
+        </tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- ======== 02 機能要件 ======== -->
+  <div id="tab-functional" class="section">
+    <div class="card">
+      <h2>機能要件一覧 (Sp0)</h2>
+      <table>
+        <tr>
+          <th>要件ID</th><th>カテゴリ</th><th>要件名</th><th>説明</th><th>優先度</th>
+        </tr>
+        <tr>
+          <td><code>FR-001</code></td>
+          <td><span class="badge b-func">UI</span></td>
+          <td>プラットフォーム全体像表示</td>
+          <td>CIDLSパイプライン6ステップ (コンセプト入力→自律進化ループ) を単一HTMLで可視化する</td>
+          <td><span class="badge b-must">Must</span></td>
+        </tr>
+        <tr>
+          <td><code>FR-002</code></td>
+          <td><span class="badge b-func">UI</span></td>
+          <td>かんばんボード表示・DA表閲覧</td>
+          <td>Backlog/Todo/InProgress/Review/Done の5カラムかんばん + DA表をproject_kanban.htmlで提供する</td>
+          <td><span class="badge b-must">Must</span></td>
+        </tr>
+        <tr>
+          <td><code>FR-003</code></td>
+          <td><span class="badge b-func">UI</span></td>
+          <td>グラフマインドマップ表示</td>
+          <td>D3.js v7 放射状ツリー + 相互連関有向グラフ + DA表をgraph_project_mindmap.htmlで提供する</td>
+          <td><span class="badge b-must">Must</span></td>
+        </tr>
+        <tr>
+          <td><code>FR-004</code></td>
+          <td><span class="badge b-func">UI</span></td>
+          <td>ナビゲーションハブ (SPA 5ビュー)</td>
+          <td>Dashboard/Analytics/Timeline/Search/Export の5ビューを index.html でデータ駆動表示する</td>
+          <td><span class="badge b-must">Must</span></td>
+        </tr>
+        <tr>
+          <td><code>FR-005</code></td>
+          <td><span class="badge b-func">RAG</span></td>
+          <td>devrag セマンティック検索</td>
+          <td>AGENTS.md + documents/*.md + .github/**/*.md (38件) を対象に multilingual-e5-small で検索する</td>
+          <td><span class="badge b-must">Must</span></td>
+        </tr>
+        <tr>
+          <td><code>FR-006</code></td>
+          <td><span class="badge b-func">生成</span></td>
+          <td>cidls_platform_overview.html 生成</td>
+          <td>scripts/generate_cidls_platform_overview.py を実行して最新コンテンツで再生成する</td>
+          <td><span class="badge b-must">Must</span></td>
+        </tr>
+        <tr>
+          <td><code>FR-007</code></td>
+          <td><span class="badge b-func">生成</span></td>
+          <td>商用請負納品文書パック.xlsx 生成</td>
+          <td>scripts/generate_commercial_delivery_pack.py で SW開発全ドキュメント一覧 Excelを生成する</td>
+          <td><span class="badge b-must">Must</span></td>
+        </tr>
+        <tr>
+          <td><code>FR-008</code></td>
+          <td><span class="badge b-func">生成</span></td>
+          <td>graph_project_mindmap.html 更新</td>
+          <td>scripts/generate_graph_project_mindmap.py --add-entry でDA表エントリを追加・更新する</td>
+          <td><span class="badge b-must">Must</span></td>
+        </tr>
+        <tr>
+          <td><code>FR-009</code></td>
+          <td><span class="badge b-func">自動化</span></td>
+          <td>日次自律進化ループ (11:00)</td>
+          <td>Windows Task Scheduler から scripts/run_daily_self_evolution.cmd を11:00に自動起動する</td>
+          <td><span class="badge b-shal">Should</span></td>
+        </tr>
+        <tr>
+          <td><code>FR-010</code></td>
+          <td><span class="badge b-func">ドキュメント</span></td>
+          <td>SW納品ドキュメント全種生成</td>
+          <td>要求定義書/要求仕様書/システム要件定義書/基本設計書等をHTML形式で生成・管理する</td>
+          <td><span class="badge b-shal">Should</span></td>
+        </tr>
+        <tr>
+          <td><code>FR-011</code></td>
+          <td><span class="badge b-func">セキュリティ</span></td>
+          <td>Secret 非配布保証</td>
+          <td>APIキー・Webhook Secret・DB接続文字列を配布物(HTML/zip/exe)に含めない</td>
+          <td><span class="badge b-must">Must</span></td>
+        </tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- ======== 03 非機能要件 ======== -->
+  <div id="tab-nonfunctional" class="section">
+    <div class="card">
+      <h2>非機能要件 (Sp1/Sp2) — JIS X 25010 準拠</h2>
+
+      <h3>性能効率性 (Sp1)</h3>
+      <table>
+        <tr><th>要件ID</th><th>項目</th><th>基準値</th><th>計測方法</th></tr>
+        <tr><td><code>NFR-P01</code></td><td>UI操作応答時間</td><td>&le; 1秒</td><td>ブラウザ DevTools Performance</td></tr>
+        <tr><td><code>NFR-P02</code></td><td>devrag 検索応答時間</td><td>&le; 3秒 (ローカル CPU)</td><td>PowerShell Measure-Command</td></tr>
+        <tr><td><code>NFR-P03</code></td><td>スクリプト実行時間 (generate_*.py)</td><td>&le; 30秒</td><td>uv run time 計測</td></tr>
+        <tr><td><code>NFR-P04</code></td><td>devrag インデックス類似度</td><td>&ge; 0.90 (top-3 平均)</td><td>5クエリでの実測平均</td></tr>
+      </table>
+
+      <h3>信頼性 (Sp2)</h3>
+      <table>
+        <tr><th>要件ID</th><th>項目</th><th>基準値</th><th>備考</th></tr>
+        <tr><td><code>NFR-R01</code></td><td>スクリプト冪等性</td><td>同一入力で同一出力</td><td>generate_*.py は何度実行しても副作用なし</td></tr>
+        <tr><td><code>NFR-R02</code></td><td>devrag DB 整合性</td><td>index-code (Python) 除外</td><td>ゼロベクトル混入バグ回避のため md のみ索引</td></tr>
+        <tr><td><code>NFR-R03</code></td><td>日次ループ継続性</td><td>Task Scheduler 登録済み</td><td>scripts/register_daily_self_evolution_task.ps1</td></tr>
+      </table>
+
+      <h3>使用性 (Sp2)</h3>
+      <table>
+        <tr><th>要件ID</th><th>項目</th><th>基準値</th><th>備考</th></tr>
+        <tr><td><code>NFR-U01</code></td><td>主機能到達クリック数</td><td>&le; 3クリック</td><td>index.html → 各成果物</td></tr>
+        <tr><td><code>NFR-U02</code></td><td>アクセシビリティ</td><td>WCAG 2.1 AA 準拠</td><td>コントラスト比 &ge; 4.5:1</td></tr>
+        <tr><td><code>NFR-U03</code></td><td>ファイル命名規約</td><td>日本語ファイル名 (D1.3)</td><td>ソースコード除く全ドキュメント</td></tr>
+      </table>
+
+      <h3>セキュリティ (Sp2)</h3>
+      <table>
+        <tr><th>要件ID</th><th>ガバコンパターン</th><th>基準</th><th>テスト方法</th></tr>
+        <tr><td><code>NFR-S01</code></td><td>BILLING_ENFORCE</td><td>課金数量サーバーサイドのみで決定</td><td>課金API テスト</td></tr>
+        <tr><td><code>NFR-S02</code></td><td>PII_AUTH_GATE</td><td>未認証状態で PII 0フィールド返却</td><td>未認証 API テスト</td></tr>
+        <tr><td><code>NFR-S03</code></td><td>VERIFY_INTEGRITY</td><td>資格判定はサーバー許可リスト</td><td>ヘッダー改ざんテスト</td></tr>
+        <tr><td><code>NFR-S04</code></td><td>NEVER_TRUST_CLIENT</td><td>認証フラグ クライアント書換不可</td><td>role=admin リクエストテスト</td></tr>
+        <tr><td><code>NFR-S05</code></td><td>Secret 非配布</td><td>配布物に Secret 含まれないこと</td><td>grep 全検索でゼロ確認</td></tr>
+      </table>
+
+      <h3>保守性 (Sp2)</h3>
+      <table>
+        <tr><th>要件ID</th><th>項目</th><th>基準値</th></tr>
+        <tr><td><code>NFR-M01</code></td><td>テストカバレッジ (ユニット)</td><td>&ge; 90%</td></tr>
+        <tr><td><code>NFR-M02</code></td><td>コード規約</td><td>PEP8 準拠, typing 禁止, 絵文字禁止</td></tr>
+        <tr><td><code>NFR-M03</code></td><td>フォールバック禁止</td><td>SimpleFallback / ダミーデータ 完全禁止</td></tr>
+        <tr><td><code>NFR-M04</code></td><td>水平展開同期</td><td>1概念変更 → grep 全検索 → 7箇所同期</td></tr>
+      </table>
+
+      <h3>移植性 (Sp2)</h3>
+      <table>
+        <tr><th>要件ID</th><th>項目</th><th>基準値</th></tr>
+        <tr><td><code>NFR-PT01</code></td><td>OS</td><td>Windows 10/11 (WSL 禁止)</td></tr>
+        <tr><td><code>NFR-PT02</code></td><td>Python</td><td>3.11.x + uv 専用 (pip 禁止)</td></tr>
+        <tr><td><code>NFR-PT03</code></td><td>DB</td><td>DuckDB / Parquet (主要データ)</td></tr>
+        <tr><td><code>NFR-PT04</code></td><td>devrag</td><td>setup_devrag.ps1 1コマンドで再構築可能</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- ======== 04 制約・前提 ======== -->
+  <div id="tab-constraints" class="section">
+    <div class="card">
+      <h2>制約条件 (Sp3)</h2>
+
+      <h3>技術制約</h3>
+      <table>
+        <tr><th>制約ID</th><th>種別</th><th>内容</th><th>根拠</th></tr>
+        <tr>
+          <td><code>CON-T01</code></td><td>OS</td>
+          <td>Windows 10/11 必須。WSL 使用禁止。</td>
+          <td>AGENTS.md [T1.1]</td>
+        </tr>
+        <tr>
+          <td><code>CON-T02</code></td><td>Python</td>
+          <td>Python 3.11.x。パッケージ管理は uv 専用。pip 使用禁止。</td>
+          <td>AGENTS.md [T1.1]</td>
+        </tr>
+        <tr>
+          <td><code>CON-T03</code></td><td>エンコード</td>
+          <td>スクリプト本文は UTF-8。バッチファイルは Shift-JIS (chcp 932)。Unicode 絵文字禁止。</td>
+          <td>AGENTS.md [T1.1] [TS.1]</td>
+        </tr>
+        <tr>
+          <td><code>CON-T04</code></td><td>devrag</td>
+          <td><code>index-code</code> コマンド使用禁止 (Python ファイルでゼロベクトルが発生しベクトル検索を破壊)。<code>index</code> (md のみ) を使用すること。</td>
+          <td>第9回CAPDkA実証 (2026-05-12)</td>
+        </tr>
+        <tr>
+          <td><code>CON-T05</code></td><td>devrag config</td>
+          <td>devrag-config.json に <code>code_patterns</code> キーを含めない。公式スキーマ外。</td>
+          <td>第9回CAPDkA実証 (2026-05-12)</td>
+        </tr>
+        <tr>
+          <td><code>CON-T06</code></td><td>devrag search</td>
+          <td>フラグはクエリの前に配置する。例: <code>devrag search --top-k 5 --config $CFG "クエリ"</code></td>
+          <td>引数順序バグ対策</td>
+        </tr>
+        <tr>
+          <td><code>CON-T07</code></td><td>フロントエンド</td>
+          <td>iframe 使用禁止。SPA + History API で画面遷移する。</td>
+          <td>AGENTS.md [UI.7]</td>
+        </tr>
+      </table>
+
+      <h3>運用制約</h3>
+      <table>
+        <tr><th>制約ID</th><th>種別</th><th>内容</th></tr>
+        <tr>
+          <td><code>CON-O01</code></td><td>Secret 管理</td>
+          <td>APIキー・Webhook Secret・DB接続文字列を HTML / 配布 ZIP / public 配下に配置しない</td>
+        </tr>
+        <tr>
+          <td><code>CON-O02</code></td><td>フォールバック禁止</td>
+          <td>SimpleFallback・ダミーデータ補完・エラー隠蔽を一切行わない</td>
+        </tr>
+        <tr>
+          <td><code>CON-O03</code></td><td>禁止語彙</td>
+          <td>フォルダ名・変数名に「未分類/その他/不明/TBD/misc/other」を使用しない</td>
+        </tr>
+      </table>
+
+      <h3>前提条件</h3>
+      <ul>
+        <li>D:\CIDLS が CIDLS リポジトリルートであること</li>
+        <li>D:\production\.venv に Python 3.11 仮想環境が存在すること</li>
+        <li>devrag.exe が <code>%LOCALAPPDATA%\devrag\devrag.exe</code> に存在すること</li>
+        <li>GitHub Copilot が VS Code に設定済みであること</li>
+        <li>AGENTS.md が CIDLS リポジトリルートに存在し、copilot-instructions.md に反映済みであること</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ======== 05 受入基準 ======== -->
+  <div id="tab-acceptance" class="section">
+    <div class="card">
+      <h2>受入基準 (Sp4) — Given / When / Then 形式</h2>
+
+      <h3>FR-005: devrag セマンティック検索</h3>
+      <table>
+        <tr><th>テストID</th><th>Given</th><th>When</th><th>Then</th><th>結果</th></tr>
+        <tr>
+          <td><code>AT-D01</code></td>
+          <td>38件のmdがインデックス済み</td>
+          <td><code>devrag search "CAPDkA"</code></td>
+          <td>count&ge;3, similarity&ge;0.90</td>
+          <td><span class="badge b-done">PASS</span></td>
+        </tr>
+        <tr>
+          <td><code>AT-D02</code></td>
+          <td>同上</td>
+          <td><code>devrag search "fallback prohibition"</code></td>
+          <td>count&ge;3, similarity&ge;0.90</td>
+          <td><span class="badge b-done">PASS</span></td>
+        </tr>
+        <tr>
+          <td><code>AT-D03</code></td>
+          <td>同上</td>
+          <td><code>devrag search "security OWASP"</code></td>
+          <td>count&ge;3, similarity&ge;0.90</td>
+          <td><span class="badge b-done">PASS</span></td>
+        </tr>
+        <tr>
+          <td><code>AT-D04</code></td>
+          <td>index-code (Python) 実行後</td>
+          <td><code>devrag search "CAPDkA"</code></td>
+          <td>count=0 (ゼロベクトル汚染) → 禁止確認</td>
+          <td><span class="badge b-done">確認済み (禁止)</span></td>
+        </tr>
+      </table>
+
+      <h3>FR-001〜004: UI 受入</h3>
+      <table>
+        <tr><th>テストID</th><th>Given</th><th>When</th><th>Then</th><th>結果</th></tr>
+        <tr>
+          <td><code>AT-U01</code></td>
+          <td>index.html をブラウザで開く</td>
+          <td>Dashboard タブをクリック</td>
+          <td>1秒以内に表示完了</td>
+          <td><span class="badge b-done">PASS</span></td>
+        </tr>
+        <tr>
+          <td><code>AT-U02</code></td>
+          <td>同上</td>
+          <td>Quick Access カードをクリック</td>
+          <td>対応 HTML が開く (&le;3クリック)</td>
+          <td><span class="badge b-done">PASS</span></td>
+        </tr>
+        <tr>
+          <td><code>AT-U03</code></td>
+          <td>project_kanban.html をブラウザで開く</td>
+          <td>Done カラムを確認</td>
+          <td>DA-016 カードが存在すること</td>
+          <td><span class="badge b-done">PASS</span></td>
+        </tr>
+      </table>
+
+      <h3>FR-006〜008: 生成スクリプト受入</h3>
+      <table>
+        <tr><th>テストID</th><th>Given</th><th>When</th><th>Then</th><th>結果</th></tr>
+        <tr>
+          <td><code>AT-G01</code></td>
+          <td>D:\CIDLS が CWD</td>
+          <td>generate_cidls_platform_overview.py 実行</td>
+          <td>cidls_platform_overview.html が更新される (exit 0)</td>
+          <td><span class="badge b-done">PASS</span></td>
+        </tr>
+        <tr>
+          <td><code>AT-G02</code></td>
+          <td>同上</td>
+          <td>generate_commercial_delivery_pack.py 実行</td>
+          <td>商用請負納品文書パック_*.xlsx が生成される</td>
+          <td><span class="badge b-done">PASS</span></td>
+        </tr>
+        <tr>
+          <td><code>AT-G03</code></td>
+          <td>同上</td>
+          <td>generate_graph_project_mindmap.py --add-entry</td>
+          <td>graph_project_mindmap.html に新 DA 行が追加される</td>
+          <td><span class="badge b-done">PASS</span></td>
+        </tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- ======== 06 トレーサビリティ ======== -->
+  <div id="tab-traceability" class="section">
+    <div class="card">
+      <h2>要件トレーサビリティマトリクス (Sp5)</h2>
+      <p style="margin-bottom:14px">
+        各要件と要求定義書・設計成果物・テスト結果の対応関係を示す。
+        変更時は1要件変更 → 全連関先に影響波及を確認すること ([HS] 水平展開原則)。
+      </p>
+      <table>
+        <tr>
+          <th>要件ID</th><th>要求定義書</th><th>設計成果物</th><th>テスト</th><th>ステータス</th>
+        </tr>
+        <tr>
+          <td><code>FR-001</code></td>
+          <td>RQ-SYS-001 プラットフォーム可視化</td>
+          <td>cidls_platform_overview.html</td>
+          <td>AT-U01</td>
+          <td><span class="badge b-done">Done</span></td>
+        </tr>
+        <tr>
+          <td><code>FR-002</code></td>
+          <td>RQ-SYS-002 タスク管理</td>
+          <td>project_kanban.html</td>
+          <td>AT-U03</td>
+          <td><span class="badge b-done">Done</span></td>
+        </tr>
+        <tr>
+          <td><code>FR-003</code></td>
+          <td>RQ-SYS-003 知識グラフ可視化</td>
+          <td>graph_project_mindmap.html</td>
+          <td>AT-G03</td>
+          <td><span class="badge b-done">Done</span></td>
+        </tr>
+        <tr>
+          <td><code>FR-004</code></td>
+          <td>RQ-SYS-004 ナビゲーション</td>
+          <td>index.html</td>
+          <td>AT-U01, AT-U02</td>
+          <td><span class="badge b-done">Done</span></td>
+        </tr>
+        <tr>
+          <td><code>FR-005</code></td>
+          <td>RQ-SYS-005 RAG 検索</td>
+          <td>devrag-config.json, .devrag/vectors.db</td>
+          <td>AT-D01〜AT-D04</td>
+          <td><span class="badge b-done">Done</span></td>
+        </tr>
+        <tr>
+          <td><code>FR-006</code></td>
+          <td>RQ-SYS-006 成果物自動生成</td>
+          <td>scripts/generate_cidls_platform_overview.py</td>
+          <td>AT-G01</td>
+          <td><span class="badge b-done">Done</span></td>
+        </tr>
+        <tr>
+          <td><code>FR-007</code></td>
+          <td>RQ-SYS-007 Excel 成果物生成</td>
+          <td>scripts/generate_commercial_delivery_pack.py</td>
+          <td>AT-G02</td>
+          <td><span class="badge b-done">Done</span></td>
+        </tr>
+        <tr>
+          <td><code>FR-008</code></td>
+          <td>RQ-SYS-008 マインドマップ更新</td>
+          <td>scripts/generate_graph_project_mindmap.py</td>
+          <td>AT-G03</td>
+          <td><span class="badge b-done">Done</span></td>
+        </tr>
+        <tr>
+          <td><code>FR-009</code></td>
+          <td>RQ-SYS-009 日次自動化</td>
+          <td>scripts/run_daily_self_evolution.ps1</td>
+          <td>Task Scheduler 確認</td>
+          <td><span class="badge b-shal">構成済み</span></td>
+        </tr>
+        <tr>
+          <td><code>FR-010</code></td>
+          <td>RQ-SYS-010 SW ドキュメント</td>
+          <td>各種 *.html ドキュメント</td>
+          <td>目視確認</td>
+          <td><span class="badge b-shal">進行中</span></td>
+        </tr>
+        <tr>
+          <td><code>NFR-S01〜S05</code></td>
+          <td>RQ-SEC-001 セキュリティ</td>
+          <td>AGENTS.md [SEC], [DISTSEC]</td>
+          <td>grep 検査</td>
+          <td><span class="badge b-done">Done</span></td>
+        </tr>
+      </table>
+
+      <h3>変更管理履歴</h3>
+      <table>
+        <tr><th>バージョン</th><th>日付</th><th>変更内容</th><th>担当</th></tr>
+        <tr><td>1.0.0</td><td>2026-05-12</td><td>初版作成。第9回 CAPDkA kA フェーズにて生成。devrag 動作復旧確認後に要件を確定。</td><td>CIDLS 開発チーム</td></tr>
+      </table>
+    </div>
+  </div>
+
+</div><!-- /content -->
+
+<script>
+function showTab(btn, id) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('tab-' + id).classList.add('active');
+}
+</script>
+
+</body>
+</html>

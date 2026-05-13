@@ -1,0 +1,63 @@
+[project]
+name = "cidls"
+version = "0.1.0"
+description = "CIDLS OCR/RPA pipeline for Windows 11 screen capture, Snipping Tool OCR, and structured RPAInput conversion."
+readme = "docs/ocr_pipeline_requirements.md"
+requires-python = ">=3.11,<3.13"
+dependencies = [
+  "mss>=10.1.0",
+  "opencv-python>=4.10.0.84",
+  "pillow>=11.2.1",
+  "pyautogui>=0.9.54",
+  "pygetwindow>=0.0.9",
+  "pyperclip>=1.9.0",
+  "duckdb>=1.1.0",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=8.3.5",
+  "pytest-html>=4.1.1",
+  "pytest-cov>=5.0.0",
+  "pytest-mock>=3.14.0",
+]
+winocr = [
+  "winocr>=0.0.3",
+]
+compute_use = [
+  "anthropic>=0.40.0",
+]
+e2e = [
+  "playwright>=1.44.0",
+  "pytest-playwright>=0.5.0",
+  "flask>=3.0.0",
+]
+
+[project.scripts]
+cidls-ocr-pipeline = "cidls.ocr_pipeline.cli:main"
+cidls-ocr-web-target = "cidls.ocr_pipeline.web_test_target:main"
+cidls-codex-maintenance = "cidls.codex_global_loop.cli:main"
+cidls-concept-pipeline = "cidls.concept_pipeline.cli:main"
+cidls-commercial-delivery = "cidls.commercial_delivery.cli:main"
+cidls-compute-use = "cidls.compute_use.cli:main"
+cidls-qwen-control = "cidls.agentic_control.cli:main"
+
+[build-system]
+requires = ["setuptools>=75.8.0"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra -p no:cacheprovider"
+markers = [
+  "gui: requires interactive Windows desktop session",
+  "browser: requires local Edge or Chrome browser",
+  "e2e: end-to-end tests requiring Playwright and web server",
+  "winocr: requires winocr package and Windows 10+",
+]

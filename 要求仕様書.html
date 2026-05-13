@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CIDLS 要求仕様書 CIDLS-SPEC-001 v1.0.0</title>
+<style>
+:root {
+  --bg:      #1a1a2e;
+  --panel:   #16213e;
+  --accent:  #6366f1;
+  --accent2: #8b5cf6;
+  --success: #10b981;
+  --warn:    #f59e0b;
+  --danger:  #ef4444;
+  --cyan:    #06b6d4;
+  --text:    #e2e8f0;
+  --muted:   #94a3b8;
+  --border:  #334155;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+/* Header */
+.page-header {
+  background: var(--panel);
+  border-bottom: 3px solid var(--accent);
+  padding: 20px 40px;
+}
+.page-header h1 { font-size: 1.35rem; font-weight: 800; color: var(--accent); }
+.page-header .meta { font-size: 0.78rem; color: var(--muted); margin-top: 4px; }
+
+/* Nav tabs */
+.nav-tabs {
+  display: flex; gap: 0; background: var(--panel);
+  border-bottom: 1px solid var(--border); padding: 0 40px; overflow-x: auto;
+}
+.tab-btn {
+  padding: 10px 18px; font-size: 0.82rem; font-weight: 600;
+  color: var(--muted); background: transparent; border: none;
+  border-bottom: 3px solid transparent; cursor: pointer; white-space: nowrap;
+  transition: color .2s;
+}
+.tab-btn:hover { color: var(--text); }
+.tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+/* Content */
+.content { max-width: 1100px; margin: 0 auto; padding: 32px 40px; }
+.section { display: none; }
+.section.active { display: block; }
+
+/* Section titles */
+h2 { font-size: 1.1rem; font-weight: 700; color: var(--accent); margin-bottom: 16px;
+     padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+h3 { font-size: 0.95rem; font-weight: 700; color: var(--accent2); margin: 20px 0 10px; }
+
+/* Tables */
+.spec-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; margin-bottom: 24px; }
+.spec-table th {
+  background: #1e293b; color: var(--muted); padding: 9px 14px;
+  text-align: left; border: 1px solid var(--border); font-weight: 600;
+}
+.spec-table td {
+  padding: 9px 14px; border: 1px solid var(--border);
+  color: var(--text); vertical-align: top;
+}
+.spec-table tr:hover td { background: rgba(99,102,241,.05); }
+
+/* Badges */
+.badge {
+  display: inline-block; padding: 2px 8px; border-radius: 4px;
+  font-size: 0.72rem; font-weight: 600;
+}
+.badge-must    { background: rgba(239,68,68,.2);  color: #fca5a5; }
+.badge-should  { background: rgba(245,158,11,.2); color: #fcd34d; }
+.badge-could   { background: rgba(16,185,129,.2); color: #6ee7b7; }
+.badge-done    { background: rgba(16,185,129,.2); color: #6ee7b7; }
+.badge-todo    { background: rgba(99,102,241,.2); color: #a5b4fc; }
+.badge-p1      { background: rgba(239,68,68,.2);  color: #fca5a5; }
+.badge-p2      { background: rgba(245,158,11,.2); color: #fcd34d; }
+.badge-p3      { background: rgba(148,163,184,.2);color: #94a3b8; }
+
+/* Info blocks */
+.info-block {
+  background: var(--panel); border: 1px solid var(--border);
+  border-radius: 8px; padding: 16px 20px; margin-bottom: 20px;
+}
+.info-block p { font-size: 0.84rem; color: var(--muted); line-height: 1.7; margin-bottom: 6px; }
+.info-block strong { color: var(--text); }
+
+/* Traceability matrix */
+.trace-matrix { width: 100%; border-collapse: collapse; font-size: 0.75rem; }
+.trace-matrix th, .trace-matrix td {
+  border: 1px solid var(--border); padding: 6px 10px; text-align: center;
+}
+.trace-matrix th { background: #1e293b; color: var(--muted); font-weight: 600; }
+.trace-matrix .chk { color: var(--success); font-weight: 700; }
+
+/* Footer */
+.page-footer {
+  text-align: center; padding: 24px; font-size: 0.75rem; color: var(--muted);
+  border-top: 1px solid var(--border); margin-top: 40px;
+}
+</style>
+<style>
+
+.diagram-section { background: var(--panel,#16213e); border: 1px solid var(--border,#334155); border-radius: 10px; padding: 24px; margin-bottom: 20px; }
+.diagram-section h2 { font-size: 1.0rem; color: var(--accent,#6366f1); margin-bottom: 16px; border-bottom: 1px solid var(--border,#334155); padding-bottom: 8px; }
+.diagram-section h3 { font-size: 0.9rem; color: var(--cyan,#06b6d4); margin: 16px 0 10px; }
+.mermaid-wrap { background: #0d1527; border-radius: 8px; padding: 20px; overflow-x: auto; margin-bottom: 16px; }
+.mermaid-wrap .mermaid { max-width: 100%; }
+
+</style>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<script>mermaid.initialize({startOnLoad:true,theme:"dark",themeVariables:{primaryColor:"#1a2040",primaryTextColor:"#e2e8f0",primaryBorderColor:"#6366f1",lineColor:"#6366f1",secondaryColor:"#16213e",tertiaryColor:"#0f1535"}});</script>
+</head>
+<body>
+
+<div class="page-header">
+  <h1>CIDLS 要求仕様書</h1>
+  <div class="meta">
+    文書ID: CIDLS-SPEC-001 &nbsp;|&nbsp; バージョン: v1.0.0 &nbsp;|&nbsp;
+    作成日: 2026-05-12 &nbsp;|&nbsp; 根拠: AGENTS.md [CF.7][PH.1][CS.6] / 共通フレーム2007 &nbsp;|&nbsp;
+    上位文書: <a href="要求定義書.html" style="color:var(--accent)">要求定義書 CIDLS-REQ-001</a>
+  </div>
+</div>
+
+<nav class="nav-tabs">
+  <button class="tab-btn active" onclick="showTab('overview',this)">概要</button>
+  <button class="tab-btn" onclick="showTab('func-spec',this)">機能仕様</button>
+  <button class="tab-btn" onclick="showTab('if-spec',this)">IF仕様</button>
+  <button class="tab-btn" onclick="showTab('data-spec',this)">データ仕様</button>
+  <button class="tab-btn" onclick="showTab('nonfunc',this)">非機能仕様</button>
+  <button class="tab-btn" onclick="showTab('acceptance',this)">受入基準</button>
+  <button class="tab-btn" onclick="showTab('trace',this)">トレーサビリティ</button>
+    <button class="tab-btn" onclick="showTab(this,'diagram')">フロー図</button>
+</nav>
+
+<div class="content">
+
+  <!-- ===== 概要 ===== -->
+  <div id="tab-overview" class="section active">
+    <h2>1. 概要</h2>
+    <div class="info-block">
+      <p><strong>目的:</strong> 本文書は CIDLS (CI/DL System) の要求定義書 (CIDLS-REQ-001) に基づき、
+      システムが実現すべき機能・非機能・インターフェース・データ仕様を詳細化し、開発・テスト・受入れの
+      判断基準を確定する。</p>
+      <p><strong>適用範囲:</strong> CIDLSパイプライン全体 (コンセプト入力→アプリ/ドキュメント生成→日次自律進化ループ)</p>
+      <p><strong>読者:</strong> 開発者・品質保証・運用担当・発注者</p>
+    </div>
+
+    <h3>1.1 ドキュメント関連情報</h3>
+    <table class="spec-table">
+      <thead><tr><th>項目</th><th>内容</th></tr></thead>
+      <tbody>
+        <tr><td>文書ID</td><td>CIDLS-SPEC-001</td></tr>
+        <tr><td>バージョン</td><td>v1.0.0</td></tr>
+        <tr><td>上位文書</td><td>要求定義書 CIDLS-REQ-001 v1.0.0</td></tr>
+        <tr><td>作成日</td><td>2026-05-12</td></tr>
+        <tr><td>準拠フレームワーク</td><td>共通フレーム2007 (SLCP-JCF2007) / AGENTS.md [CF][PH][CS]</td></tr>
+        <tr><td>技術スタック</td><td>Python 3.11 / uv / DuckDB / Parquet / PowerShell / Windows 10/11</td></tr>
+        <tr><td>エンコーディング</td><td>UTF-8 (バッチのみ Shift-JIS / cp932)</td></tr>
+        <tr><td>パッケージ管理</td><td>uv 専用 (pip 禁止)</td></tr>
+      </tbody>
+    </table>
+
+    <h3>1.2 システム全体構成 (6ステップパイプライン)</h3>
+    <table class="spec-table">
+      <thead><tr><th>Step</th><th>処理名</th><th>入力</th><th>出力</th><th>自動化</th></tr></thead>
+      <tbody>
+        <tr><td>1</td><td>コンセプト入力</td><td>自然語・画像・注文票</td><td>注文票7要素フォーマット</td><td>-</td></tr>
+        <tr><td>2</td><td>パイプラインイメージ生成</td><td>注文票</td><td>CAPDkAフロー設計</td><td>AGENTS.md [SUPRA.2]</td></tr>
+        <tr><td>3</td><td>アプリ/ドキュメント生成</td><td>CAPDkAフロー</td><td>HTML成果物群</td><td>generate_*.py</td></tr>
+        <tr><td>4</td><td>SaaS/exe出力</td><td>HTML成果物</td><td>配布形式</td><td>[DISTSEC]準拠</td></tr>
+        <tr><td>5</td><td>納品文書一式</td><td>成果物群</td><td>Excel / PDF</td><td>generate_commercial_delivery_pack.py</td></tr>
+        <tr><td>6</td><td>自律進化保守ループ</td><td>全成果物</td><td>改善版成果物</td><td>日次 11:00 Task Scheduler</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ===== 機能仕様 ===== -->
+  <div id="tab-func-spec" class="section">
+    <h2>2. 機能仕様</h2>
+
+    <h3>2.1 コア機能仕様</h3>
+    <table class="spec-table">
+      <thead>
+        <tr><th>機能ID</th><th>機能名</th><th>MoSCoW</th><th>入力</th><th>処理</th><th>出力</th><th>完了判定</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>FS-001</td><td>CAPDkAサイクル実行</td>
+          <td><span class="badge badge-must">Must</span></td>
+          <td>ユーザー指示・自然語</td>
+          <td>C→A→D→kA 永久循環。Why×5根本原因特定。</td>
+          <td>成果物群+kanban更新</td>
+          <td>kanban.DoneカードにCAPDkA記録あり</td>
+        </tr>
+        <tr>
+          <td>FS-002</td><td>DA表自動更新</td>
+          <td><span class="badge badge-must">Must</span></td>
+          <td>サイクル完了イベント</td>
+          <td>generate_graph_project_mindmap.py 実行 (--add-entry)</td>
+          <td>graph_project_mindmap.html 更新</td>
+          <td>DA-NNN エントリが自動追加される</td>
+        </tr>
+        <tr>
+          <td>FS-003</td><td>overview自動更新</td>
+          <td><span class="badge badge-must">Must</span></td>
+          <td>バージョンアップイベント</td>
+          <td>generate_cidls_platform_overview.py --bump-patch</td>
+          <td>cidls_platform_overview.html (両パス) 更新</td>
+          <td>schema vX.Y.Z が自動インクリメント</td>
+        </tr>
+        <tr>
+          <td>FS-004</td><td>Excel納品パック生成</td>
+          <td><span class="badge badge-must">Must</span></td>
+          <td>日次ループ完了イベント</td>
+          <td>generate_commercial_delivery_pack.py 実行</td>
+          <td>reports/commercial_delivery/商用請負納品文書パック_YYYY-MM-DD.xlsx</td>
+          <td>Excel 4シート生成・成果物ステータス反映</td>
+        </tr>
+        <tr>
+          <td>FS-005</td><td>日次自律進化ループ</td>
+          <td><span class="badge badge-must">Must</span></td>
+          <td>毎日 11:00 (Task Scheduler)</td>
+          <td>run_daily_self_evolution.ps1 → agent モード → 成果物更新</td>
+          <td>logs/daily_self_evolution/*.log + 成果物更新</td>
+          <td>LastResult=0 / 成果物全件 [OK]</td>
+        </tr>
+        <tr>
+          <td>FS-006</td><td>devrag RAG 検索</td>
+          <td><span class="badge badge-must">Must</span></td>
+          <td>検索クエリ (日本語)</td>
+          <td>devrag.exe search --config devrag-config.json</td>
+          <td>AGENTS.md ルール・禁止事項のセマンティック検索結果</td>
+          <td>ExitCode=0 / 類似度 0.8 以上 5件</td>
+        </tr>
+        <tr>
+          <td>FS-007</td><td>SW納品ドキュメント生成</td>
+          <td><span class="badge badge-should">Should</span></td>
+          <td>40_00_kihonsekkei/ XLS テンプレート</td>
+          <td>テンプレート参照 → HTML化</td>
+          <td>13種 *.html ドキュメント</td>
+          <td>13種全ファイル存在 / 共通フレーム2007準拠</td>
+        </tr>
+        <tr>
+          <td>FS-008</td><td>カンバンボード管理</td>
+          <td><span class="badge badge-must">Must</span></td>
+          <td>タスク追加・更新指示</td>
+          <td>project_kanban.html 直接編集 / MO必須出力</td>
+          <td>project_kanban.html 更新</td>
+          <td>Done移行条件=客観データ+第三者確認</td>
+        </tr>
+        <tr>
+          <td>FS-009</td><td>STORY.html 更新</td>
+          <td><span class="badge badge-should">Should</span></td>
+          <td>業務フロー変更イベント</td>
+          <td>6登場人物(USER/DEVICE/APP/SERVER/STRIPE/OWNER)の業務ストーリー更新</td>
+          <td>STORY.html v*.*.* 更新</td>
+          <td>登場人物6名存在 / 決済フロー確認可能</td>
+        </tr>
+        <tr>
+          <td>FS-010</td><td>コンセプトスライド提供</td>
+          <td><span class="badge badge-should">Should</span></td>
+          <td>販売LP・MTG用途</td>
+          <td>[SLIDE]準拠 SPA HTML (7枚)</td>
+          <td>コンセプトスライド.html</td>
+          <td>キーボード操作・印刷CSS・7枚完備</td>
+        </tr>
+        <tr>
+          <td>FS-011</td><td>index.html クイックアクセス</td>
+          <td><span class="badge badge-should">Should</span></td>
+          <td>利用者のブラウザアクセス</td>
+          <td>全成果物へのリンクを1画面に集約</td>
+          <td>index.html 更新 (クイックアクセスカード)</td>
+          <td>全主要成果物へ 1クリックで到達</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ===== IF仕様 ===== -->
+  <div id="tab-if-spec" class="section">
+    <h2>3. インターフェース仕様</h2>
+
+    <h3>3.1 外部インターフェース</h3>
+    <table class="spec-table">
+      <thead><tr><th>IF-ID</th><th>名称</th><th>方向</th><th>種別</th><th>形式</th><th>認証</th><th>備考</th></tr></thead>
+      <tbody>
+        <tr><td>IF-001</td><td>devrag MCP</td><td>OUT/IN</td><td>プロセス間(stdio)</td><td>JSON</td><td>なし(ローカル)</td><td>ExitCode=0 確認必須</td></tr>
+        <tr><td>IF-002</td><td>VS Code Copilot Chat</td><td>IN</td><td>チャット UI</td><td>自然語・Markdown</td><td>GitHub アカウント</td><td>agent モード使用</td></tr>
+        <tr><td>IF-003</td><td>Windows Task Scheduler</td><td>OUT</td><td>OS スケジューラ</td><td>cmd/ps1</td><td>Windowsユーザー権限</td><td>11:00 日次実行</td></tr>
+        <tr><td>IF-004</td><td>ブラウザ (HTML成果物)</td><td>IN</td><td>HTTP(file://)</td><td>HTML/CSS/JS</td><td>なし</td><td>オフライン動作</td></tr>
+        <tr><td>IF-005</td><td>openpyxl (Excel出力)</td><td>OUT</td><td>Python ライブラリ</td><td>.xlsx</td><td>なし</td><td>uv管理</td></tr>
+        <tr><td>IF-006</td><td>40_00_kihonsekkei XLS</td><td>IN</td><td>参照ファイル</td><td>.xls</td><td>なし</td><td>40年来の設計書テンプレート</td></tr>
+      </tbody>
+    </table>
+
+    <h3>3.2 ファイルインターフェース</h3>
+    <table class="spec-table">
+      <thead><tr><th>ファイル名</th><th>種別</th><th>エンコード</th><th>更新トリガー</th><th>SoT</th></tr></thead>
+      <tbody>
+        <tr><td>project_kanban.html</td><td>HTML (SoT統合ハブ)</td><td>UTF-8</td><td>タスク変更時</td><td>YES</td></tr>
+        <tr><td>graph_project_mindmap.html</td><td>HTML (D3.js)</td><td>UTF-8</td><td>DA表エントリ追加時</td><td>NO</td></tr>
+        <tr><td>cidls_platform_overview.html</td><td>HTML</td><td>UTF-8</td><td>バージョンアップ時</td><td>NO</td></tr>
+        <tr><td>STORY.html</td><td>HTML</td><td>UTF-8</td><td>業務フロー変更時</td><td>NO</td></tr>
+        <tr><td>devrag-config.json</td><td>JSON</td><td>UTF-8</td><td>インデックス対象追加時</td><td>YES</td></tr>
+        <tr><td>logs/daily_self_evolution/*.log</td><td>テキスト</td><td>UTF-8</td><td>日次実行時</td><td>NO</td></tr>
+        <tr><td>reports/commercial_delivery/*.xlsx</td><td>Excel</td><td>バイナリ</td><td>日次ループ完了時</td><td>NO</td></tr>
+        <tr><td>scripts/*.ps1 / *.py</td><td>スクリプト</td><td>UTF-8</td><td>機能追加時</td><td>YES</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ===== データ仕様 ===== -->
+  <div id="tab-data-spec" class="section">
+    <h2>4. データ仕様</h2>
+
+    <h3>4.1 DA表エントリ構造</h3>
+    <div class="info-block">
+      <p>DA表 (診断分析表) は graph_project_mindmap.html の HTML テーブルとして管理される。
+      1行 = 1件のアセスメント観測事項。</p>
+    </div>
+    <table class="spec-table">
+      <thead><tr><th>フィールド</th><th>型</th><th>説明</th><th>例</th></tr></thead>
+      <tbody>
+        <tr><td>DA-ID</td><td>string</td><td>連番ID (DA-001〜)</td><td>DA-012</td></tr>
+        <tr><td>分類</td><td>enum F/A/U</td><td>事実(F) / 想定(A) / 未知(U)</td><td>F</td></tr>
+        <tr><td>軸</td><td>string</td><td>[CS.2]5軸のいずれか</td><td>軸1 機能維持</td></tr>
+        <tr><td>内容</td><td>text</td><td>[DONE/TODO/BLOCKED YYYY-MM-DD] 詳細説明</td><td>[DONE 2026-05-12] ...</td></tr>
+        <tr><td>出典/根拠</td><td>string</td><td>ファイル名・コマンド・スクリプト名</td><td>CAPDkAサイクル実行 2026-05-12 第8回</td></tr>
+        <tr><td>優先度</td><td>enum P1/P2/P3</td><td>P1=緊急 P2=重要 P3=中期</td><td>P1</td></tr>
+      </tbody>
+    </table>
+
+    <h3>4.2 成果物マスターデータ構造</h3>
+    <table class="spec-table">
+      <thead><tr><th>フィールド</th><th>型</th><th>制約</th></tr></thead>
+      <tbody>
+        <tr><td>ファイル名</td><td>string</td><td>日本語可 / .html / 重複禁止</td></tr>
+        <tr><td>カテゴリ</td><td>enum</td><td>CIDLSコア / SW納品 / スクリプト</td></tr>
+        <tr><td>バージョン</td><td>semver</td><td>vX.Y.Z 形式</td></tr>
+        <tr><td>ステータス</td><td>enum</td><td>DONE / TODO / BLOCKED / IN_PROGRESS</td></tr>
+        <tr><td>優先度</td><td>enum</td><td>P1 / P2 / P3</td></tr>
+        <tr><td>生成日</td><td>date</td><td>YYYY-MM-DD 形式</td></tr>
+      </tbody>
+    </table>
+
+    <h3>4.3 DuckDB / Parquet データ規約</h3>
+    <div class="info-block">
+      <p>将来的にDuckDB/Parquetを使用するデータパイプラインを構築する場合の規約を定める。</p>
+    </div>
+    <table class="spec-table">
+      <thead><tr><th>規約項目</th><th>内容</th></tr></thead>
+      <tbody>
+        <tr><td>DB パス</td><td><code>Path(os.environ.get("DB_PATH", "data/local.duckdb"))</code></td></tr>
+        <tr><td>ファイル形式</td><td>Parquet (snappy圧縮) / 目標圧縮率 ≥30%削減</td></tr>
+        <tr><td>スキーマバージョン</td><td>schema_version / exported_at / record_count を必ず付加</td></tr>
+        <tr><td>round-trip</td><td>export → import → 同一結果 (自動テスト必須)</td></tr>
+        <tr><td>NULL許可</td><td>import前にサーバーサイドで検証必須 (クライアント申告禁止)</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ===== 非機能仕様 ===== -->
+  <div id="tab-nonfunc" class="section">
+    <h2>5. 非機能仕様</h2>
+
+    <h3>5.1 パフォーマンス</h3>
+    <table class="spec-table">
+      <thead><tr><th>指標</th><th>目標値</th><th>計測方法</th></tr></thead>
+      <tbody>
+        <tr><td>UI応答時間</td><td>≤1秒</td><td>ブラウザ DevTools</td></tr>
+        <tr><td>generate_*.py 実行時間</td><td>≤30秒</td><td>Measure-Command</td></tr>
+        <tr><td>devrag 検索応答</td><td>≤3秒</td><td>コマンド実行時間</td></tr>
+        <tr><td>Excel生成時間</td><td>≤10秒</td><td>Measure-Command</td></tr>
+        <tr><td>日次ループ全体</td><td>≤30分</td><td>log ファイルのタイムスタンプ差分</td></tr>
+      </tbody>
+    </table>
+
+    <h3>5.2 セキュリティ (AGENTS.md [SEC] / OWASP Top 10)</h3>
+    <table class="spec-table">
+      <thead><tr><th>区分</th><th>要件</th><th>実装箇所</th></tr></thead>
+      <tbody>
+        <tr><td>[SEC.BILLING_ENFORCE]</td><td>課金はサーバーサイドのみで決定</td><td>将来 Stripe 統合時に適用</td></tr>
+        <tr><td>[SEC.PII_AUTH_GATE]</td><td>未認証状態でPII返却禁止</td><td>将来 Web公開時に適用</td></tr>
+        <tr><td>[DISTSEC.2]</td><td>Secret を配布物・public・HTML に含めない</td><td>.gitignore / 配布ZIP確認</td></tr>
+        <tr><td>絵文字禁止</td><td>Unicode絵文字は cp932 エラーの原因 → 禁止</td><td>全 .py / .ps1 / .bat</td></tr>
+        <tr><td>pip 禁止</td><td>uv 専用。pip コマンドは使用禁止</td><td>全 Python スクリプト</td></tr>
+        <tr><td>入力検証</td><td>コマンドライン引数はargparseで型・必須を強制</td><td>generate_*.py</td></tr>
+      </tbody>
+    </table>
+
+    <h3>5.3 信頼性・運用性</h3>
+    <table class="spec-table">
+      <thead><tr><th>指標</th><th>目標値</th></tr></thead>
+      <tbody>
+        <tr><td>日次ループ成功率</td><td>≥95% (月次 30回中 29回以上 LastResult=0)</td></tr>
+        <tr><td>TDD カバレッジ</td><td>ユニット ≥90% / 統合=全 API/スクリプト</td></tr>
+        <tr><td>WCAG 2.1 AA 準拠</td><td>全 HTML 成果物のコントラスト比 ≥4.5:1</td></tr>
+        <tr><td>ロールバック</td><td>AGENTS.md [DIFF] 差分記録 + git commit で復元可能</td></tr>
+        <tr><td>ドキュメント 13 種</td><td>引き継ぎ資料として第三者が 1 時間以内に運用開始できる</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ===== 受入基準 ===== -->
+  <div id="tab-acceptance" class="section">
+    <h2>6. 受入基準 (Given-When-Then)</h2>
+
+    <h3>6.1 コア機能受入基準</h3>
+    <table class="spec-table">
+      <thead><tr><th>TS-ID</th><th>対象機能</th><th>Given</th><th>When</th><th>Then</th><th>結果</th></tr></thead>
+      <tbody>
+        <tr>
+          <td>TS-001</td><td>DA表自動更新</td>
+          <td>graph_project_mindmap.html が存在する</td>
+          <td>generate_graph_project_mindmap.py --add-entry --summary "テスト" を実行</td>
+          <td>新DA-NNNエントリが追加され ExitCode=0</td>
+          <td>-</td>
+        </tr>
+        <tr>
+          <td>TS-002</td><td>overview自動更新</td>
+          <td>cidls_platform_overview.html が存在する</td>
+          <td>generate_cidls_platform_overview.py --bump-patch を実行</td>
+          <td>schema vX.Y.Z が +1 / reports/ にも同報</td>
+          <td>-</td>
+        </tr>
+        <tr>
+          <td>TS-003</td><td>Excel納品パック生成</td>
+          <td>D:\CIDLS\reports\commercial_delivery\ が存在する</td>
+          <td>generate_commercial_delivery_pack.py を実行</td>
+          <td>商用請負納品文書パック_YYYY-MM-DD.xlsx が生成 / 4シート存在</td>
+          <td>PASS (2026-05-12)</td>
+        </tr>
+        <tr>
+          <td>TS-004</td><td>devrag 検索</td>
+          <td>devrag.exe が %LOCALAPPDATA%\devrag\ に存在</td>
+          <td>devrag search "フォールバック禁止" --config devrag-config.json を実行</td>
+          <td>ExitCode=0 / 類似度 0.8+ の結果 ≥1 件</td>
+          <td>PASS (ExitCode=0 確認済)</td>
+        </tr>
+        <tr>
+          <td>TS-005</td><td>日次ループ実行</td>
+          <td>Task Scheduler に CIDLS_Daily_Self_Evolution_1100 が登録済み</td>
+          <td>翌日 11:00 を迎える</td>
+          <td>LastResult=0 / logs/daily_self_evolution/ にログ生成</td>
+          <td>PASS (2026-05-11 実行確認)</td>
+        </tr>
+        <tr>
+          <td>TS-006</td><td>成果物全件存在</td>
+          <td>D:\CIDLS ルート</td>
+          <td>generate_cidls_platform_overview.py --show-summary を実行</td>
+          <td>全成果物が [OK] 表示</td>
+          <td>PASS (全6件[OK]確認済)</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ===== トレーサビリティ ===== -->
+  <div id="tab-trace" class="section">
+    <h2>7. トレーサビリティマトリクス</h2>
+
+    <h3>7.1 要求→仕様 対応表</h3>
+    <table class="spec-table">
+      <thead>
+        <tr>
+          <th>要求ID (REQ)</th><th>要求概要</th>
+          <th>仕様ID (FS)</th><th>受入TS-ID</th><th>完了</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>FR-001</td><td>CAPDkAサイクル実行</td><td>FS-001</td><td>-</td><td><span class="badge badge-done">DONE</span></td></tr>
+        <tr><td>FR-002</td><td>DA表自動更新</td><td>FS-002</td><td>TS-001</td><td><span class="badge badge-done">DONE</span></td></tr>
+        <tr><td>FR-003</td><td>overview自動更新</td><td>FS-003</td><td>TS-002</td><td><span class="badge badge-done">DONE</span></td></tr>
+        <tr><td>FR-004</td><td>Excel納品パック生成</td><td>FS-004</td><td>TS-003</td><td><span class="badge badge-done">DONE</span></td></tr>
+        <tr><td>FR-005</td><td>日次自律進化ループ</td><td>FS-005</td><td>TS-005</td><td><span class="badge badge-done">DONE</span></td></tr>
+        <tr><td>FR-006</td><td>devrag RAG検索</td><td>FS-006</td><td>TS-004</td><td><span class="badge badge-done">DONE</span></td></tr>
+        <tr><td>FR-007</td><td>SW納品ドキュメント13種</td><td>FS-007</td><td>-</td><td><span class="badge badge-todo">TODO (2/13)</span></td></tr>
+        <tr><td>FR-008</td><td>カンバンボード管理</td><td>FS-008</td><td>-</td><td><span class="badge badge-done">DONE</span></td></tr>
+        <tr><td>FR-009</td><td>STORY.html</td><td>FS-009</td><td>-</td><td><span class="badge badge-done">DONE v2.3.0</span></td></tr>
+        <tr><td>FR-010</td><td>コンセプトスライド</td><td>FS-010</td><td>-</td><td><span class="badge badge-done">DONE</span></td></tr>
+        <tr><td>FR-011</td><td>index.html クイックアクセス</td><td>FS-011</td><td>-</td><td><span class="badge badge-todo">TODO</span></td></tr>
+      </tbody>
+    </table>
+
+    <h3>7.2 次優先アクション</h3>
+    <div class="info-block">
+      <p><strong>P1: generate_*.py 日次ループ統合</strong><br>
+      run_daily_self_evolution.ps1 に generate_graph_project_mindmap.py / generate_cidls_platform_overview.py / generate_commercial_delivery_pack.py の呼び出しを追加する。</p>
+      <p><strong>P2: 要求仕様書.html 本文書の受入テスト実施</strong><br>
+      TS-001〜TS-006 を全件実行し「結果」列を PASS / FAIL で埋める。</p>
+      <p><strong>P2: システム要件定義書.html 作成</strong><br>
+      40_00_kihonsekkei/ テンプレート(システム構成図・機能一覧)を参照して作成する。</p>
+      <p><strong>P3: index.html クイックアクセスカード追加 (FR-011)</strong><br>
+      全主要成果物へ 1クリックで到達できるカードリンクをダッシュボードに追加する。</p>
+    </div>
+  </div>
+
+</div><!-- /content -->
+
+<div class="page-footer">
+  CIDLS 要求仕様書 CIDLS-SPEC-001 v1.0.0 &nbsp;|&nbsp;
+  上位文書: <a href="要求定義書.html" style="color:var(--accent)">要求定義書 CIDLS-REQ-001</a> &nbsp;|&nbsp;
+  Generated: 2026-05-12 (第8回 CAPDkAサイクル) &nbsp;|&nbsp;
+  AGENTS.md [CF.7][PH.1][CS.6][CIDLS]準拠
+</div>
+
+<script>
+function showTab(id, btn) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + id).classList.add('active');
+  btn.classList.add('active');
+}
+</script>
+
+</body>
+</html>

@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CIDLS Commercial OCR Validation Console</title>
+  <style>
+    :root {
+      --bg: #0d1526;
+      --bg-2: #101d34;
+      --bg-3: #0b1220;
+      --panel: rgba(255, 255, 255, 0.05);
+      --line: rgba(255, 255, 255, 0.1);
+      --text: #eef4ff;
+      --muted: #b7c5db;
+      --mint: #8ff7bf;
+      --mint-soft: rgba(143, 247, 191, 0.16);
+      --blue: #9fd2ff;
+      --blue-soft: rgba(159, 210, 255, 0.16);
+      --gold: #ffd977;
+      --gold-soft: rgba(255, 217, 119, 0.14);
+      --rose: #ff8ca1;
+      --rose-soft: rgba(255, 140, 161, 0.14);
+      --shadow: 0 18px 38px rgba(0, 0, 0, 0.28);
+      --radius: 18px;
+      font-family: "Segoe UI", "Yu Gothic UI", "Meiryo", sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top left, rgba(143, 247, 191, 0.08), transparent 24%),
+        radial-gradient(circle at top right, rgba(159, 210, 255, 0.08), transparent 24%),
+        linear-gradient(180deg, var(--bg) 0%, var(--bg-2) 44%, var(--bg-3) 100%);
+    }
+
+    .shell {
+      width: min(1560px, calc(100vw - 28px));
+      margin: 0 auto;
+      padding: 18px 0 24px;
+      display: grid;
+      gap: 14px;
+    }
+
+    .hero, .workspace, .sidebar-card, .command-bar {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(6px);
+    }
+
+    .hero {
+      padding: 20px 22px 18px;
+      display: grid;
+      gap: 14px;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: var(--mint-soft);
+      color: var(--mint);
+      font-size: 0.76rem;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    h1, h2, h3, h4, p { margin: 0; }
+    h1 { font-size: clamp(2rem, 3vw, 3.2rem); letter-spacing: -0.03em; }
+    .subtitle {
+      max-width: 1120px;
+      color: var(--muted);
+      line-height: 1.7;
+      font-size: 0.98rem;
+    }
+
+    .hero-grid, .layout, .scene-board {
+      display: grid;
+      gap: 14px;
+    }
+
+    .hero-grid { grid-template-columns: minmax(0, 1.5fr) minmax(360px, 0.95fr); }
+    .layout { grid-template-columns: minmax(0, 1fr) 390px; align-items: start; }
+    .scene-board { grid-template-columns: minmax(0, 1.25fr) minmax(320px, 0.8fr); }
+
+    .metric-grid, .pipeline-grid, .card-grid, .label-grid {
+      display: grid;
+      gap: 10px;
+    }
+    .metric-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    .pipeline-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .card-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .label-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+
+    .metric, .hero-notes, .pipeline-card, .panel, table, .label-grid, .card-grid > article, .status-item {
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: rgba(255, 255, 255, 0.04);
+    }
+
+    .metric, .pipeline-card, .panel, .card-grid > article, .status-item { padding: 14px; }
+    .hero-notes, .label-grid { padding: 14px 16px; }
+
+    .metric span, .pipeline-card .step, .panel-title, .label, .chip-key {
+      color: var(--muted);
+      font-size: 0.72rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      font-weight: 800;
+    }
+
+    .metric strong { display: block; font-size: 1.35rem; line-height: 1.25; }
+    .hero-notes .title { color: var(--blue); font-size: 0.82rem; letter-spacing: 0.08em; text-transform: uppercase; font-weight: 800; }
+    .hero-notes ul, .pipeline-card ul, .sidebar-card ul {
+      margin: 0;
+      padding-left: 18px;
+      color: var(--muted);
+      line-height: 1.62;
+      font-size: 0.83rem;
+    }
+
+    .toolbar, .status-line { display: flex; flex-wrap: wrap; gap: 8px; }
+    .toolbar button {
+      appearance: none;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      background: rgba(255, 255, 255, 0.06);
+      color: var(--text);
+      border-radius: 999px;
+      padding: 8px 12px;
+      cursor: pointer;
+      font-size: 0.82rem;
+      font-weight: 700;
+    }
+    .toolbar button.active {
+      background: var(--mint-soft);
+      border-color: rgba(143, 247, 191, 0.3);
+      color: var(--mint);
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--text);
+      font-size: 0.76rem;
+      font-weight: 700;
+    }
+    .mint { background: var(--mint-soft); color: var(--mint); }
+    .blue { background: var(--blue-soft); color: var(--blue); }
+    .gold { background: var(--gold-soft); color: var(--gold); }
+    .rose { background: var(--rose-soft); color: var(--rose); }
+
+    .command-bar {
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .mono { font-family: "Cascadia Mono", "Consolas", monospace; color: var(--blue); font-size: 0.84rem; }
+    .hint { color: var(--muted); font-size: 0.82rem; line-height: 1.6; }
+
+    .workspace {
+      padding: 14px;
+      display: grid;
+      gap: 12px;
+      min-height: 780px;
+    }
+    .stage-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 14px;
+      flex-wrap: wrap;
+    }
+    .stage-head .left { display: grid; gap: 8px; }
+
+    .pipeline-card strong { font-size: 1rem; line-height: 1.45; }
+    .pipeline-card p, .status-item p, .card-grid p {
+      color: var(--muted);
+      line-height: 1.65;
+      font-size: 0.84rem;
+    }
+
+    .stage {
+      min-height: 520px;
+      border-radius: 18px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      background:
+        radial-gradient(circle at top left, rgba(143, 247, 191, 0.07), transparent 22%),
+        radial-gradient(circle at top right, rgba(255, 217, 119, 0.06), transparent 18%),
+        linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.03));
+      padding: 18px;
+      display: grid;
+      gap: 18px;
+      align-content: start;
+    }
+
+    .field-row {
+      display: grid;
+      gap: 6px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .field-row:last-child { padding-bottom: 0; border-bottom: 0; }
+    .value { font-size: 1.28rem; line-height: 1.45; font-weight: 800; color: var(--text); }
+    .value.subtle { font-size: 1rem; color: var(--muted); font-weight: 600; }
+
+    table { width: 100%; border-collapse: collapse; overflow: hidden; }
+    th, td { padding: 13px 14px; border-bottom: 1px solid rgba(255, 255, 255, 0.08); text-align: left; vertical-align: top; }
+    th { color: var(--gold); font-size: 0.74rem; letter-spacing: 0.08em; text-transform: uppercase; font-weight: 800; background: rgba(255, 255, 255, 0.04); }
+    td { font-size: 1rem; line-height: 1.55; color: var(--text); }
+    tr:last-child td { border-bottom: 0; }
+
+    .card-grid > article { display: grid; gap: 10px; }
+    .card-grid h3 { color: var(--muted); font-size: 0.75rem; letter-spacing: 0.08em; text-transform: uppercase; }
+    .card-grid strong { font-size: 1.36rem; line-height: 1.35; }
+
+    .label-chip {
+      padding: 14px;
+      border-radius: 14px;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      display: grid;
+      gap: 8px;
+    }
+    .chip-value { font-size: 1.1rem; font-weight: 800; line-height: 1.45; }
+
+    .sidebar { display: grid; gap: 12px; }
+    .sidebar-card { padding: 14px; display: grid; gap: 10px; }
+    .status-stack { display: grid; gap: 8px; }
+    .status-item .top { display: flex; justify-content: space-between; gap: 8px; align-items: center; }
+    .status-item strong { font-size: 0.92rem; }
+    .kv {
+      display: grid;
+      grid-template-columns: 110px 1fr;
+      gap: 6px 10px;
+      font-size: 0.82rem;
+      line-height: 1.6;
+    }
+    .kv div:nth-child(odd) { color: var(--gold); font-weight: 700; }
+
+    @media (max-width: 1320px) {
+      .layout, .hero-grid, .scene-board { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 1024px) {
+      .metric-grid, .pipeline-grid, .card-grid, .label-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <section class="hero">
+      <div class="eyebrow">CIDLS Commercial OCR Validation Console</div>
+      <div>
+        <h1>商用 OCR / LLM / RPAInput 検証コンソール</h1>
+        <p class="subtitle">
+          OCR 対象を単なるサンプル表示ではなく、商用オペレーション画面として再構成した。
+          画面上で <strong>OCR 取得対象</strong>、<strong>LLM 抽出の完了条件</strong>、<strong>RPAInput 引き渡し条件</strong> を明示し、
+          scene と dataset を固定した再現性ある画面 TDD の土台にする。
+        </p>
+      </div>
+      <div class="hero-grid">
+        <div class="metric-grid" id="metrics"></div>
+        <div class="hero-notes">
+          <div class="title">Operator Contract</div>
+          <ul>
+            <li>scene と dataset を query 固定し、OCR の再現条件を揃える。</li>
+            <li>LLM 抽出状態を UI 上に明示し、通過条件を人間が一目で判定できるようにする。</li>
+            <li>商用向けの稟議・請求・顧客・SLA 文脈を使い、現実運用の目線で OCR 誤読を検証する。</li>
+          </ul>
+        </div>
+      </div>
+      <div class="toolbar" id="sceneToolbar"></div>
+      <div class="toolbar" id="datasetToolbar"></div>
+    </section>
+
+    <section class="command-bar">
+      <div class="mono" id="sceneMarker">scene=form / dataset=ja</div>
+      <div class="hint" id="commandHint"></div>
+    </section>
+
+    <div class="layout">
+      <section class="workspace">
+        <div class="stage-head">
+          <div class="left">
+            <h2 id="stageTitle">Commercial Scene</h2>
+            <p class="subtitle" id="stageSubtitle"></p>
+            <div class="status-line" id="statusLine"></div>
+          </div>
+          <div class="badge blue">Business-grade OCR target</div>
+        </div>
+        <div class="pipeline-grid" id="pipelineGrid"></div>
+        <div class="stage" id="stage"></div>
+      </section>
+
+      <aside class="sidebar">
+        <section class="sidebar-card">
+          <h3 class="panel-title">Pipeline Status</h3>
+          <div class="status-stack" id="pipelineStatus"></div>
+        </section>
+        <section class="sidebar-card">
+          <h3 class="panel-title">LLM Evidence Contract</h3>
+          <div class="kv" id="llmContract"></div>
+        </section>
+        <section class="sidebar-card">
+          <h3 class="panel-title">Commercial Review Notes</h3>
+          <ul id="reviewNotes"></ul>
+        </section>
+        <section class="sidebar-card">
+          <h3 class="panel-title">Handoff Target</h3>
+          <div class="kv" id="handoffTarget"></div>
+        </section>
+      </aside>
+    </div>
+  </div>
+  <script>
+    const SCENES = {
+      form: { label: "Approval Form" },
+      table: { label: "Operations Table" },
+      cards: { label: "Executive Cards" },
+      labels: { label: "Control Labels" }
+    };
+
+    const DATASETS = {
+      ja: {
+        title: "稟議・請求オペレーション画面",
+        subtitle: "日本語主体の商用入力を対象に、OCR と LLM 抽出が通るかを確認する。",
+        commandHint: "OCR -> LLM extraction -> RPAInput handoff の順で pass/fail を判定する。",
+        metrics: [["Expected fields", "12"], ["LLM decision", "PASS"], ["Operator action", "Approve"], ["Evidence ID", "OCR-JA-0417"]],
+        tags: [["Scene fixed", "scene=form"], ["Dataset fixed", "dataset=ja"], ["Language", "ja-JP"], ["Business class", "Approval / Billing"]],
+        pipeline: [
+          { step: "Step 1", title: "OCR Capture", status: "Ready", tone: "mint", summary: "画面上の稟議情報を Snipping Tool または fallback で取得する。", checks: ["主キーを含む", "金額と日付を含む", "担当者名を含む"] },
+          { step: "Step 2", title: "LLM Extraction", status: "Pass criteria visible", tone: "blue", summary: "LLM がどの key を抽出すべきかを UI 上で契約として見せる。", checks: ["申請番号", "取引先", "金額", "承認状態"] },
+          { step: "Step 3", title: "RPAInput Handoff", status: "Business-ready", tone: "gold", summary: "下流 RPA がそのまま使える構造化単位へ落とす。", checks: ["key_values", "rows", "evidence id", "review note"] }
+        ],
+        llm: {
+          state: "PASS",
+          confidence: "0.93 - expected range",
+          expectedKeys: "申請番号, 取引先, 金額, 承認状態, SLA",
+          reviewRule: "金額, 顧客コード, SLA の 3 点が抜けたら review",
+          operatorDecision: "Approve if all required keys exist",
+          downstream: "RPAInput / approval bot / audit log"
+        },
+        reviewNotes: [
+          "人名と部署が連続する行で改行崩れがないかを見る。",
+          "金額と税抜/税込表記の取り違えを確認する。",
+          "メールや電話番号が secure mode で mask される想定かを確認する。"
+        ],
+        handoff: [
+          ["Primary adapter", "Snipping Tool Text actions"],
+          ["Fallback", "PowerToys Text Extractor"],
+          ["Structured target", "cidls.rpainput.v1"],
+          ["Audit scope", "manifest / raw / structured / failure"]
+        ],
+        formPrimary: [
+          ["申請番号", "AP-2026-0417"],
+          ["取引先", "株式会社 CIDLS BizOps"],
+          ["請求先コード", "BIZ-00188-JP"],
+          ["承認者", "山田 花子 / 営業企画本部"],
+          ["契約金額", "¥128,000"],
+          ["SLA", "翌営業日 17:00 までに登録"]
+        ],
+        formSecondary: [
+          ["案件名", "OCR / LLM / RPAInput 商用検証"],
+          ["実行環境", "Windows 11 / Fixed Browser Layout / 125% scale target"],
+          ["LLM抽出状態", "PASS 判定条件を UI で明示"],
+          ["監査メモ", "証跡 ID と review 判定を同時に残す"]
+        ],
+        table: {
+          headers: ["項目", "値", "状態"],
+          rows: [
+            ["依頼区分", "契約更新", "進行中"],
+            ["締切", "2026-04-30", "期限前"],
+            ["担当", "田中 / y.tanaka@example.com", "要連絡"]
+          ]
+        },
+        cards: [
+          ["Revenue impact", "¥4.8M / quarter", "OCR 失敗は請求遅延へ直結する"],
+          ["LLM extraction", "5 required keys", "抜けた場合は review lane に送る"],
+          ["RPA handoff", "Audit-safe JSON", "証跡と実行 payload を分離保存する"]
+        ],
+        labels: [
+          ["郵便番号", "100-0001"],
+          ["電話番号", "03-1234-5678"],
+          ["メール", "cidls.test@example.com"],
+          ["ステータス", "確認待ち"]
+        ]
+      },
+      mixed: {
+        title: "Multi-lingual operations validation",
+        subtitle: "英数・日本語・記号混在の商用 OCR / LLM 抽出を検証する。",
+        commandHint: "英数コード、URL、部署名が同時に出る業務画面を想定する。",
+        metrics: [["Expected fields", "10"], ["LLM decision", "REVIEW"], ["Operator action", "Validate codes"], ["Evidence ID", "OCR-MIX-0417"]],
+        tags: [["Scene fixed", "scene=mixed"], ["Dataset fixed", "dataset=mixed"], ["Language", "ja-JP / en-US"], ["Business class", "Mixed Ops"]],
+        pipeline: [
+          { step: "Step 1", title: "OCR Capture", status: "Mixed text", tone: "mint", summary: "URL、コード、部署名、英数字が同時に認識されるかを見る。", checks: ["URL", "INV code", "locale tag"] },
+          { step: "Step 2", title: "LLM Extraction", status: "Review required", tone: "rose", summary: "業務コードと自然言語を分離できるかを確認する。", checks: ["owner", "ROI", "priority", "locale"] },
+          { step: "Step 3", title: "RPAInput Handoff", status: "Conditional", tone: "gold", summary: "コード誤読がある場合は review gate に止める。", checks: ["code checksum", "review note"] }
+        ],
+        llm: {
+          state: "REVIEW",
+          confidence: "0.78 - operator review required",
+          expectedKeys: "Project, Owner, ROI, Priority, Locale",
+          reviewRule: "Code or locale mismatch triggers review",
+          operatorDecision: "Hold if any symbol-heavy field is corrupted",
+          downstream: "RPAInput / ops triage"
+        },
+        reviewNotes: [
+          "URL とコードの区切りが OCR で連結していないかを見る。",
+          "ROI の % 記号と数値が分離されていないかを見る。",
+          "英数字コードを LLM が説明文として誤解釈していないかを見る。"
+        ],
+        handoff: [
+          ["Primary adapter", "Snipping Tool Text actions"],
+          ["Fallback", "PowerToys Text Extractor"],
+          ["Structured target", "rows + key_values"],
+          ["Audit scope", "review lane enabled"]
+        ],
+        formPrimary: [
+          ["Project", "CIDLS OCR Pipeline"],
+          ["Owner", "S. Shibusawa"],
+          ["ROI", "12.4%"],
+          ["Priority", "P1 / Blocker"],
+          ["Locale", "ja-JP / en-US"]
+        ],
+        formSecondary: [
+          ["Execution note", "Win11 Snipping Tool -> OCR -> LLM -> RPAInput"],
+          ["Ops URL", "https://localhost:8765/form"],
+          ["Approval code", "INV-88-AX"],
+          ["Review gate", "Symbol-heavy fields require operator check"]
+        ],
+        table: {
+          headers: ["Field", "Sample", "Note"],
+          rows: [
+            ["URL", "https://localhost:8765/form", "local web test"],
+            ["Code", "INV-88-AX", "symbol-heavy"],
+            ["Locale", "ja-JP / en-US", "multi-lang"]
+          ]
+        },
+        cards: [
+          ["Budget", "USD 15,800", "finance style number"],
+          ["Customer", "ACME / 東京支社", "latin + Japanese"],
+          ["Engine", "OCR + LLM + RPA", "commercial converter target"]
+        ],
+        labels: [
+          ["Queue", "A-17"],
+          ["Batch", "BATCH_20260417"],
+          ["Rate", "99.7%"],
+          ["Flag", "ON / READY"]
+        ]
+      },
+      table_noise: {
+        title: "Dense commercial table / OCR noise validation",
+        subtitle: "密度が高い表を商用票面として見せ、OCR 誤読と LLM rescue の境界を検証する。",
+        commandHint: "OCR の限界を測る scene。成功条件と review 条件を UI で切り分ける。",
+        metrics: [["Expected fields", "14"], ["LLM decision", "PARTIAL"], ["Operator action", "Escalate on mismatch"], ["Evidence ID", "OCR-NOISE-0417"]],
+        tags: [["Scene fixed", "scene=table"], ["Dataset fixed", "dataset=table_noise"], ["Language", "ja-JP + symbols"], ["Business class", "Invoice / Address"]],
+        pipeline: [
+          { step: "Step 1", title: "OCR Capture", status: "High density", tone: "mint", summary: "住所、票番、メール、半角記号が密集した表を取得する。", checks: ["address", "invoice", "mail"] },
+          { step: "Step 2", title: "LLM Extraction", status: "Partial recovery", tone: "rose", summary: "誤読を補正してよい範囲と review へ送る範囲を分離する。", checks: ["postal code", "product code", "owner"] },
+          { step: "Step 3", title: "RPAInput Handoff", status: "Escalation-aware", tone: "gold", summary: "補正不能な値は error ではなく review reason として残す。", checks: ["review reason", "retry history", "evidence path"] }
+        ],
+        llm: {
+          state: "PARTIAL",
+          confidence: "0.68 - human review mandatory",
+          expectedKeys: "帳票ID, 郵便番号, メール, Alert, Owner",
+          reviewRule: "住所 or code mismatch always escalates",
+          operatorDecision: "Reject auto-apply when address fields drift",
+          downstream: "RPAInput / escalation queue"
+        },
+        reviewNotes: [
+          "住所行と帳票行が隣接しているため、セル境界の OCR 崩れを確認する。",
+          "メールアドレスは secure mode で mask される前提かを確認する。",
+          "LLM が補正してよいのは typo までで、住所の再解釈は review に送る。"
+        ],
+        handoff: [
+          ["Primary adapter", "Snipping Tool Text actions"],
+          ["Fallback", "PowerToys Text Extractor"],
+          ["Structured target", "rows + review metadata"],
+          ["Audit scope", "escalation trace enabled"]
+        ],
+        formPrimary: [
+          ["帳票ID", "REP-77"],
+          ["摘要", "半角/全角 mix ､ 記号 % & # を含む"],
+          ["数量", "1,280"],
+          ["単価", "¥9,980"],
+          ["金額", "¥12,774,400"]
+        ],
+        formSecondary: [
+          ["票番", "No. 002-88"],
+          ["住所", "〒160-0022 / 新宿区新宿3-1-1"],
+          ["メール", "ops-cidls@example.co.jp"],
+          ["LLM抽出状態", "PARTIAL - human review mandatory"]
+        ],
+        table: {
+          headers: ["コード", "説明", "値"],
+          rows: [
+            ["A-100", "OCR 誤字テスト", "Alpha/アルファ"],
+            ["B-220", "2行連結 対応", "Line break safe"],
+            ["C-310", "住所 〒160-0022", "新宿区新宿3-1-1"]
+          ]
+        },
+        cards: [
+          ["Invoice", "No. 002-88", "記号入りの票番"],
+          ["Address", "〒160-0022", "新宿区新宿3-1-1"],
+          ["Mail", "ops-cidls@example.co.jp", "masking target"]
+        ],
+        labels: [
+          ["Alert", "WARN-02"],
+          ["Score", "88 / 100"],
+          ["Owner", "QA Team"],
+          ["Mode", "Screen OCR"]
+        ]
+      }
+    };
+
+    function renderButtons(containerId, items, activeValue, paramName) {
+      const target = document.getElementById(containerId);
+      target.innerHTML = "";
+      Object.entries(items).forEach(([value, item]) => {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.textContent = item.label || value;
+        if (value === activeValue) button.className = "active";
+        button.addEventListener("click", () => {
+          const next = new URLSearchParams(location.search);
+          next.set(paramName, value);
+          if (paramName === "scene") next.set("dataset", activeDataset);
+          if (paramName === "dataset") next.set("scene", activeScene);
+          location.search = next.toString();
+        });
+        target.appendChild(button);
+      });
+    }
+
+    function toneClass(tone) {
+      return tone === "mint" ? "mint" : tone === "blue" ? "blue" : tone === "gold" ? "gold" : "rose";
+    }
+
+    function renderMetrics(data) {
+      document.getElementById("metrics").innerHTML = data.metrics.map(([label, value]) => `
+        <div class="metric">
+          <span>${label}</span>
+          <strong>${value}</strong>
+        </div>
+      `).join("");
+    }
+
+    function renderHeader(data) {
+      document.getElementById("sceneMarker").textContent = `scene=${activeScene} / dataset=${activeDataset}`;
+      document.getElementById("commandHint").textContent = data.commandHint;
+      document.getElementById("stageTitle").textContent = data.title;
+      document.getElementById("stageSubtitle").textContent = data.subtitle;
+      document.getElementById("statusLine").innerHTML = data.tags.map(([label, value], index) => {
+        const tones = ["mint", "blue", "gold", "rose"];
+        return `<span class="badge ${tones[index % tones.length]}">${label}: ${value}</span>`;
+      }).join("");
+    }
+
+    function renderPipeline(data) {
+      document.getElementById("pipelineGrid").innerHTML = data.pipeline.map((item) => `
+        <article class="pipeline-card">
+          <div class="step">${item.step}</div>
+          <div class="badge ${toneClass(item.tone)}">${item.status}</div>
+          <strong>${item.title}</strong>
+          <p>${item.summary}</p>
+          <ul>${item.checks.map((check) => `<li>${check}</li>`).join("")}</ul>
+        </article>
+      `).join("");
+
+      document.getElementById("pipelineStatus").innerHTML = data.pipeline.map((item) => `
+        <div class="status-item">
+          <div class="top">
+            <strong>${item.title}</strong>
+            <span class="badge ${toneClass(item.tone)}">${item.status}</span>
+          </div>
+          <p>${item.summary}</p>
+        </div>
+      `).join("");
+
+      document.getElementById("llmContract").innerHTML = `
+        <div>State</div><div>${data.llm.state}</div>
+        <div>Confidence</div><div>${data.llm.confidence}</div>
+        <div>Expected keys</div><div>${data.llm.expectedKeys}</div>
+        <div>Review rule</div><div>${data.llm.reviewRule}</div>
+        <div>Operator rule</div><div>${data.llm.operatorDecision}</div>
+      `;
+      document.getElementById("reviewNotes").innerHTML = data.reviewNotes.map((item) => `<li>${item}</li>`).join("");
+      document.getElementById("handoffTarget").innerHTML = data.handoff.map(([key, value]) => `<div>${key}</div><div>${value}</div>`).join("");
+    }
+
+    function buildFormScene(data) {
+      return `
+        <div class="scene-board">
+          <article class="panel">
+            <h3 class="panel-title">Approval Intake</h3>
+            ${data.formPrimary.map(([label, value]) => `
+              <div class="field-row">
+                <div class="label">${label}</div>
+                <div class="value">${value}</div>
+              </div>
+            `).join("")}
+          </article>
+          <article class="panel">
+            <h3 class="panel-title">Downstream Decision Panel</h3>
+            ${data.formSecondary.map(([label, value]) => `
+              <div class="field-row">
+                <div class="label">${label}</div>
+                <div class="value ${label === "LLM抽出状態" ? "" : "subtle"}">${value}</div>
+              </div>
+            `).join("")}
+          </article>
+        </div>
+      `;
+    }
+
+    function buildTableScene(data) {
+      return `
+        <table>
+          <thead>
+            <tr>${data.table.headers.map((item) => `<th>${item}</th>`).join("")}</tr>
+          </thead>
+          <tbody>
+            ${data.table.rows.map((row) => `<tr>${row.map((cell) => `<td>${cell}</td>`).join("")}</tr>`).join("")}
+          </tbody>
+        </table>
+      `;
+    }
+
+    function buildCardsScene(data) {
+      return `
+        <div class="card-grid">
+          ${data.cards.map(([title, value, note]) => `
+            <article>
+              <h3>${title}</h3>
+              <strong>${value}</strong>
+              <p>${note}</p>
+            </article>
+          `).join("")}
+        </div>
+      `;
+    }
+
+    function buildLabelsScene(data) {
+      return `
+        <div class="label-grid">
+          ${data.labels.map(([key, value]) => `
+            <div class="label-chip">
+              <span class="chip-key">${key}</span>
+              <span class="chip-value">${value}</span>
+            </div>
+          `).join("")}
+        </div>
+      `;
+    }
+
+    function renderStage() {
+      const data = DATASETS[activeDataset];
+      const stage = document.getElementById("stage");
+      stage.innerHTML = `
+        <div class="status-line">
+          <span class="badge blue">scene=${activeScene} / dataset=${activeDataset}</span>
+          <span class="badge mint">LLM state: ${data.llm.state}</span>
+          <span class="badge gold">Expected keys: ${data.llm.expectedKeys}</span>
+        </div>
+      `;
+      if (activeScene === "form") stage.innerHTML += buildFormScene(data);
+      if (activeScene === "table") stage.innerHTML += buildTableScene(data);
+      if (activeScene === "cards") stage.innerHTML += buildCardsScene(data);
+      if (activeScene === "labels") stage.innerHTML += buildLabelsScene(data);
+    }
+
+    function renderAll() {
+      const data = DATASETS[activeDataset];
+      renderMetrics(data);
+      renderHeader(data);
+      renderPipeline(data);
+      renderStage();
+      renderButtons("sceneToolbar", SCENES, activeScene, "scene");
+      renderButtons("datasetToolbar", Object.fromEntries(Object.keys(DATASETS).map((key) => [key, { label: key }])), activeDataset, "dataset");
+    }
+
+    const query = new URLSearchParams(location.search);
+    let activeScene = SCENES[query.get("scene")] ? query.get("scene") : "form";
+    let activeDataset = DATASETS[query.get("dataset")] ? query.get("dataset") : "ja";
+    renderAll();
+  </script>
+</body>
+</html>

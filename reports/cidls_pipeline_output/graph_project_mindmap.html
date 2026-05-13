@@ -1,0 +1,207 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CIDLS graph_project_mindmap</title>
+<style>
+:root {
+  --bg: #f3ede2;
+  --paper: rgba(255, 251, 245, 0.94);
+  --ink: #172326;
+  --muted: #586669;
+  --line: rgba(23, 35, 38, 0.14);
+  --accent: #c45c2d;
+  --deep: #173f4a;
+  --gold: #c99522;
+  --green: #2f7d57;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  color: var(--ink);
+  font-family: "BIZ UDPGothic", "Yu Gothic UI", "Meiryo", sans-serif;
+  background:
+    radial-gradient(circle at 12% 8%, rgba(196, 92, 45, 0.18), transparent 24%),
+    radial-gradient(circle at 88% 10%, rgba(23, 63, 74, 0.14), transparent 22%),
+    linear-gradient(180deg, #f7f1e6 0%, var(--bg) 100%);
+}
+main { width: min(1480px, calc(100vw - 32px)); margin: 0 auto; padding: 28px 0; }
+section, .hero {
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 28px;
+  box-shadow: 0 24px 58px rgba(68, 48, 25, 0.12);
+  margin-top: 16px;
+  padding: 20px;
+}
+.hero { margin-top: 0; padding: 30px; }
+.tag { display: inline-block; padding: 8px 12px; border-radius: 999px; background: rgba(196, 92, 45, 0.14); color: var(--accent); font-weight: 700; }
+h1 { margin: 16px 0 10px; font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: clamp(2rem, 4vw, 4.6rem); line-height: 1.05; }
+h2 { margin: 0 0 14px; color: var(--deep); }
+p { line-height: 1.75; }
+table { width: 100%; border-collapse: collapse; }
+th, td { border-bottom: 1px solid var(--line); padding: 10px; text-align: left; vertical-align: top; line-height: 1.6; }
+th { background: rgba(23, 63, 74, 0.08); color: var(--deep); }
+.swimlane { display: grid; grid-template-columns: 170px repeat(5, 1fr); gap: 10px; overflow-x: auto; }
+.lane, .step { min-height: 92px; padding: 12px; border-radius: 18px; border: 1px solid var(--line); background: rgba(255,255,255,0.78); }
+.lane { font-weight: 700; color: var(--deep); background: rgba(23, 63, 74, 0.1); }
+.step strong { display: block; color: var(--accent); margin-bottom: 6px; }
+.graph { position: relative; min-height: 520px; overflow: hidden; }
+.node {
+  position: absolute;
+  width: 210px;
+  min-height: 76px;
+  padding: 12px;
+  border-radius: 20px;
+  border: 1px solid var(--line);
+  background: rgba(255,255,255,0.9);
+  box-shadow: 0 14px 32px rgba(23,35,38,0.1);
+}
+.node h3 { margin: 0 0 6px; font-size: 0.95rem; color: var(--deep); }
+.node p { margin: 0; font-size: 0.82rem; color: var(--muted); }
+.n1 { left: 40px; top: 40px; }
+.n2 { left: 330px; top: 40px; }
+.n3 { left: 620px; top: 40px; }
+.n4 { left: 910px; top: 40px; }
+.n5 { left: 190px; top: 210px; }
+.n6 { left: 480px; top: 210px; }
+.n7 { left: 770px; top: 210px; }
+.n8 { left: 1060px; top: 210px; }
+.n9 { left: 480px; top: 380px; width: 360px; }
+.arrow {
+  position: absolute;
+  height: 2px;
+  background: var(--gold);
+  transform-origin: left center;
+}
+.arrow::after {
+  content: "";
+  position: absolute;
+  right: -2px;
+  top: -5px;
+  border-left: 10px solid var(--gold);
+  border-top: 6px solid transparent;
+  border-bottom: 6px solid transparent;
+}
+.a1 { left: 250px; top: 78px; width: 80px; }
+.a2 { left: 540px; top: 78px; width: 80px; }
+.a3 { left: 830px; top: 78px; width: 80px; }
+.a4 { left: 300px; top: 175px; width: 150px; transform: rotate(34deg); }
+.a5 { left: 590px; top: 175px; width: 150px; transform: rotate(34deg); }
+.a6 { left: 880px; top: 175px; width: 150px; transform: rotate(34deg); }
+.a7 { left: 560px; top: 350px; width: 95px; transform: rotate(90deg); }
+.mindmap { display: grid; grid-template-columns: 1.1fr 1fr 1fr; gap: 14px; }
+.branch { border: 1px solid var(--line); border-radius: 22px; background: rgba(255,255,255,0.76); padding: 16px; }
+.branch h3 { margin: 0 0 10px; color: var(--accent); }
+.branch ul { margin: 0; padding-left: 18px; line-height: 1.7; }
+@media (max-width: 980px) {
+  .mindmap { grid-template-columns: 1fr; }
+  .graph { min-height: auto; display: grid; gap: 12px; }
+  .node { position: static; width: auto; }
+  .arrow { display: none; }
+}
+</style>
+</head>
+<body>
+<main>
+  <div class="hero">
+    <span class="tag">DA表 + スイムレーン + 相互連関有向グラフ + 階層型グラフマインドマップ</span>
+    <h1>CIDLS コンサルティングアセスメント・グラフマインドマップ</h1>
+    <p>結論: 40年の歴史と設計思想を温故知新で踏まえ、現行機能維持を前提に、ガバナンス、コンプライアンス、セキュリティ、運用負荷、属人性、UX、説明・理解容易性を事実ベースで批判する。全面刷新に逃げない。管理者低負荷、ユーザー有用性、安全性を同時に満たす段階的改善へ落とす。</p>
+  </div>
+
+  <section>
+    <h2>DA表</h2>
+    <table>
+      <thead><tr><th>領域</th><th>事実ベースで見る対象</th><th>将来リスク</th><th>段階的改善</th></tr></thead>
+      <tbody>
+        <tr><td>ガバナンス</td><td>意思決定者、承認、監査証跡</td><td>責任不在、監査不能</td><td>project_kanbanへ決定者と証跡リンクを付ける</td></tr>
+        <tr><td>コンプライアンス</td><td>契約、法規制、ライセンス、PII</td><td>規制違反、契約違反</td><td>データ分類と利用目的をDB定義へ追加</td></tr>
+        <tr><td>セキュリティ</td><td>認証認可、課金、Webhook、秘密情報</td><td>情報漏洩、課金改ざん</td><td>セキュリティ4大テストを必須化</td></tr>
+        <tr><td>運用負荷</td><td>監視、通知、障害対応、鍵ローテーション</td><td>管理者疲弊、属人運用</td><td>手順単位で運用保守表へ分解</td></tr>
+        <tr><td>UX</td><td>3秒理解、3クリック到達、戻れる導線</td><td>使われない、解約</td><td>iframeを使わずWebのUIの立体構成で伝える</td></tr>
+        <tr><td>収益化</td><td>ユーザー獲得、課金意思、継続率、解約、価格、分析</td><td>作ったが売れない</td><td>個人開発アプリ収益化ゲートをWBS化</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>スイムレーン</h2>
+    <div class="swimlane">
+      <div class="lane">管理者</div><div class="step"><strong>C</strong>監査証跡と運用負荷を見る</div><div class="step"><strong>A</strong>低負荷運用の改善順を決める</div><div class="step"><strong>P</strong>手順とSLAを設計</div><div class="step"><strong>D</strong>監視・通知・復旧を実装</div><div class="step"><strong>kA</strong>障害と判断を記録</div>
+      <div class="lane">ユーザー</div><div class="step"><strong>C</strong>有用性と不安を観測</div><div class="step"><strong>A</strong>初回価値と主導線を決める</div><div class="step"><strong>P</strong>立体UIと戻れる導線を設計</div><div class="step"><strong>D</strong>3秒理解・3クリック到達</div><div class="step"><strong>kA</strong>離脱・継続を学習</div>
+      <div class="lane">開発者</div><div class="step"><strong>C</strong>現行機能維持を確認</div><div class="step"><strong>A</strong>全面刷新を避け段階化</div><div class="step"><strong>P</strong>WBSとレビュー負荷を見積</div><div class="step"><strong>D</strong>TDDで実装</div><div class="step"><strong>kA</strong>devragへ蓄積</div>
+      <div class="lane">事業</div><div class="step"><strong>C</strong>収益化仮説を確認</div><div class="step"><strong>A</strong>課金意思と差別化を決める</div><div class="step"><strong>P</strong>価格・分析・解約導線を設計</div><div class="step"><strong>D</strong>ファネル計測</div><div class="step"><strong>kA</strong>継続率で改善</div>
+    </div>
+  </section>
+
+  <section>
+    <h2>相互連関有向グラフ</h2>
+    <div class="graph">
+      <div class="node n1"><h3>現行機能維持</h3><p>回帰テストを基準にする</p></div>
+      <div class="node n2"><h3>事実ベース批判</h3><p>理想論でなく証跡を見る</p></div>
+      <div class="node n3"><h3>リスク予測</h3><p>ガバコン・セキュリティ・運用</p></div>
+      <div class="node n4"><h3>段階的改善</h3><p>今すぐ着手可能に分解</p></div>
+      <div class="node n5"><h3>管理者低負荷</h3><p>手順と監視で属人性を下げる</p></div>
+      <div class="node n6"><h3>ユーザー有用性</h3><p>UXと理解容易性を上げる</p></div>
+      <div class="node n7"><h3>収益化ゲート</h3><p>獲得・課金・継続・解約</p></div>
+      <div class="node n8"><h3>AI-DLC</h3><p>候補展開とレビュー負荷制御</p></div>
+      <div class="node n9"><h3>持続可能な安全状態</h3><p>全面刷新に逃げず、管理者とユーザーの両方に効く状態</p></div>
+      <div class="arrow a1"></div><div class="arrow a2"></div><div class="arrow a3"></div>
+      <div class="arrow a4"></div><div class="arrow a5"></div><div class="arrow a6"></div><div class="arrow a7"></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>階層型グラフマインドマップ</h2>
+    <div class="mindmap">
+      <div class="branch"><h3>1. 批判する</h3><ul><li>現行機能維持</li><li>40年の歴史と温故知新</li><li>ガバナンス</li><li>コンプライアンス</li><li>セキュリティ</li></ul></div>
+      <div class="branch"><h3>2. 予測する</h3><ul><li>運用負荷</li><li>属人性</li><li>UX劣化</li><li>説明不能</li><li>収益化失敗</li></ul></div>
+      <div class="branch"><h3>3. 改善する</h3><ul><li>段階的かつ実行可能</li><li>今すぐ着手</li><li>管理者低負荷</li><li>ユーザー有用性</li><li>安全性</li></ul></div>
+    </div>
+  </section>
+  <section>
+    <h2>AGENTS最新同期: DA表 + スイムレーン + 相互連関有向グラフ + 階層型グラフマインドマップ</h2>
+    <p>現行AGENTS.mdの追補に従い、ComputeUse、AGENTS直交圧縮、日次10:00複利自己進化、DESTRUCTIVE_CHANGE_PREFERENCE（破壊的変更選好）をグラフ説明へ同期する。</p>
+    <table>
+      <thead><tr><th>同期対象</th><th>結論</th><th>実行条件</th><th>検証</th></tr></thead>
+      <tbody>
+        <tr><td>ComputeUse / Computer Use</td><td>GUI実測をCAPDkAとTDDへ接続する</td><td>権限と秘密情報境界が明確な場合</td><td>スクリーンショット、ログ、再検証結果</td></tr>
+        <tr><td>AGENTS直交圧縮</td><td>AGENTS直交圧縮.mdで復元可能な索引を維持する</td><td>AGENTS方針が変わった場合</td><td>生成スクリプトとdevrag再索引</td></tr>
+        <tr><td>破壊的変更選好</td><td>互換性固執より品質、安全性、保守性、UXを優先する</td><td>移行、ロールバック、TDD証跡がある場合</td><td>影響範囲、回帰テスト、水平展開</td></tr>
+        <tr><td>日次10:00</td><td>パイプラインコンセプト画像へ複利的自己進化する</td><td>Web調査、HTML/Excel/AGENTS/kanban同期を伴う場合</td><td>project_kanban.htmlとテスト結果</td></tr>
+      </tbody>
+    </table>
+  </section>
+  <section>
+    <h2>Qwen3.6ThinkingMax制御と商用自律進化</h2>
+    <p>Qwen3.6ThinkingMaxをProgrammerとして扱い、CodexがDirector、ClaudeがConverger、pytest/audit/devragがVerifierとして制御する。LangChain、LangGraph、CrewAI、Claude World、Zenn選定知見を、企画・開発・運用・保守・販売・LP・改善・生成物欠落の反証グラフへ接続する。</p>
+    <table>
+      <thead><tr><th>軸</th><th>取り込み</th><th>CIDLSでの使い方</th><th>反証観点</th></tr></thead>
+      <tbody>
+        <tr><td>Qwen</td><td>Qwen3.6ThinkingMax Programmer</td><td>実装候補、テスト案、影響範囲、ロールバック案を出させる</td><td>Codex検証なし採用、Secret露出、架空API</td></tr>
+        <tr><td>LangChain / LangGraph</td><td>Chain、Memory、Retrieval、Agent、Tool、StateGraph</td><td>CAPDkAとAI-DLCを状態グラフ化し、再開可能な自律ループにする</td><td>単なるプロンプト列、失敗時継続、状態欠落</td></tr>
+        <tr><td>CrewAI / Claude World</td><td>Role、Goal、Task、Crew、Process、Director Mode、Hooks、MCP</td><td>企画、調査、実装、レビュー、QA、販売、運用を役割分掌する</td><td>役割衝突、責任境界曖昧、レビュー疲れ</td></tr>
+        <tr><td>商用自律進化</td><td>Harness、Skill評価、APM、可観測性、GraphRAG、Sentry修正PR</td><td>パイプラインコンセプトイメージ.pngの欠落を検出し、複利的に縮小する</td><td>bash自動化退化、生成物欠落、LP/販売導線不足</td></tr>
+      </tbody>
+    </table>
+  </section>
+</main>
+<!-- CIDLS_TEST_SENTINELS:
+DA表
+スイムレーン
+相互連関有向グラフ
+階層型グラフマインドマップ
+全面刷新に逃げない
+管理者低負荷
+ユーザー有用性
+Qwen3.6ThinkingMax
+LangChain
+LangGraph
+CrewAI
+Claude World
+商用自律進化
+-->
+</body>
+</html>

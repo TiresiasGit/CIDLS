@@ -1,0 +1,9 @@
+{
+  "chat.useCustomizationsInParentRepositories": true,
+  "github.copilot.chat.codeGeneration.useInstructionFiles": true,
+  "github.copilot.chat.experimental.agentFiles": true,
+  "github.copilot.chat.experimental.promptFiles": true,
+  "github.copilot.chat.experimental.skillFiles": true,
+  "github.copilot.chat.reasoningEffortOverride": "high",
+  "github.copilot.chat.cli.autoModel.enabled": true
+}

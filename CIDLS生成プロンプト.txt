@@ -1,0 +1,111 @@
+Windows 11 / PowerShell / UTF-8 前提のローカル開発プロジェクト「CIDLS」を、現在の運用状態ごと再現する。
+
+目的:
+- 単なる画面モックではなく、実運用用の single source of truth を持つ HTML かんばん + 補助文書 + automation 設計まで再現する
+- 画像的な世界観は「CIDD / GrGPHRAG pipeline」を継承するが、成果物は静的 HTML / Markdown / テキスト資産として利用可能にする
+- Review と Done を混ぜず、未完了課題を explicit ticket として保持する
+
+必須成果物:
+1. `project_kanban.html`
+- このプロジェクトの主運用面
+- 読みやすい single-file HTML
+- hero section, stage cards, selected detail pane, kanban lanes, knowledge panel を含む
+- 画面上部に CIDD / GrGPHRAG の横流れ pipeline を置く
+- 構図は「Input -> Concept -> Draft -> Fusion -> Control -> Deliver」の 6 stage
+- stage と ticket は双方向に連動する
+- kanban lane は `Backlog / Todo / Review / Done`
+- 次の ticket を最低限含む
+  - `CIDLS-105` Done: `CIDLS生成プロンプト.txt` を repo に配置
+  - `CIDLS-106` Done: `agents-sw-cycle` automation を再設計
+  - `CIDLS-107` Todo: devrag indexing を有効化
+  - `CIDLS-108` Review: 実ブラウザで user review
+  - `CIDLS-109` Backlog: QA / Scenario 統合
+  - `CIDLS-110` Backlog: alaya / DuckDB log analysis 導線
+  - `CIDLS-111` Done: repo-local `AGENTS.md` を整備
+  - `CIDLS-112` Review: automation 初回定期実行の観測
+  - `CIDLS-113` Todo: `ICDD\\pre_prompt_cycle.bat` と runtime 復旧
+- knowledge panel に次を含む
+  - Phase1 の As-Is / Root Cause / To-Be
+  - multi-persona council 要約
+  - devrag blocker
+  - automation / external research 要約
+
+2. `project.md`
+- `project_kanban.html` の compact mirror
+- Current SoT, Current Snapshot, CAPDkA Snapshot, Open Work を持つ
+- Primary operating board は `project_kanban.html`
+- Repo-local operating guide は `AGENTS.md`
+- Regeneration asset は `CIDLS生成プロンプト.txt`
+
+3. `TODO.md`
+- 人が一目で見られる簡潔な checklist
+- Done / 未完の境界が `project_kanban.html` と一致すること
+
+4. `AGENTS.md`
+- repo-local の運用ガイド
+- `project_kanban.html` を primary operating surface と定義
+- Start Cycle に `ICDD\\pre_prompt_cycle.bat` の確認手順を書く
+- hook が存在しなければ記録して続行する
+- fallback, dummy data, silent error masking を禁止する
+
+5. `CIDLS生成プロンプト.txt`
+- この prompt 自身
+- 再生成資産として repo に残す
+
+6. legacy reference hub
+- `kanban_project.html` は legacy / integrated reference hub として残してよい
+
+UI / 見た目:
+- 未来感のある明るい寒色系
+- 白、青、シアン、紫、ピンク、金の発光を差し色に使う
+- 単なる業務画面ではなく、図解と運用面の中間
+- 横長 desktop では pipeline が左から右へ流れる
+- mobile では縦積みになっても読める
+- detail pane と kanban は情報が分断しない
+- 中央の Fusion stage は devrag / ClaudeCowork / CodexApp の統合判断面として最も強く見せる
+
+運用ルール:
+- Single Source of Truth は `project_kanban.html`
+- `project.md` は要約
+- `TODO.md` は checklist mirror
+- Review は未完了として扱い、Done へ混ぜない
+- 新しく見つけた問題は `CIDLS-*` ticket として増やす
+- 未知のことを黙殺せず ticket 化する
+
+automation:
+- automation 名は `AGENTS SW Cycle`
+- automation id は `agents-sw-cycle`
+- weekday のみ、09:00 JST 実行
+- local workspace `C:\\Github\\CIDLS`
+- 役割は次の通り
+  - 未完了 task と未コミット変更を確認
+  - `project_kanban.html` を更新
+  - `project.md` と `TODO.md` を同期
+  - devrag が使えれば探索に使い、使えなければ blocker を残す
+  - `alaya_analyzer.py` や DuckDB/JSONL trace があれば改善候補を ticket 化
+  - Done / Review を混同しない
+
+外部発想の反映:
+- Zenn の Claude/Codex 分業記事の発想から、設計 / 実装 / 評価の役割分離を採用する
+- Liam BX の DuckDB log analysis の発想から、将来の trace 集計先を設計する
+- Qiita の PDCA 型自立思考 AI の発想から、理想 / 現実 / 優先度 / 実行可能 flag を ticket 判断に反映する
+- 取得できない外部参照は捏造せず backlog または blocker に落とす
+
+現在の既知 blocker:
+- `ICDD\\pre_prompt_cycle.bat` が workspace に存在しない
+- `CIDLS` workspace は devrag の configured directory に入っていない
+- `alaya_analyzer.py` は現 workspace に存在しない
+
+禁止:
+- WSL 前提
+- fallback で古いデータや架空データを埋める
+- `Review` を `Done` 扱いにする
+- 旧 `プロンプト.txt` を残す
+- catch-all で曖昧に握り潰す
+
+品質条件:
+- 読める HTML
+- UTF-8 前提
+- Windows PowerShell で扱える
+- board / summary / checklist / AGENTS が相互に矛盾しない
+- 画面だけでなく、運用状態と未完了課題まで再現されている

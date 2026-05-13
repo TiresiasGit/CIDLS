@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CIDLS 構成定義書 兼 運用保守手順書 CIDLS-OPS-002 v1.0.0</title>
+<style>
+:root {
+  --bg:      #0a1610;
+  --panel:   #0f2018;
+  --accent:  #10b981;
+  --accent2: #34d399;
+  --indigo:  #6366f1;
+  --warn:    #f59e0b;
+  --danger:  #ef4444;
+  --sky:     #38bdf8;
+  --text:    #f1f5f9;
+  --muted:   #94a3b8;
+  --border:  #1e3a2a;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+.page-header { background: var(--panel); border-bottom: 3px solid var(--accent); padding: 20px 40px; }
+.page-header h1 { font-size: 1.35rem; font-weight: 800; color: var(--accent); }
+.page-header .meta { font-size: 0.78rem; color: var(--muted); margin-top: 4px; }
+
+.nav-tabs { display: flex; background: var(--panel); border-bottom: 1px solid var(--border); padding: 0 40px; overflow-x: auto; }
+.tab-btn { padding: 10px 18px; font-size: 0.82rem; font-weight: 600; color: var(--muted); background: transparent; border: none; border-bottom: 3px solid transparent; cursor: pointer; white-space: nowrap; transition: color .2s; }
+.tab-btn:hover { color: var(--text); }
+.tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+.content { max-width: 1100px; margin: 0 auto; padding: 32px 40px; }
+.section { display: none; }
+.section.active { display: block; }
+
+.card { background: var(--panel); border: 1px solid var(--border); border-radius: 10px; padding: 20px 24px; margin-bottom: 20px; }
+.card h2 { font-size: 1.1rem; color: var(--accent); margin-bottom: 14px; border-bottom: 1px solid var(--border); padding-bottom: 8px; }
+.card h3 { font-size: 0.95rem; color: var(--accent2); margin: 14px 0 8px; }
+
+table { width: 100%; border-collapse: collapse; font-size: 0.82rem; margin: 10px 0; }
+th { background: rgba(16,185,129,0.12); color: var(--accent); padding: 8px 10px; text-align: left; border: 1px solid var(--border); }
+td { padding: 7px 10px; border: 1px solid var(--border); vertical-align: top; line-height: 1.5; }
+tr:hover td { background: rgba(255,255,255,0.03); }
+
+.badge { display: inline-block; border-radius: 999px; padding: 2px 10px; font-size: 11px; font-weight: 700; }
+.badge-ok     { background: rgba(16,185,129,0.2);  color: #6ee7b7; border: 1px solid rgba(16,185,129,0.3); }
+.badge-warn   { background: rgba(245,158,11,0.2);  color: #fcd34d; border: 1px solid rgba(245,158,11,0.3); }
+.badge-error  { background: rgba(239,68,68,0.2);   color: #fca5a5; border: 1px solid rgba(239,68,68,0.3); }
+.badge-info   { background: rgba(99,102,241,0.2);  color: #a5b4fc; border: 1px solid rgba(99,102,241,0.3); }
+
+.step-block { background: rgba(16,185,129,0.06); border-left: 3px solid var(--accent); border-radius: 0 8px 8px 0; padding: 14px 18px; margin: 10px 0; }
+.step-block h4 { color: var(--accent); font-size: 0.9rem; margin-bottom: 6px; }
+.step-block p  { font-size: 0.82rem; color: var(--muted); line-height: 1.6; }
+
+.warn-block { background: rgba(245,158,11,0.06); border-left: 3px solid var(--warn); border-radius: 0 8px 8px 0; padding: 14px 18px; margin: 10px 0; }
+.warn-block h4 { color: var(--warn); font-size: 0.9rem; margin-bottom: 6px; }
+.warn-block p  { font-size: 0.82rem; color: var(--muted); line-height: 1.6; }
+
+.err-block  { background: rgba(239,68,68,0.06); border-left: 3px solid var(--danger); border-radius: 0 8px 8px 0; padding: 14px 18px; margin: 10px 0; }
+.err-block h4 { color: var(--danger); font-size: 0.9rem; margin-bottom: 6px; }
+.err-block p  { font-size: 0.82rem; color: var(--muted); line-height: 1.6; }
+
+.code-block { background: #050a08; border: 1px solid var(--border); border-radius: 6px; padding: 14px; font-family: 'Consolas', 'Courier New', monospace; font-size: 0.78rem; color: #86efac; white-space: pre; overflow-x: auto; margin: 8px 0; }
+
+.kv-row { display: flex; gap: 12px; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.04); font-size: 0.82rem; }
+.kv-key { width: 200px; flex-shrink: 0; color: var(--muted); }
+.kv-val { flex: 1; }
+
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
+
+.stat-card { background: rgba(16,185,129,0.08); border: 1px solid rgba(16,185,129,0.2); border-radius: 8px; padding: 16px; text-align: center; }
+.stat-num  { font-size: 2rem; font-weight: 800; color: var(--accent); }
+.stat-lbl  { font-size: 0.78rem; color: var(--muted); margin-top: 4px; }
+
+footer { text-align: center; padding: 24px 0 16px; color: var(--muted); font-size: 0.75rem; border-top: 1px solid var(--border); margin-top: 40px; }
+</style>
+</head>
+<body>
+
+<div class="page-header">
+  <h1>CIDLS 構成定義書 兼 運用保守手順書</h1>
+  <div class="meta">CIDLS-OPS-002 &nbsp;|&nbsp; v1.0.0 &nbsp;|&nbsp; 2026-05-13 &nbsp;|&nbsp; CAPDkA 第13回</div>
+</div>
+
+<nav class="nav-tabs">
+  <button class="tab-btn active" onclick="show('overview',this)">概要・目次</button>
+  <button class="tab-btn" onclick="show('arch',this)">サービス構成図</button>
+  <button class="tab-btn" onclick="show('deploy',this)">配置構成定義</button>
+  <button class="tab-btn" onclick="show('ops',this)">運用手順</button>
+  <button class="tab-btn" onclick="show('maint',this)">保守手順</button>
+  <button class="tab-btn" onclick="show('setup',this)">セットアップ</button>
+  <button class="tab-btn" onclick="show('recovery',this)">リカバリ</button>
+  <button class="tab-btn" onclick="show('monitor',this)">監視・アラート</button>
+  <button class="tab-btn" onclick="show('backup',this)">バックアップ</button>
+  <button class="tab-btn" onclick="show('incident',this)">障害対応</button>
+</nav>
+
+<div class="content">
+
+<!-- 概要・目次 -->
+<div id="overview" class="section active">
+  <div class="card">
+    <h2>ドキュメント概要</h2>
+    <div class="kv-row"><div class="kv-key">ドキュメントID</div><div class="kv-val">CIDLS-OPS-002</div></div>
+    <div class="kv-row"><div class="kv-key">ドキュメント名</div><div class="kv-val">CIDLS プラットフォーム 構成定義書 兼 運用保守手順書</div></div>
+    <div class="kv-row"><div class="kv-key">バージョン</div><div class="kv-val">v1.0.0</div></div>
+    <div class="kv-row"><div class="kv-key">作成日</div><div class="kv-val">2026-05-13</div></div>
+    <div class="kv-row"><div class="kv-key">対象環境</div><div class="kv-val">Windows 10/11 / Python 3.11.x / uv / DuckDB / devrag v1.4.4</div></div>
+    <div class="kv-row" style="border:none;"><div class="kv-key">関連文書</div><div class="kv-val">CIDLS-REQ-002 要求要件定義書 / CIDLS-HLD-001 基本設計書 / CIDLS-TEST-001 テストシナリオ兼結果チェックリスト</div></div>
+  </div>
+  <div class="card">
+    <h2>サマリ</h2>
+    <div class="grid3">
+      <div class="stat-card"><div class="stat-num">10</div><div class="stat-lbl">主要コンポーネント</div></div>
+      <div class="stat-card"><div class="stat-num">11:00</div><div class="stat-lbl">日次自律進化実行時刻</div></div>
+      <div class="stat-card"><div class="stat-num">1h</div><div class="stat-lbl">L3障害停止判断SLA</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- サービス構成図 -->
+<div id="arch" class="section">
+  <div class="card">
+    <h2>サービス構成図</h2>
+    <h3>2.1 論理構成</h3>
+    <div class="step-block">
+      <h4>[Layer 1] 入力層</h4>
+      <p>コンセプト入力フォーム / チャットUI / ファイルアップロード<br>ユーザーがアイデア・課題・要望・制約を入力するエントリポイント</p>
+    </div>
+    <div class="step-block">
+      <h4>[Layer 2] 知識・ルール層</h4>
+      <p>AGENTS.md (SoT) / devrag v1.4.4 (RAGインデックス) / documents/*.md (知識ベース)<br>全AIエージェントがルール参照・知識検索を行う中心層</p>
+    </div>
+    <div class="step-block">
+      <h4>[Layer 3] AI実行層</h4>
+      <p>ClaudeCowork / sonnet 4.6 / VSCode Copilot Agent<br>CAPDkAサイクルを実行し、コード生成・ドキュメント生成・反証複利進化を担う</p>
+    </div>
+    <div class="step-block">
+      <h4>[Layer 4] 生成・保存層</h4>
+      <p>scripts/*.py (生成スクリプト) / D:\CIDLS\ (成果物保存) / DuckDB (データ管理)<br>全HTMLドキュメント・Excel・ログを生成・保存する層</p>
+    </div>
+    <div class="step-block">
+      <h4>[Layer 5] 出力・配布層</h4>
+      <p>index.html (クイックアクセス) / シームレス生成ドキュメント5種 / LP.html (商用)<br>エンドユーザー・顧客が最終成果物にアクセスする層</p>
+    </div>
+    <h3>2.2 主要コンポーネント一覧</h3>
+    <table>
+      <tr><th>コンポーネント</th><th>役割</th><th>場所</th></tr>
+      <tr><td>AGENTS.md</td><td>全ルールのSoT。全AIエージェントが参照</td><td>D:\CIDLS\AGENTS.md</td></tr>
+      <tr><td>project_kanban.html</td><td>タスク管理のSoT。Backlog→Done管理</td><td>D:\CIDLS\project_kanban.html</td></tr>
+      <tr><td>devrag v1.4.4</td><td>AGENTS.md知識ベースRAG検索</td><td>%LOCALAPPDATA%\devrag\devrag.exe</td></tr>
+      <tr><td>scripts/generate_*.py</td><td>各HTML/Excel/kanban自動生成スクリプト</td><td>D:\CIDLS\scripts\</td></tr>
+      <tr><td>run_daily_self_evolution.cmd</td><td>日次自律進化ループエントリポイント</td><td>D:\CIDLS\scripts\</td></tr>
+      <tr><td>D:\production\.venv</td><td>uv仮想環境 (Python 3.11.x)</td><td>D:\production\.venv</td></tr>
+      <tr><td>index.html</td><td>全成果物へのクイックアクセスナビ</td><td>D:\CIDLS\index.html</td></tr>
+      <tr><td>ドキュメント一覧.html</td><td>全ドキュメント索引・ナビゲーション</td><td>D:\CIDLS\ドキュメント一覧.html</td></tr>
+      <tr><td>n8n (外部発報オーケストレーター)</td><td>全外部発報系のデフォルト中継基盤。Secret管理・リトライ・冪等性・発報先切替を担う [N8N]</td><td>localhost:5678 (Docker / セルフホスト)</td></tr>
+      <tr><td>n8n_workflows/</td><td>n8nワークフロー定義をJSONでバージョン管理 (Secret除く)</td><td>D:\CIDLS\n8n_workflows\</td></tr>
+    </table>
+  </div>
+</div>
+
+<!-- 配置構成定義 -->
+<div id="deploy" class="section">
+  <div class="card">
+    <h2>配置構成定義</h2>
+    <h3>3.1 ディレクトリ構成</h3>
+    <div class="code-block">D:\CIDLS\
+  AGENTS.md                          # 全ルールSoT
+  index.html                         # クイックアクセスナビ
+  project_kanban.html                # タスク管理SoT
+  graph_project_mindmap.html         # グラフマインドマップ
+  cidls_platform_overview.html       # パイプライン全体像
+  STORY.html                         # 業務ストーリー
+  コンセプトスライド.html              # コンセプトスライド
+  要求要件定義書.html                  # シームレスドキュメント1
+  構成定義書 兼 運用保守手順書.html    # シームレスドキュメント2
+  テストシナリオ兼結果チェックリスト.html # シームレスドキュメント3
+  ユーザーマニュアル.html              # シームレスドキュメント4
+  ドキュメント一覧.html               # シームレスドキュメント5
+  devrag-config.json                 # devrag設定
+  setup_devrag.ps1                   # devragセットアップスクリプト
+  documents/                         # devragインデックス対象*.md
+  scripts/                           # 生成スクリプト群
+  logs/daily_self_evolution/         # 日次進化ログ
+  reports/                           # Excel納品パック出力先</div>
+    <h3>3.2 環境変数・設定</h3>
+    <table>
+      <tr><th>変数/設定</th><th>値/説明</th><th>必須</th></tr>
+      <tr><td>%LOCALAPPDATA%\devrag\devrag.exe</td><td>devrag v1.4.4 バイナリ</td><td><span class="badge badge-ok">必須</span></td></tr>
+      <tr><td>D:\production\.venv</td><td>uv仮想環境パス</td><td><span class="badge badge-ok">必須</span></td></tr>
+      <tr><td>devrag-config.json</td><td>インデックス対象・モデル設定</td><td><span class="badge badge-ok">必須</span></td></tr>
+      <tr><td>COPILOT_ENH_ROOT</td><td>setup_devrag.ps1が自動登録</td><td><span class="badge badge-info">推奨</span></td></tr>
+    </table>
+    <h3>3.3 Python依存パッケージ</h3>
+    <table>
+      <tr><th>パッケージ</th><th>バージョン</th><th>用途</th></tr>
+      <tr><td>openpyxl</td><td>3.1.5</td><td>Excel生成スクリプト</td></tr>
+      <tr><td>duckdb</td><td>latest</td><td>DuckDB操作</td></tr>
+      <tr><td>pandas</td><td>latest</td><td>データ処理</td></tr>
+      <tr><td>pyarrow</td><td>latest</td><td>Parquet入出力</td></tr>
+    </table>
+  </div>
+</div>
+
+<!-- 運用手順 -->
+<div id="ops" class="section">
+  <div class="card">
+    <h2>運用手順</h2>
+    <h3>4.1 日次自律進化ループ運用手順</h3>
+    <div class="step-block"><h4>Step 1: 実行前確認</h4><p>D:\CIDLS\logs\daily_self_evolution\ に前日のログが存在することを確認する。エラーがあれば障害対応タブを参照する。</p></div>
+    <div class="step-block"><h4>Step 2: 自動実行 (11:00)</h4><p>Windows Task Scheduler が scripts\run_daily_self_evolution.cmd を自動実行する。手動実行が必要な場合は下記コマンドを使用する。</p></div>
+    <div class="code-block">cd D:\CIDLS
+scripts\run_daily_self_evolution.cmd</div>
+    <div class="step-block"><h4>Step 3: 実行結果確認</h4><p>logs\daily_self_evolution\ に当日付のログファイルが作成されていることを確認する。エラーがないことを確認する。</p></div>
+    <div class="step-block"><h4>Step 4: kanban更新確認</h4><p>project_kanban.html を開き、タスク状態が正しく更新されていることを確認する。</p></div>
+    <h3>4.2 kanban定期更新手順</h3>
+    <div class="step-block"><h4>CAPDkAサイクル完了時</h4><p>scripts\generate_project_kanban.py を編集し、回数・タスク内容・完了事項を更新する。その後、手動でproject_kanban.htmlに反映する（または生成スクリプトを実行する）。</p></div>
+    <h3>4.3 新規成果物追加時の水平展開同期</h3>
+    <div class="warn-block">
+      <h4>必須: [HS]水平展開同期</h4>
+      <p>新規HTMLファイル追加時は以下の全箇所を同期すること（省略=G1違反）:<br>
+      1. index.html — Quick Accessカード追加<br>
+      2. cidls_platform_overview.html — 成果物リスト更新<br>
+      3. scripts/generate_cidls_platform_overview.py — ARTIFACT_FILES追加<br>
+      4. ドキュメント一覧.html — カード追加<br>
+      5. project_kanban.html — 第N回完了タスク記録</p>
+    </div>
+  </div>
+</div>
+
+<!-- 保守手順 -->
+<div id="maint" class="section">
+  <div class="card">
+    <h2>保守手順</h2>
+    <h3>5.1 定期保守スケジュール</h3>
+    <table>
+      <tr><th>頻度</th><th>作業内容</th><th>担当</th></tr>
+      <tr><td>日次</td><td>日次進化ログ確認 / kanban状態確認 / エラー有無チェック</td><td>運用担当</td></tr>
+      <tr><td>週次</td><td>devragインデックス状態確認 / 成果物完全性チェック / ログローテーション</td><td>開発者</td></tr>
+      <tr><td>月次</td><td>AGENTS.md棚卸し(陳腐化・矛盾・重複検出) / 依存ライブラリEOLチェック / 品質KPI集計</td><td>開発者</td></tr>
+      <tr><td>CAPDkA毎</td><td>シームレスドキュメント5種更新確認 / 水平展開同期検証 / MO必須出力確認</td><td>開発者</td></tr>
+    </table>
+    <h3>5.2 devragインデックス再構築手順</h3>
+    <div class="step-block"><h4>documents/*.md 追加・更新時</h4><p>devragインデックスを再構築する。index-codeは実行禁止（DB破壊リスク）。</p></div>
+    <div class="code-block">cd D:\CIDLS
+# インデックス再構築 (index-code は禁止)
+%LOCALAPPDATA%\devrag\devrag.exe index --config devrag-config.json</div>
+    <div class="warn-block"><h4>禁止: index-code コマンド</h4><p>index-code はDB破壊リスクがあるため実行禁止。通常の index コマンドのみ使用すること。</p></div>
+    <h3>5.3 Python仮想環境再構築手順</h3>
+    <div class="code-block">cd D:\production
+# 仮想環境再作成
+uv venv .venv
+# 依存パッケージインストール
+uv pip install openpyxl duckdb pandas pyarrow</div>
+    <h3>5.4 AGENTS.md棚卸し手順</h3>
+    <div class="step-block"><h4>月次実施</h4><p>1. 陳腐化した記述を検出する<br>2. SoT衝突箇所を特定する<br>3. 重複記述を統合する<br>4. 変更時は[DIFF]報告フォーマットで記録する</p></div>
+  </div>
+</div>
+
+<!-- セットアップ手順 -->
+<div id="setup" class="section">
+  <div class="card">
+    <h2>セットアップ手順</h2>
+    <h3>6.1 初回環境構築</h3>
+    <div class="step-block"><h4>Step 1: リポジトリ配置確認</h4><p>D:\CIDLS\ に全ファイルが配置されていることを確認する。AGENTS.md, index.html, project_kanban.html が存在することを確認する。</p></div>
+    <div class="step-block"><h4>Step 2: uv仮想環境構築</h4><p>D:\production\ でuv仮想環境を構築する。</p></div>
+    <div class="code-block">cd D:\production
+uv venv .venv
+uv pip install openpyxl duckdb pandas pyarrow</div>
+    <div class="step-block"><h4>Step 3: devragセットアップ</h4><p>setup_devrag.ps1 を実行してdevragバイナリとインデックスをセットアップする。</p></div>
+    <div class="code-block">cd D:\CIDLS
+powershell -ExecutionPolicy Bypass -File setup_devrag.ps1</div>
+    <div class="step-block"><h4>Step 4: Task Scheduler登録</h4><p>日次自律進化ループのTask Schedulerタスクを登録する。</p></div>
+    <div class="code-block">cd D:\CIDLS
+powershell -ExecutionPolicy Bypass -File scripts\register_daily_self_evolution_task.ps1</div>
+    <div class="step-block"><h4>Step 5: 動作確認</h4><p>index.html をブラウザで開き、全カードのリンクが正常であることを確認する。</p></div>
+    <h3>6.2 VSCode拡張設定</h3>
+    <table>
+      <tr><th>設定項目</th><th>値</th></tr>
+      <tr><td>github.copilot.chat.codeGeneration.useInstructionFiles</td><td>true</td></tr>
+      <tr><td>chat.useCustomizationsInParentRepositories</td><td>true</td></tr>
+      <tr><td>github.copilot.chat.experimental.agentFiles</td><td>true</td></tr>
+    </table>
+  </div>
+</div>
+
+<!-- リカバリ手順 -->
+<div id="recovery" class="section">
+  <div class="card">
+    <h2>リカバリ手順</h2>
+    <h3>7.1 ロールバック手順</h3>
+    <div class="warn-block">
+      <h4>前提: [DIFF]差分報告が必要</h4>
+      <p>全変更に対してBefore/After・変更理由・ロールバック手順を記録すること（AGENTS.md [DIFF.3]）。</p>
+    </div>
+    <div class="step-block"><h4>HTML成果物のロールバック</h4><p>git revert または バックアップからの復元。変更前ファイルが.bak存在する場合はリネームで復元。</p></div>
+    <div class="step-block"><h4>生成スクリプトのロールバック</h4><p>git reset --hard または バックアップからの復元。必ず動作確認後に本番適用する。</p></div>
+    <div class="step-block"><h4>devragインデックスのロールバック</h4><p>.devrag/vectors.db を削除後、index コマンドで再構築する。</p></div>
+    <h3>7.2 AGENTS.mdのロールバック</h3>
+    <div class="err-block">
+      <h4>重要: AGENTS.md変更は慎重に</h4>
+      <p>AGENTS.md はSoTであるため、変更前にAGENTS.md.bakを必ず作成すること。ロールバック時は .bak をリネームして復元する。</p>
+    </div>
+    <div class="code-block"># バックアップ作成
+copy D:\CIDLS\AGENTS.md D:\CIDLS\AGENTS.md.bak
+# ロールバック
+copy D:\CIDLS\AGENTS.md.bak D:\CIDLS\AGENTS.md</div>
+    <h3>7.3 仮想環境の再構築</h3>
+    <div class="step-block"><h4>venv破損時</h4><p>.venv フォルダを削除後、セットアップ手順Step 2を再実行する。</p></div>
+    <div class="code-block">cd D:\production
+rmdir /s /q .venv
+uv venv .venv
+uv pip install openpyxl duckdb pandas pyarrow</div>
+  </div>
+</div>
+
+<!-- 監視・アラート -->
+<div id="monitor" class="section">
+  <div class="card">
+    <h2>監視・アラート</h2>
+    <h3>8.1 日次監視項目</h3>
+    <table>
+      <tr><th>監視項目</th><th>確認方法</th><th>正常値</th><th>異常時対応</th></tr>
+      <tr><td>日次進化ループ実行</td><td>logs\daily_self_evolution\ ログ確認</td><td>当日付ログが存在</td><td>手動実行 / タスク再登録</td></tr>
+      <tr><td>エラーログ有無</td><td>ログ内 ERROR 文字列 grep</td><td>ERROR 0件</td><td>障害対応タブ参照</td></tr>
+      <tr><td>kanban更新確認</td><td>project_kanban.html 最終更新日確認</td><td>当日 or 前日</td><td>手動kanban更新</td></tr>
+    </table>
+    <h3>8.2 週次監視項目</h3>
+    <table>
+      <tr><th>監視項目</th><th>確認方法</th><th>正常値</th></tr>
+      <tr><td>devragインデックス件数</td><td>devrag list コマンド</td><td>38件以上</td></tr>
+      <tr><td>成果物ファイル存在確認</td><td>全シームレスドキュメント5種の存在確認</td><td>全5ファイル存在</td></tr>
+      <tr><td>Python仮想環境</td><td>D:\production\.venv 存在確認</td><td>.venv 存在</td></tr>
+    </table>
+    <h3>8.3 アラート閾値</h3>
+    <table>
+      <tr><th>レベル</th><th>条件</th><th>対応SLA</th></tr>
+      <tr><td><span class="badge badge-ok">L1 情報</span></td><td>日次ループ完了</td><td>確認のみ</td></tr>
+      <tr><td><span class="badge badge-warn">L2 警告</span></td><td>日次ループ実行失敗 / エラーログ検出</td><td>4時間以内調査開始</td></tr>
+      <tr><td><span class="badge badge-error">L3 重大</span></td><td>AGENTS.md消失 / kanban消失 / devrag DB破壊</td><td>1時間以内停止検討・ロールバック</td></tr>
+    </table>
+  </div>
+</div>
+
+<!-- バックアップ -->
+<div id="backup" class="section">
+  <div class="card">
+    <h2>バックアップ</h2>
+    <h3>9.1 バックアップ対象</h3>
+    <table>
+      <tr><th>対象</th><th>優先度</th><th>頻度</th><th>保管場所</th></tr>
+      <tr><td>AGENTS.md</td><td><span class="badge badge-error">最高</span></td><td>変更毎</td><td>AGENTS.md.bak (同ディレクトリ)</td></tr>
+      <tr><td>project_kanban.html</td><td><span class="badge badge-error">最高</span></td><td>変更毎</td><td>git / 外部ストレージ</td></tr>
+      <tr><td>シームレスドキュメント5種</td><td><span class="badge badge-warn">高</span></td><td>日次</td><td>git / 外部ストレージ</td></tr>
+      <tr><td>scripts/*.py</td><td><span class="badge badge-warn">高</span></td><td>変更毎</td><td>git</td></tr>
+      <tr><td>documents/*.md</td><td><span class="badge badge-warn">高</span></td><td>変更毎</td><td>git</td></tr>
+      <tr><td>devrag vectors.db</td><td><span class="badge badge-info">中</span></td><td>週次</td><td>外部ストレージ（再構築可能）</td></tr>
+      <tr><td>logs/</td><td><span class="badge badge-info">中</span></td><td>月次</td><td>外部ストレージ</td></tr>
+    </table>
+    <h3>9.2 バックアップ実施手順</h3>
+    <div class="step-block"><h4>日次バックアップ（手動）</h4><p>主要ファイルをgit commitし、リモートリポジトリにpushする。ただし、git pushは操作安全性確認後に実施すること。</p></div>
+    <div class="code-block"># 変更確認
+git status
+git diff
+# ステージング・コミット
+git add AGENTS.md project_kanban.html *.html scripts/ documents/
+git commit -m "CAPDkA 第N回 / [変更内容]"
+# push は慎重に（リモートへの影響を確認後）</div>
+    <h3>9.3 バックアップ禁止事項</h3>
+    <div class="err-block">
+      <h4>gitignore対象ファイルのコミット禁止</h4>
+      <p>.env / *.key / *.pem / vectors.db / devrag.exe / __pycache__/ をコミットしないこと。.gitignoreで除外を徹底する。</p>
+    </div>
+  </div>
+</div>
+
+<!-- 障害対応 -->
+<div id="incident" class="section">
+  <div class="card">
+    <h2>障害対応</h2>
+    <h3>10.1 インシデント対応SLA</h3>
+    <table>
+      <tr><th>レベル</th><th>定義</th><th>対応時間</th></tr>
+      <tr><td>L1 (低)</td><td>バグ・軽微な表示不具合</td><td>72時間以内パッチ</td></tr>
+      <tr><td>L2 (中)</td><td>日次ループ失敗・ドキュメント生成エラー</td><td>4時間以内調査開始・関係者通知</td></tr>
+      <tr><td>L3 (高)</td><td>AGENTS.md消失・kanban消失・devrag DB破壊</td><td>1時間以内ロールバック実施</td></tr>
+    </table>
+    <h3>10.2 よくある障害と対処</h3>
+    <div class="err-block">
+      <h4>日次進化ループが実行されない</h4>
+      <p>確認: Task Schedulerのタスク「CIDLS_Daily_Self_Evolution_1100」の状態を確認。<br>
+      対処: タスクが無効化されている場合は有効化する。register_daily_self_evolution_task.ps1 を再実行してタスクを再登録する。</p>
+    </div>
+    <div class="err-block">
+      <h4>devragインデックス検索が失敗する</h4>
+      <p>確認: %LOCALAPPDATA%\devrag\devrag.exe の存在確認 / devrag-config.json の内容確認。<br>
+      対処: setup_devrag.ps1 を再実行してセットアップをやり直す。index-code は実行禁止。</p>
+    </div>
+    <div class="err-block">
+      <h4>Excel生成スクリプトでUnicodeEncodeError</h4>
+      <p>確認: コード内にUnicode絵文字が含まれていないか確認。<br>
+      対処: 絵文字を全て削除し、ASCII文字列に置き換える（AGENTS.md [TS.1]準拠）。</p>
+    </div>
+    <div class="err-block">
+      <h4>Python仮想環境が見つからない</h4>
+      <p>確認: D:\production\.venv の存在確認。<br>
+      対処: リカバリ手順タブの「仮想環境の再構築」を実行する。</p>
+    </div>
+    <div class="err-block">
+      <h4>n8n が停止して外部発報が届かない</h4>
+      <p>確認: docker ps で n8n コンテナの状態を確認。localhost:5678 の応答を確認。<br>
+      対処: docker compose -f docker-compose.n8n.yml restart n8n を実行する。<br>
+      応急: n8n停止時はアプリ側は [WARNING] ログを出力して処理を継続する設計 (フェイルクローズ)。復旧後に再送は行わないため、手動での発報再実行を検討する。<br>
+      参照: AGENTS.md [N8N.2]</p>
+    </div>
+    <h3>10.3 n8n 運用手順</h3>
+    <table>
+      <tr><th>作業</th><th>手順</th><th>頻度</th></tr>
+      <tr><td>n8n 起動</td><td>docker compose -f docker-compose.n8n.yml up -d</td><td>システム起動時</td></tr>
+      <tr><td>n8n 停止</td><td>docker compose -f docker-compose.n8n.yml down</td><td>メンテナンス時</td></tr>
+      <tr><td>ワークフロー定義のバックアップ</td><td>n8n UI からエクスポート → n8n_workflows/ に保存 (Credentials除外)</td><td>ワークフロー変更時</td></tr>
+      <tr><td>Credentials の追加</td><td>n8n UI の Credentials メニューから追加。アプリコードへの混入は禁止</td><td>新規発報先追加時</td></tr>
+      <tr><td>Webhook URL 変更</td><td>.env の N8N_WEBHOOK_URL を更新 → アプリ再起動。アプリコードのハードコードは禁止</td><td>URL変更時</td></tr>
+    </table>
+  </div>
+</div>
+
+</div>
+
+<footer>
+  CIDLS-OPS-002 構成定義書 兼 運用保守手順書 v1.0.0 &nbsp;|&nbsp; 2026-05-13 &nbsp;|&nbsp; CAPDkA 第13回 &nbsp;|&nbsp;
+  <a href="index.html" style="color:#10b981;">index.html</a> &nbsp;|&nbsp;
+  <a href="ドキュメント一覧.html" style="color:#10b981;">ドキュメント一覧</a>
+</footer>
+
+<script>
+function show(id, btn) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  if (btn) btn.classList.add('active');
+}
+</script>
+</body>
+</html>

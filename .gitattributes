@@ -1,0 +1,26 @@
+# Auto-detect text files and normalize line endings
+* text=auto
+
+# Windows batch/cmd files: CRLF
+*.bat text eol=crlf
+*.cmd text eol=crlf
+
+# Python/scripts: LF
+*.py text eol=lf
+*.ps1 text eol=lf
+*.sh text eol=lf
+
+# HTML/MD/JSON/TOML: LF
+*.html text eol=lf
+*.md text eol=lf
+*.json text eol=lf
+*.toml text eol=lf
+*.txt text eol=lf
+
+# Binaries
+*.png binary
+*.jpg binary
+*.xlsx binary
+*.zip binary
+*.onnx binary
+*.duckdb binary

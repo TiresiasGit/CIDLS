@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CIDLS 要求定義書 - v1.0.0</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #0f1535; --bg-card: #1a2040; --bg-section: #111828;
+    --accent: #6366f1; --accent2: #8b5cf6; --success: #10b981;
+    --warn: #f59e0b; --error: #ef4444; --info: #3bc9db;
+    --text: #e2e8f0; --text-muted: #94a3b8; --border: rgba(99,102,241,0.2);
+    --shadow: 0 4px 24px rgba(0,0,0,0.4);
+  }
+  body { font-family: 'Segoe UI', -apple-system, sans-serif; background: var(--bg); color: var(--text); line-height: 1.7; }
+  .container { max-width: 1100px; margin: 0 auto; padding: 40px 24px; }
+
+  /* Header */
+  .doc-header { background: linear-gradient(135deg, #1a2040 0%, #0f1535 100%); border: 1px solid var(--border); border-radius: 16px; padding: 40px; margin-bottom: 32px; position: relative; overflow: hidden; }
+  .doc-header::before { content: ''; position: absolute; top: -60px; right: -60px; width: 200px; height: 200px; background: radial-gradient(circle, rgba(99,102,241,0.2) 0%, transparent 70%); }
+  .doc-badge { display: inline-flex; align-items: center; gap: 8px; background: rgba(99,102,241,0.2); border: 1px solid rgba(99,102,241,0.4); border-radius: 999px; padding: 4px 14px; font-size: 12px; color: #a5b4fc; margin-bottom: 16px; }
+  .doc-title { font-size: 28px; font-weight: 800; color: #fff; margin-bottom: 8px; }
+  .doc-meta { display: flex; flex-wrap: wrap; gap: 20px; margin-top: 20px; }
+  .meta-item { display: flex; flex-direction: column; gap: 2px; }
+  .meta-label { font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+  .meta-value { font-size: 14px; font-weight: 600; color: var(--text); }
+
+  /* Sections */
+  .section { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 28px; margin-bottom: 20px; }
+  .section-title { font-size: 16px; font-weight: 700; color: var(--accent); margin-bottom: 20px; display: flex; align-items: center; gap: 8px; padding-bottom: 12px; border-bottom: 1px solid var(--border); }
+  .section-title .num { background: rgba(99,102,241,0.2); border-radius: 6px; padding: 2px 8px; font-size: 12px; }
+
+  /* Table */
+  table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+  th { background: rgba(99,102,241,0.15); color: #a5b4fc; font-weight: 600; padding: 10px 14px; text-align: left; border: 1px solid var(--border); font-size: 12px; }
+  td { padding: 10px 14px; border: 1px solid var(--border); vertical-align: top; }
+  tr:nth-child(even) td { background: rgba(255,255,255,0.02); }
+
+  /* Badge */
+  .badge { display: inline-block; border-radius: 999px; padding: 2px 10px; font-size: 11px; font-weight: 700; }
+  .badge-must { background: rgba(239,68,68,0.2); color: #fca5a5; border: 1px solid rgba(239,68,68,0.3); }
+  .badge-should { background: rgba(245,158,11,0.2); color: #fcd34d; border: 1px solid rgba(245,158,11,0.3); }
+  .badge-want { background: rgba(99,102,241,0.2); color: #a5b4fc; border: 1px solid rgba(99,102,241,0.3); }
+  .badge-done { background: rgba(16,185,129,0.2); color: #6ee7b7; border: 1px solid rgba(16,185,129,0.3); }
+  .badge-wip { background: rgba(245,158,11,0.2); color: #fcd34d; border: 1px solid rgba(245,158,11,0.3); }
+  .badge-open { background: rgba(239,68,68,0.2); color: #fca5a5; border: 1px solid rgba(239,68,68,0.3); }
+
+  /* Grid */
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .kv-row { display: flex; gap: 12px; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
+  .kv-key { width: 160px; flex-shrink: 0; color: var(--text-muted); font-size: 13px; }
+  .kv-val { flex: 1; font-size: 13px; }
+
+  /* Story-flow */
+  .flow-step { display: flex; gap: 16px; align-items: flex-start; padding: 14px; background: rgba(255,255,255,0.03); border-radius: 8px; margin-bottom: 8px; border-left: 3px solid var(--accent); }
+  .flow-num { width: 28px; height: 28px; background: var(--accent); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; flex-shrink: 0; color: #fff; }
+  .flow-body { flex: 1; }
+  .flow-title { font-weight: 600; font-size: 14px; margin-bottom: 4px; }
+  .flow-desc { font-size: 13px; color: var(--text-muted); }
+
+  /* Risk matrix */
+  .risk-high { color: var(--error); font-weight: 700; }
+  .risk-mid  { color: var(--warn); font-weight: 600; }
+  .risk-low  { color: var(--success); }
+
+  .toc a { color: #a5b4fc; text-decoration: none; font-size: 14px; display: block; padding: 4px 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
+  .toc a:hover { color: #fff; }
+
+  footer { text-align: center; padding: 32px 0 20px; color: var(--text-muted); font-size: 12px; border-top: 1px solid var(--border); margin-top: 40px; }
+</style>
+<style>
+
+.diagram-section { background: var(--panel,#16213e); border: 1px solid var(--border,#334155); border-radius: 10px; padding: 24px; margin-bottom: 20px; }
+.diagram-section h2 { font-size: 1.0rem; color: var(--accent,#6366f1); margin-bottom: 16px; border-bottom: 1px solid var(--border,#334155); padding-bottom: 8px; }
+.diagram-section h3 { font-size: 0.9rem; color: var(--cyan,#06b6d4); margin: 16px 0 10px; }
+.mermaid-wrap { background: #0d1527; border-radius: 8px; padding: 20px; overflow-x: auto; margin-bottom: 16px; }
+.mermaid-wrap .mermaid { max-width: 100%; }
+
+</style>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<script>mermaid.initialize({startOnLoad:true,theme:"dark",themeVariables:{primaryColor:"#1a2040",primaryTextColor:"#e2e8f0",primaryBorderColor:"#6366f1",lineColor:"#6366f1",secondaryColor:"#16213e",tertiaryColor:"#0f1535"}});</script>
+</head>
+<body>
+<div class="container">
+
+  <!-- ヘッダー -->
+  <div class="doc-header">
+    <div class="doc-badge">SW開発 納品ドキュメント / 要求定義書</div>
+    <div class="doc-title">CIDLS プラットフォーム 要求定義書</div>
+    <p style="color:var(--text-muted);font-size:14px;margin-top:8px;">Concept-Input to Delivery-Lifecycle System — コンセプト入力からアプリ出力・自律進化まで一気通貫パイプライン</p>
+    <div class="doc-meta">
+      <div class="meta-item"><span class="meta-label">文書番号</span><span class="meta-value">CIDLS-REQ-001</span></div>
+      <div class="meta-item"><span class="meta-label">バージョン</span><span class="meta-value">v1.0.0</span></div>
+      <div class="meta-item"><span class="meta-label">作成日</span><span class="meta-value">2026-05-12</span></div>
+      <div class="meta-item"><span class="meta-label">ステータス</span><span class="meta-value"><span class="badge badge-wip">作成中</span></span></div>
+      <div class="meta-item"><span class="meta-label">オーナー</span><span class="meta-value">CIDLSチーム</span></div>
+      <div class="meta-item"><span class="meta-label">準拠規格</span><span class="meta-value">共通フレーム2007 / AGENTS.md [CF,PH]</span></div>
+    </div>
+  </div>
+
+  <!-- 目次 -->
+  <div class="section">
+    <div class="section-title"><span class="num">TOC</span> 目次</div>
+    <div class="toc" style="columns:2; gap:24px;">
+      <a href="#s1">1. 事業要件 (ビジョン・目的)</a>
+      <a href="#s2">2. 利害関係者一覧</a>
+      <a href="#s3">3. 業務要件 (As-Is / To-Be)</a>
+      <a href="#s4">4. ペイン・根本原因 (Why×5)</a>
+      <a href="#s5">5. 機能要件 (Must / Should / Want)</a>
+      <a href="#s6">6. 非機能要件</a>
+      <a href="#s7">7. 制約・前提</a>
+      <a href="#s8">8. リスク一覧</a>
+      <a href="#s9">9. 完了判定基準</a>
+      <a href="#s10">10. 変更履歴</a>
+    </div>
+  </div>
+
+  <!-- 1. 事業要件 -->
+  <div id="s1" class="section">
+    <div class="section-title"><span class="num">1</span> 事業要件 — ビジョン・目的 (ToBe T0-T2)</div>
+    <div class="flow-step">
+      <div class="flow-num">T0</div>
+      <div class="flow-body">
+        <div class="flow-title">ビジョン (3〜5年後)</div>
+        <div class="flow-desc">「言葉で祈るだけで商用品質の成果物が生成される」自律進化AI開発プラットフォーム。開発工数87%削減を維持しながら、全日本トップITエンジニアが違和感を持たない品質を毎日自動更新する状態を実現する。</div>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-num">T1</div>
+      <div class="flow-body">
+        <div class="flow-title">目的</div>
+        <div class="flow-desc">コンセプト入力から、アプリ生成・設計ドキュメント一式・SW納品文書・自律進化保守ループまでを一気通貫で生成するCIDLSパイプラインを構築・運用する。</div>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-num">T2</div>
+      <div class="flow-body">
+        <div class="flow-title">目標 (数値)</div>
+        <div class="flow-desc">
+          開発工数: 従来比87%削減 (15.5人日→1.5人日) |
+          UI応答: &lt;= 1秒 |
+          テストカバレッジ: &gt;= 90% |
+          ドキュメント自動更新率: 100% (日次11:00) |
+          初回主機能到達: &lt;= 3クリック
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. 利害関係者 -->
+  <div id="s2" class="section">
+    <div class="section-title"><span class="num">2</span> 利害関係者一覧 (Stakeholder)</div>
+    <table>
+      <thead><tr><th>ID</th><th>役割</th><th>関与形態</th><th>期待・ニーズ</th><th>懸念点</th></tr></thead>
+      <tbody>
+        <tr><td>SH-01</td><td>プロダクトオーナー (経営層)</td><td>意思決定・投資承認</td><td>ROI明確化・工数削減の定量効果・競合優位性</td><td>初期投資コスト・習熟コスト</td></tr>
+        <tr><td>SH-02</td><td>開発担当者 (エンジニア)</td><td>設計・実装・レビュー</td><td>繰り返し作業の自動化・高品質テンプレート</td><td>AIブラックボックス化・理解負債</td></tr>
+        <tr><td>SH-03</td><td>運用管理者</td><td>日次運用・監視</td><td>低負荷運用・自動更新・アラート通知</td><td>障害時の対応手順の不明確さ</td></tr>
+        <tr><td>SH-04</td><td>エンドユーザー (業務担当)</td><td>機能利用・検証</td><td>3クリック以内で主機能到達・業務用語のUI</td><td>操作習熟コスト・エラー時の復旧</td></tr>
+        <tr><td>SH-05</td><td>セキュリティ担当</td><td>レビュー・監査</td><td>OWASP Top 10準拠・PII保護・認証強制</td><td>AI生成コードの脆弱性2.74倍リスク</td></tr>
+        <tr><td>SH-06</td><td>外部受発注先 (顧客)</td><td>納品物受領・検収</td><td>標準化された納品ドキュメント・引き継ぎ資料</td><td>ドキュメント品質・保守継続性</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 3. 業務要件 -->
+  <div id="s3" class="section">
+    <div class="section-title"><span class="num">3</span> 業務要件 — As-Is / To-Be</div>
+    <div class="grid2">
+      <div>
+        <div style="font-size:13px;font-weight:700;color:var(--error);margin-bottom:12px;">[As-Is] 現状の問題</div>
+        <div class="kv-row"><span class="kv-key">開発工数</span><span class="kv-val">15.5人日/機能（手動実装中心）</span></div>
+        <div class="kv-row"><span class="kv-key">ドキュメント</span><span class="kv-val">Excelテンプレート手作業更新、陳腐化率高</span></div>
+        <div class="kv-row"><span class="kv-key">品質管理</span><span class="kv-val">TDDなし、テストカバレッジ不明、手動確認</span></div>
+        <div class="kv-row"><span class="kv-key">知識継承</span><span class="kv-val">属人化、担当者退職で断絶リスク</span></div>
+        <div class="kv-row"><span class="kv-key">RAG検索</span><span class="kv-val">devrag ACLエラーでRAG不能（DA-004）</span></div>
+        <div class="kv-row"><span class="kv-key">販売LP</span><span class="kv-val">LPなし、外部向け訴求不能</span></div>
+        <div class="kv-row"><span class="kv-key">納品ドキュメント</span><span class="kv-val">13種中0種作成済み（DA-005）</span></div>
+      </div>
+      <div>
+        <div style="font-size:13px;font-weight:700;color:var(--success);margin-bottom:12px;">[To-Be] 目標状態</div>
+        <div class="kv-row"><span class="kv-key">開発工数</span><span class="kv-val">1.5人日/機能（87%削減）</span></div>
+        <div class="kv-row"><span class="kv-key">ドキュメント</span><span class="kv-val">HTML自動生成、日次11:00更新、陳腐化ゼロ</span></div>
+        <div class="kv-row"><span class="kv-key">品質管理</span><span class="kv-val">TDD必須、カバレッジ≥90%、WCAG2.1AA</span></div>
+        <div class="kv-row"><span class="kv-key">知識継承</span><span class="kv-val">devrag RAG、kanban_project.html SoT</span></div>
+        <div class="kv-row"><span class="kv-key">RAG検索</span><span class="kv-val">devrag v1.4.4動作確認済み（2026-05-12）</span></div>
+        <div class="kv-row"><span class="kv-key">販売LP</span><span class="kv-val">コンセプトスライド.html + LP.html作成</span></div>
+        <div class="kv-row"><span class="kv-key">納品ドキュメント</span><span class="kv-val">13種HTML形式で段階的作成</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4. ペイン・根本原因 -->
+  <div id="s4" class="section">
+    <div class="section-title"><span class="num">4</span> ペイン・根本原因分析 (Why×5 / As-Is L0-L5)</div>
+    <table>
+      <thead><tr><th>層</th><th>観察事実</th><th>内容</th></tr></thead>
+      <tbody>
+        <tr><td>L0 現象</td><td>工数が削減されない</td><td>AI活用しているが工数87%削減に届かない</td></tr>
+        <tr><td>L1 症状</td><td>繰り返し作業が残存</td><td>ドキュメント更新・テスト実行を毎回手動実施</td></tr>
+        <tr><td>L2 直接原因</td><td>自動化ループ未完成</td><td>日次11:00ループはスケジューラ登録済みだが成果物自動生成未実装</td></tr>
+        <tr><td>L3 中間原因</td><td>スクリプト未整備</td><td>generate_*.pyスクリプト群が未作成、手動実行依存</td></tr>
+        <tr><td>L4 根本原因</td><td>パイプライン実装の欠如</td><td>コンセプトイメージのStep3(v0でアプリ生成)がコード実装されていない</td></tr>
+        <tr><td>L5 メタ原因</td><td>段階的実装の優先度付けなし</td><td>全Step同時実現を目指し、MVP（最小実現可能パイプライン）が定義されていない</td></tr>
+      </tbody>
+    </table>
+    <div style="margin-top:16px;padding:14px;background:rgba(99,102,241,0.1);border-radius:8px;font-size:13px;">
+      <strong style="color:var(--accent);">レバレッジポイント:</strong> L4「generate_*.pyスクリプト群を1本ずつ実装し、日次ループに組み込む」ことで構造的に工数削減が実現する。1スクリプト追加 = 1ドキュメント自動更新 = 属人化リスク低減。
+    </div>
+  </div>
+
+  <!-- 5. 機能要件 -->
+  <div id="s5" class="section">
+    <div class="section-title"><span class="num">5</span> 機能要件 (Must / Should / Want)</div>
+    <table>
+      <thead><tr><th>ID</th><th>優先度</th><th>機能名</th><th>要件</th><th>ステータス</th></tr></thead>
+      <tbody>
+        <tr>
+          <td>FR-001</td><td><span class="badge badge-must">Must</span></td>
+          <td>CAPDkAサイクル実行</td>
+          <td>C→A→D→kAの各フェーズをAGENTS.md準拠で実行できる</td>
+          <td><span class="badge badge-done">Done</span></td>
+        </tr>
+        <tr>
+          <td>FR-002</td><td><span class="badge badge-must">Must</span></td>
+          <td>kanban_project.html SoT管理</td>
+          <td>全成果物・タスク・証跡を単一HTMLで管理できる</td>
+          <td><span class="badge badge-done">Done</span></td>
+        </tr>
+        <tr>
+          <td>FR-003</td><td><span class="badge badge-must">Must</span></td>
+          <td>devrag RAG検索</td>
+          <td>AGENTS.md知識ベースをセマンティック検索できる（v1.4.4）</td>
+          <td><span class="badge badge-done">Done</span></td>
+        </tr>
+        <tr>
+          <td>FR-004</td><td><span class="badge badge-must">Must</span></td>
+          <td>日次自律進化ループ</td>
+          <td>毎日11:00にWindows Task Schedulerから自動実行される</td>
+          <td><span class="badge badge-done">Done</span></td>
+        </tr>
+        <tr>
+          <td>FR-005</td><td><span class="badge badge-must">Must</span></td>
+          <td>SW納品ドキュメント13種</td>
+          <td>要求定義書〜リリースノートまでHTML形式で納品できる</td>
+          <td><span class="badge badge-wip">進行中</span></td>
+        </tr>
+        <tr>
+          <td>FR-006</td><td><span class="badge badge-must">Must</span></td>
+          <td>コンセプトスライド</td>
+          <td>[SLIDE]準拠の販売・提案用スライドをHTML形式で生成できる</td>
+          <td><span class="badge badge-wip">進行中</span></td>
+        </tr>
+        <tr>
+          <td>FR-007</td><td><span class="badge badge-should">Should</span></td>
+          <td>STORY.htmlリアルタイム更新</td>
+          <td>決済・認証・Webhook等のビジネスストーリーを常時最新化する</td>
+          <td><span class="badge badge-wip">進行中</span></td>
+        </tr>
+        <tr>
+          <td>FR-008</td><td><span class="badge badge-should">Should</span></td>
+          <td>generate_*.py スクリプト群</td>
+          <td>各ドキュメントをPythonスクリプトで自動生成できる</td>
+          <td><span class="badge badge-open">未着手</span></td>
+        </tr>
+        <tr>
+          <td>FR-009</td><td><span class="badge badge-should">Should</span></td>
+          <td>商用請負納品文書パックExcel</td>
+          <td>全ドキュメント一覧・進捗・品質を.xlsxで出力できる</td>
+          <td><span class="badge badge-open">未着手</span></td>
+        </tr>
+        <tr>
+          <td>FR-010</td><td><span class="badge badge-want">Want</span></td>
+          <td>v0/SaaS ホスティング</td>
+          <td>クラウド公開またはexe出力を選択できる（DISTSEC準拠）</td>
+          <td><span class="badge badge-open">未着手</span></td>
+        </tr>
+        <tr>
+          <td>FR-011</td><td><span class="badge badge-want">Want</span></td>
+          <td>LP（ランディングページ）</td>
+          <td>外部向けの販売・訴求ページをHTMLで公開できる</td>
+          <td><span class="badge badge-open">未着手</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 6. 非機能要件 -->
+  <div id="s6" class="section">
+    <div class="section-title"><span class="num">6</span> 非機能要件 (JIS X 25010 準拠)</div>
+    <table>
+      <thead><tr><th>品質特性</th><th>指標</th><th>目標値</th><th>計測方法</th></tr></thead>
+      <tbody>
+        <tr><td>性能効率性</td><td>UI応答時間</td><td>&lt;= 1秒</td><td>ブラウザDevTools計測</td></tr>
+        <tr><td>使用性</td><td>主機能到達クリック数</td><td>&lt;= 3クリック</td><td>操作ログ計測</td></tr>
+        <tr><td>信頼性</td><td>日次ループ成功率</td><td>&gt;= 99%</td><td>Task Scheduler LastResult=0確認</td></tr>
+        <tr><td>セキュリティ</td><td>OWASP Top 10</td><td>Critical=0 / High=0</td><td>手動レビュー + AI生成コードチェックリスト</td></tr>
+        <tr><td>保守性</td><td>テストカバレッジ</td><td>&gt;= 90%</td><td>pytest --cov</td></tr>
+        <tr><td>移植性</td><td>Windows 10/11対応</td><td>100%</td><td>動作確認ログ</td></tr>
+        <tr><td>アクセシビリティ</td><td>WCAG 2.1 AA</td><td>全ページ適合</td><td>axe-coreスキャン</td></tr>
+        <tr><td>互換性</td><td>Python バージョン</td><td>3.11.x</td><td>python --version確認</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 7. 制約・前提 -->
+  <div id="s7" class="section">
+    <div class="section-title"><span class="num">7</span> 制約・前提</div>
+    <div class="grid2">
+      <div>
+        <div style="font-size:13px;font-weight:700;color:var(--warn);margin-bottom:10px;">技術制約</div>
+        <div class="kv-row"><span class="kv-key">OS</span><span class="kv-val">Windows 10/11（WSL禁止）</span></div>
+        <div class="kv-row"><span class="kv-key">言語</span><span class="kv-val">Python 3.11.x（typing禁止）</span></div>
+        <div class="kv-row"><span class="kv-key">パッケージ管理</span><span class="kv-val">uv専用（pip禁止）</span></div>
+        <div class="kv-row"><span class="kv-key">DB</span><span class="kv-val">DuckDB / Parquet</span></div>
+        <div class="kv-row"><span class="kv-key">エンコード</span><span class="kv-val">UTF-8（バッチのみShift-JIS）</span></div>
+        <div class="kv-row"><span class="kv-key">絵文字</span><span class="kv-val">禁止（cp932でエラー）</span></div>
+      </div>
+      <div>
+        <div style="font-size:13px;font-weight:700;color:var(--warn);margin-bottom:10px;">運用制約</div>
+        <div class="kv-row"><span class="kv-key">秘密情報</span><span class="kv-val">exeや配布物にSecretを含めない（DISTSEC.2）</span></div>
+        <div class="kv-row"><span class="kv-key">フォールバック</span><span class="kv-val">架空データ補完・エラー隠蔽は絶対禁止</span></div>
+        <div class="kv-row"><span class="kv-key">ドキュメント命名</span><span class="kv-val">日本語ファイル名必須（D1.3）</span></div>
+        <div class="kv-row"><span class="kv-key">コードスタイル</span><span class="kv-val">PEP8準拠・完全形ファイル提示</span></div>
+        <div class="kv-row"><span class="kv-key">ライセンス</span><span class="kv-val">GPL/AGPL/CC-NC含む依存は採用禁止</span></div>
+        <div class="kv-row"><span class="kv-key">期日</span><span class="kv-val">日次11:00ループで継続的に更新</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 8. リスク -->
+  <div id="s8" class="section">
+    <div class="section-title"><span class="num">8</span> リスク一覧 (CS.3 将来リスク予測)</div>
+    <table>
+      <thead><tr><th>ID</th><th>リスク</th><th>確率</th><th>影響</th><th>対策</th></tr></thead>
+      <tbody>
+        <tr>
+          <td>RSK-001</td>
+          <td>AI生成コードの脆弱性混入（2.74倍リスク・AV.1）</td>
+          <td class="risk-high">高</td><td class="risk-high">高</td>
+          <td>AV.5チェックリスト必須適用・DUAL_VERIFY実施</td>
+        </tr>
+        <tr>
+          <td>RSK-002</td>
+          <td>devrag vectorsDB破損（DA-004 経験済み）</td>
+          <td class="risk-mid">中</td><td class="risk-mid">中</td>
+          <td>setup_devrag.ps1で再インデックス可能・定期バックアップ</td>
+        </tr>
+        <tr>
+          <td>RSK-003</td>
+          <td>日次ループの失敗・スクリプトエラー</td>
+          <td class="risk-mid">中</td><td class="risk-mid">中</td>
+          <td>LastResult監視・ログ保存・エラー通知追加</td>
+        </tr>
+        <tr>
+          <td>RSK-004</td>
+          <td>理解負債（AI生成コードの属人化）</td>
+          <td class="risk-mid">中</td><td class="risk-high">高</td>
+          <td>DUAL_VERIFY・devrag RAGによる知識外部化・DS.3組織知循環</td>
+        </tr>
+        <tr>
+          <td>RSK-005</td>
+          <td>generate_*.pyスクリプト未整備による手動作業依存</td>
+          <td class="risk-high">高</td><td class="risk-mid">中</td>
+          <td>日次ループに自動生成スクリプトを1本ずつ追加（段階実装）</td>
+        </tr>
+        <tr>
+          <td>RSK-006</td>
+          <td>Windows OSアップデートによるTask Scheduler動作変化</td>
+          <td class="risk-low">低</td><td class="risk-mid">中</td>
+          <td>月次で動作確認・register_daily_self_evolution_task.ps1で再登録</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 9. 完了判定 -->
+  <div id="s9" class="section">
+    <div class="section-title"><span class="num">9</span> 完了判定基準 (Given-When-Then)</div>
+    <table>
+      <thead><tr><th>ID</th><th>観点</th><th>Given</th><th>When</th><th>Then (合格基準)</th></tr></thead>
+      <tbody>
+        <tr>
+          <td>ACC-001</td><td>根本原因除去</td>
+          <td>generate_*.pyが実装済み</td>
+          <td>日次11:00ループを実行</td>
+          <td>全ドキュメントが自動更新され、手動作業ゼロ</td>
+        </tr>
+        <tr>
+          <td>ACC-002</td><td>再発防止</td>
+          <td>devrag RAGが動作中</td>
+          <td>AGENTS.mdルールをRAG検索</td>
+          <td>ExitCode=0で結果が返り、知識が正常参照できる</td>
+        </tr>
+        <tr>
+          <td>ACC-003</td><td>ユーザー検証</td>
+          <td>コンセプトスライドとLPが存在</td>
+          <td>非エンジニアに見せて説明</td>
+          <td>「なるほど」と言われ、3クリック以内で主機能を理解できる</td>
+        </tr>
+        <tr>
+          <td>ACC-004</td><td>納品品質</td>
+          <td>SW納品ドキュメント13種が存在</td>
+          <td>顧客に納品する</td>
+          <td>全文書にTODO/TBD/placeholder/要確認ゼロ</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 10. 変更履歴 -->
+  <div id="s10" class="section">
+    <div class="section-title"><span class="num">10</span> 変更履歴</div>
+    <table>
+      <thead><tr><th>版</th><th>日付</th><th>変更内容</th><th>変更者</th></tr></thead>
+      <tbody>
+        <tr><td>v1.0.0</td><td>2026-05-12</td><td>初版作成。DA-005 SW納品ドキュメント13種の第1弾。As-Is/To-Be・機能要件・リスク・完了判定を記載。</td><td>CIDLSチーム（Copilot）</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  
+<div class="section" style="background:var(--bg-card,#1a2040);border:1px solid var(--border);border-radius:12px;padding:28px;margin-bottom:20px;">
+  <div class="section-title"><span class="num">D</span>フロー図・ダイアグラム</div>
+
+  <div class="diagram-section">
+    <h2>業務フロー (注文票 7要素フロー)</h2>
+    <div class="mermaid-wrap">
+      <div class="mermaid">
+flowchart LR
+  A([誰が
+対象者]) --> B([何の
+目的・業務])
+  B --> C([何に困り
+ペイン])
+  C --> D([根拠はこれで
+データ・事実])
+  D --> E([いつまでで
+制約・期日])
+  E --> F([理想はこうだから
+To-Be目標])
+  F --> G([解はこれ
+ソリューション])
+
+  style A fill:#1a2040,stroke:#6366f1,color:#e2e8f0
+  style B fill:#1a2040,stroke:#8b5cf6,color:#e2e8f0
+  style C fill:#1a2040,stroke:#ef4444,color:#e2e8f0
+  style D fill:#1a2040,stroke:#f59e0b,color:#e2e8f0
+  style E fill:#1a2040,stroke:#06b6d4,color:#e2e8f0
+  style F fill:#1a2040,stroke:#10b981,color:#e2e8f0
+  style G fill:#1a2040,stroke:#6366f1,color:#e2e8f0
+      </div>
+    </div>
+  </div>
+
+  <div class="diagram-section">
+    <h2>CAPDkA 開発サイクル</h2>
+    <div class="mermaid-wrap">
+      <div class="mermaid">
+flowchart LR
+  C1([C
+Check
+現状把握]) --> A1([A
+ActionPlan
+計画])
+  A1 --> P1([P
+Plan
+設計])
+  P1 --> D1([D
+Do
+実装])
+  D1 --> K1([kA
+Knowledge
+知識蓄積])
+  K1 -->|永久循環| C1
+
+  style C1 fill:#1a2040,stroke:#6366f1,color:#a5b4fc
+  style A1 fill:#1a2040,stroke:#8b5cf6,color:#c4b5fd
+  style P1 fill:#1a2040,stroke:#06b6d4,color:#67e8f9
+  style D1 fill:#1a2040,stroke:#10b981,color:#6ee7b7
+  style K1 fill:#1a2040,stroke:#f59e0b,color:#fcd34d
+      </div>
+    </div>
+  </div>
+
+  <div class="diagram-section">
+    <h2>As-Is / To-Be ギャップ分析</h2>
+    <div class="mermaid-wrap">
+      <div class="mermaid">
+graph TD
+  subgraph AsIs["As-Is (現状)"]
+    A1[手動Excel管理]
+    A2[転記ミス頻発]
+    A3[進捗不透明]
+  end
+  subgraph Gap["ギャップ・ペイン"]
+    G1[工数ロス]
+    G2[品質低下]
+    G3[属人化]
+  end
+  subgraph ToBe["To-Be (理想)"]
+    T1[自動パイプライン]
+    T2[エラーゼロ設計]
+    T3[可視化ダッシュボード]
+  end
+  AsIs --> Gap
+  Gap --> ToBe
+
+  style AsIs fill:#1a2040,stroke:#ef4444
+  style Gap fill:#0f1535,stroke:#f59e0b
+  style ToBe fill:#1a2040,stroke:#10b981
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer>
+    CIDLS-REQ-001 v1.0.0 | 2026-05-12 | AGENTS.md [CF.7, PH.1, CS.6] 準拠 |
+    次のドキュメント: <a href="要求仕様書.html" style="color:#a5b4fc;">要求仕様書.html</a>
+  </footer>
+</div>
+</body>
+</html>

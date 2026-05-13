@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CIDLS ドキュメント一覧 CIDLS-IDX-001 v1.0.0</title>
+<style>
+:root {
+  --bg:      #0d0b1a;
+  --panel:   #17142a;
+  --accent:  #8b5cf6;
+  --accent2: #a78bfa;
+  --success: #10b981;
+  --warn:    #f59e0b;
+  --danger:  #ef4444;
+  --sky:     #38bdf8;
+  --indigo:  #6366f1;
+  --text:    #f1f5f9;
+  --muted:   #94a3b8;
+  --border:  #2a2040;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+.page-header { background: var(--panel); border-bottom: 3px solid var(--accent); padding: 20px 40px; }
+.page-header h1 { font-size: 1.35rem; font-weight: 800; color: var(--accent); }
+.page-header .meta { font-size: 0.78rem; color: var(--muted); margin-top: 4px; }
+
+.nav-tabs { display: flex; background: var(--panel); border-bottom: 1px solid var(--border); padding: 0 40px; overflow-x: auto; }
+.tab-btn { padding: 10px 18px; font-size: 0.82rem; font-weight: 600; color: var(--muted); background: transparent; border: none; border-bottom: 3px solid transparent; cursor: pointer; white-space: nowrap; transition: color .2s; }
+.tab-btn:hover { color: var(--text); }
+.tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+.content { max-width: 1200px; margin: 0 auto; padding: 32px 40px; }
+.section { display: none; }
+.section.active { display: block; }
+
+/* 検索バー */
+.search-bar { display: flex; gap: 10px; margin-bottom: 20px; align-items: center; }
+.search-bar input { flex: 1; background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 10px 16px; color: var(--text); font-size: 0.85rem; outline: none; transition: border-color .2s; }
+.search-bar input:focus { border-color: var(--accent); }
+.search-bar input::placeholder { color: var(--muted); }
+.filter-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 20px; }
+.filter-btn { padding: 5px 14px; border-radius: 999px; border: 1px solid var(--border); background: transparent; color: var(--muted); font-size: 0.78rem; cursor: pointer; transition: all .2s; }
+.filter-btn:hover, .filter-btn.active-f { border-color: var(--accent); color: var(--accent); background: rgba(139,92,246,0.1); }
+
+/* ドキュメントカード */
+.doc-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; }
+.doc-card { background: var(--panel); border: 1px solid var(--border); border-radius: 10px; padding: 18px 20px; cursor: pointer; transition: border-color .2s, transform .15s; text-decoration: none; color: inherit; display: block; }
+.doc-card:hover { border-color: var(--accent); transform: translateY(-2px); }
+.doc-card .card-header { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 10px; }
+.doc-card .icon { width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 1rem; flex-shrink: 0; font-weight: 700; }
+.doc-card .title { font-size: 0.92rem; font-weight: 700; color: var(--text); line-height: 1.3; }
+.doc-card .id-tag { font-size: 0.73rem; color: var(--muted); margin-top: 3px; }
+.doc-card .desc { font-size: 0.79rem; color: var(--muted); line-height: 1.55; margin-bottom: 12px; }
+.doc-card .footer-row { display: flex; align-items: center; justify-content: space-between; font-size: 0.75rem; }
+
+/* バッジ */
+.badge { display: inline-block; border-radius: 999px; padding: 2px 10px; font-size: 11px; font-weight: 700; }
+.badge-violet { background: rgba(139,92,246,0.2); color: #c4b5fd; border: 1px solid rgba(139,92,246,0.3); }
+.badge-ok     { background: rgba(16,185,129,0.2); color: #6ee7b7; border: 1px solid rgba(16,185,129,0.3); }
+.badge-warn   { background: rgba(245,158,11,0.2); color: #fcd34d; border: 1px solid rgba(245,158,11,0.3); }
+.badge-info   { background: rgba(56,189,248,0.2);  color: #7dd3fc; border: 1px solid rgba(56,189,248,0.3); }
+.badge-indigo { background: rgba(99,102,241,0.2);  color: #a5b4fc; border: 1px solid rgba(99,102,241,0.3); }
+.badge-red    { background: rgba(239,68,68,0.2);   color: #fca5a5; border: 1px solid rgba(239,68,68,0.3); }
+.badge-muted  { background: rgba(148,163,184,0.15); color: var(--muted); border: 1px solid rgba(148,163,184,0.2); }
+
+.card { background: var(--panel); border: 1px solid var(--border); border-radius: 10px; padding: 20px 24px; margin-bottom: 20px; }
+.card h2 { font-size: 1.1rem; color: var(--accent); margin-bottom: 14px; border-bottom: 1px solid var(--border); padding-bottom: 8px; }
+.card h3 { font-size: 0.95rem; color: var(--accent2); margin: 14px 0 8px; }
+
+table { width: 100%; border-collapse: collapse; font-size: 0.82rem; margin: 10px 0; }
+th { background: rgba(139,92,246,0.12); color: var(--accent); padding: 8px 10px; text-align: left; border: 1px solid var(--border); }
+td { padding: 7px 10px; border: 1px solid var(--border); vertical-align: top; line-height: 1.5; }
+td a { color: var(--accent2); text-decoration: none; }
+td a:hover { text-decoration: underline; }
+tr:hover td { background: rgba(255,255,255,0.03); }
+
+.stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 24px; }
+.stat-card { background: rgba(139,92,246,0.08); border: 1px solid rgba(139,92,246,0.2); border-radius: 8px; padding: 16px; text-align: center; }
+.stat-num  { font-size: 2rem; font-weight: 800; color: var(--accent); }
+.stat-lbl  { font-size: 0.78rem; color: var(--muted); margin-top: 4px; }
+
+footer { text-align: center; padding: 24px 0 16px; color: var(--muted); font-size: 0.75rem; border-top: 1px solid var(--border); margin-top: 40px; }
+</style>
+</head>
+<body>
+
+<div class="page-header">
+  <h1>CIDLS ドキュメント一覧</h1>
+  <div class="meta">CIDLS-IDX-001 &nbsp;|&nbsp; v1.0.0 &nbsp;|&nbsp; 2026-05-13 &nbsp;|&nbsp; CAPDkA 第13回</div>
+</div>
+
+<nav class="nav-tabs">
+  <button class="tab-btn active" onclick="show('all',this)">全ドキュメント</button>
+  <button class="tab-btn" onclick="show('seamless',this)">シームレス生成5種</button>
+  <button class="tab-btn" onclick="show('existing',this)">既存ドキュメント</button>
+  <button class="tab-btn" onclick="show('scripts',this)">スクリプト</button>
+  <button class="tab-btn" onclick="show('config',this)">設定・定義ファイル</button>
+  <button class="tab-btn" onclick="show('index',this)">インデックス表</button>
+</nav>
+
+<div class="content">
+
+<!-- 全ドキュメント -->
+<div id="all" class="section active">
+  <div class="stat-grid">
+    <div class="stat-card"><div class="stat-num" id="total-count">16</div><div class="stat-lbl">総ドキュメント数</div></div>
+    <div class="stat-card"><div class="stat-num">5</div><div class="stat-lbl">シームレス生成5種</div></div>
+    <div class="stat-card"><div class="stat-num">5</div><div class="stat-lbl">既存HTMLドキュメント</div></div>
+    <div class="stat-card"><div class="stat-num">4</div><div class="stat-lbl">生成スクリプト</div></div>
+  </div>
+  <div class="search-bar">
+    <input type="text" id="search-input" placeholder="ドキュメント名・IDで検索..." oninput="filterCards()">
+  </div>
+  <div class="filter-row">
+    <button class="filter-btn active-f" onclick="setFilter('all',this)">全て</button>
+    <button class="filter-btn" onclick="setFilter('seamless',this)">シームレス</button>
+    <button class="filter-btn" onclick="setFilter('nav',this)">ナビ系</button>
+    <button class="filter-btn" onclick="setFilter('html',this)">既存HTML</button>
+    <button class="filter-btn" onclick="setFilter('script',this)">スクリプト</button>
+    <button class="filter-btn" onclick="setFilter('config',this)">設定</button>
+  </div>
+
+  <div class="doc-grid" id="doc-grid">
+
+    <!-- シームレス生成5種 -->
+    <a href="要求要件定義書.html" class="doc-card" data-category="seamless" data-name="要求要件定義書 CIDLS-REQ-002">
+      <div class="card-header">
+        <div class="icon" style="background:rgba(99,102,241,0.2);color:#a5b4fc;">REQ</div>
+        <div><div class="title">要求要件定義書</div><div class="id-tag">CIDLS-REQ-002 &nbsp;|&nbsp; v1.0.0</div></div>
+      </div>
+      <div class="desc">業務要件・機能要件・非機能要件・ユースケース・ステークホルダー・制約・用語定義を統合した要件定義書。</div>
+      <div class="footer-row"><span class="badge badge-indigo">シームレス</span><span style="color:var(--muted);">10タブ</span></div>
+    </a>
+
+    <a href="構成定義書 兼 運用保守手順書.html" class="doc-card" data-category="seamless" data-name="構成定義書 兼 運用保守手順書 CIDLS-OPS-002">
+      <div class="card-header">
+        <div class="icon" style="background:rgba(16,185,129,0.2);color:#6ee7b7;">OPS</div>
+        <div><div class="title">構成定義書 兼 運用保守手順書</div><div class="id-tag">CIDLS-OPS-002 &nbsp;|&nbsp; v1.0.0</div></div>
+      </div>
+      <div class="desc">サービス構成図・配置定義・運用手順・保守手順・セットアップ・リカバリ・監視・バックアップを統合。</div>
+      <div class="footer-row"><span class="badge badge-ok">シームレス</span><span style="color:var(--muted);">10タブ</span></div>
+    </a>
+
+    <a href="テストシナリオ兼結果チェックリスト.html" class="doc-card" data-category="seamless" data-name="テストシナリオ兼結果チェックリスト CIDLS-TEST-001">
+      <div class="card-header">
+        <div class="icon" style="background:rgba(245,158,11,0.2);color:#fcd34d;">TST</div>
+        <div><div class="title">テストシナリオ兼結果チェックリスト</div><div class="id-tag">CIDLS-TEST-001 &nbsp;|&nbsp; v1.0.0</div></div>
+      </div>
+      <div class="desc">品質確認・チェックリスト・定期チェック・ログ確認・DB変数・性能確認を統合したテスト管理書。</div>
+      <div class="footer-row"><span class="badge badge-warn">シームレス</span><span style="color:var(--muted);">10タブ</span></div>
+    </a>
+
+    <a href="ユーザーマニュアル.html" class="doc-card" data-category="seamless" data-name="ユーザーマニュアル CIDLS-MAN-001">
+      <div class="card-header">
+        <div class="icon" style="background:rgba(56,189,248,0.2);color:#7dd3fc;">MAN</div>
+        <div><div class="title">ユーザーマニュアル</div><div class="id-tag">CIDLS-MAN-001 &nbsp;|&nbsp; v1.0.0</div></div>
+      </div>
+      <div class="desc">利用者向け操作ガイド。はじめに・システム概要・基本操作・スクリプト実行・トラブルシューティング・FAQ。</div>
+      <div class="footer-row"><span class="badge badge-info">シームレス</span><span style="color:var(--muted);">10タブ</span></div>
+    </a>
+
+    <a href="ドキュメント一覧.html" class="doc-card" data-category="seamless" data-name="ドキュメント一覧 CIDLS-IDX-001">
+      <div class="card-header">
+        <div class="icon" style="background:rgba(139,92,246,0.2);color:#c4b5fd;">IDX</div>
+        <div><div class="title">ドキュメント一覧</div><div class="id-tag">CIDLS-IDX-001 &nbsp;|&nbsp; v1.0.0</div></div>
+      </div>
+      <div class="desc">全ドキュメントの索引・検索・フィルタリング。このページです。</div>
+      <div class="footer-row"><span class="badge badge-violet">シームレス</span><span style="color:var(--muted);">6タブ</span></div>
+    </a>
+
+    <!-- ナビ系 -->
+    <a href="index.html" class="doc-card" data-category="nav" data-name="index クイックアクセス">
+      <div class="card-header">
+        <div class="icon" style="background:rgba(99,102,241,0.18);color:#a5b4fc;">TOP</div>
+        <div><div class="title">index.html (クイックアクセス)</div><div class="id-tag">CIDLS ナビゲーション</div></div>
+      </div>
+      <div class="desc">全成果物へのクイックアクセスナビゲーション。Quick Accessカード一覧から全HTMLドキュメントへリンク。</div>
+      <div class="footer-row"><span class="badge badge-indigo">ナビ</span></div>
+    </a>
+
+    <a href="project_kanban.html" class="doc-card" data-category="nav" data-name="project_kanban タスク管理">
+      <div class="card-header">
+        <div class="icon" style="background:rgba(245,158,11,0.18);color:#fcd34d;">KAN</div>
+        <div><div class="title">project_kanban.html</div><div class="id-tag">CIDLS タスク管理 v13</div></div>
+      </div>
+      <div class="desc">CAPDkAサイクルのタスクをBacklog→Done管理するkanbanボード。グラフマインドマップ・要求要件定義も統合。</div>
+      <div class="footer-row"><span class="badge badge-warn">ナビ</span></div>
+    </a>
+
+    <a href="cidls_platform_overview.html" class="doc-card" data-category="nav" data-name="cidls_platform_overview CIDLSプラットフォーム全体像">
+      <div class="card-header">
+        <div class="icon" style="background:rgba(56,189,248,0.18);color:#7dd3fc;">OVW</div>
+        <div><div class="title">cidls_platform_overview.html</div><div class="id-tag">CIDLS プラットフォーム全体像</div></div>
+      </div>
+      <div class="desc">CIDLSパイプライン全体像・成果物一覧・AI-DLC統合・6ステップフロー。schema v2.2.2。</div>
+      <div class="footer-row"><span class="badge badge-info">ナビ</span></div>
+    </a>
+
+    <a href="graph_project_mindmap.html" class="doc-card" data-category="nav" data-name="graph_project_mindmap マインドマップ">
+      <div class="card-header">
+        <div class="icon" style="background:rgba(139,92,246,0.18);color:#c4b5fd;">MAP</div>
+        <div><div class="title">graph_project_mindmap.html</div><div class="id-tag">CIDLS マインドマップ</div></div>
+      </div>
+      <div class="desc">PJグラフマインドマップ。DA表・スイムレーン・D3.js相互連関有向グラフ付き。</div>
+      <div class="footer-row"><span class="badge badge-violet">ナビ</span></div>
+    </a>
+
+    <!-- 既存HTML -->
+    <a href="要求定義書.html" class="doc-card" data-category="html" data-name="要求定義書">
+      <div class="card-header">
+        <div class="icon" style="background:rgba(148,163,184,0.15);color:var(--muted);">DEF</div>
+        <div><div class="title">要求定義書.html</div><div class="id-tag">既存ドキュメント</div></div>
+      </div>
+      <div class="desc">要求定義書（既存）。業務要件・目的・ステークホルダー要求。</div>
+      <div class="footer-row"><span class="badge badge-muted">既存</span></div>
+    </a>
+
+    <a href="要求仕様書.html" class="doc-card" data-category="html" data-name="要求仕様書">
+      <div class="card-header">
+        <div class="icon" style="background:rgba(148,163,184,0.15);color:var(--muted);">SPC</div>
+        <div><div class="title">要求仕様書.html</div><div class="id-tag">既存ドキュメント</div></div>
+      </div>
+      <div class="desc">要求仕様書（既存）。機能要件・非機能要件の詳細仕様。</div>
+      <div class="footer-row"><span class="badge badge-muted">既存</span></div>
+    </a>
+
+    <a href="システム要件定義書.html" class="doc-card" data-category="html" data-name="システム要件定義書">
+      <div class="card-header">
+        <div class="icon" style="background:rgba(148,163,184,0.15);color:var(--muted);">SYS</div>
+        <div><div class="title">システム要件定義書.html</div><div class="id-tag">既存ドキュメント</div></div>
+      </div>
+      <div class="desc">システム要件定義書（既存）。システム構成・要件定義・制約条件。</div>
+      <div class="footer-row"><span class="badge badge-muted">既存</span></div>
+    </a>
+
+    <a href="基本設計書.html" class="doc-card" data-category="html" data-name="基本設計書">
+      <div class="card-header">
+        <div class="icon" style="background:rgba(148,163,184,0.15);color:var(--muted);">DSN</div>
+        <div><div class="title">基本設計書.html</div><div class="id-tag">既存ドキュメント</div></div>
+      </div>
+      <div class="desc">基本設計書（既存）。アーキテクチャ・データ設計・インターフェース設計。</div>
+      <div class="footer-row"><span class="badge badge-muted">既存</span></div>
+    </a>
+
+    <a href="運用手順書.html" class="doc-card" data-category="html" data-name="運用手順書">
+      <div class="card-header">
+        <div class="icon" style="background:rgba(148,163,184,0.15);color:var(--muted);">OPR</div>
+        <div><div class="title">運用手順書.html</div><div class="id-tag">既存ドキュメント</div></div>
+      </div>
+      <div class="desc">運用手順書（既存）。日常運用・監視・障害対応手順。</div>
+      <div class="footer-row"><span class="badge badge-muted">既存</span></div>
+    </a>
+
+    <!-- スクリプト代表 -->
+    <div class="doc-card" data-category="script" data-name="スクリプト 生成スクリプト群" style="cursor:default;">
+      <div class="card-header">
+        <div class="icon" style="background:rgba(56,189,248,0.15);color:#7dd3fc;">PY</div>
+        <div><div class="title">scripts/ 生成スクリプト群</div><div class="id-tag">D:\CIDLS\scripts\</div></div>
+      </div>
+      <div class="desc">各HTML/Excel自動生成スクリプト。generate_*.py 4本。</div>
+      <div class="footer-row"><span class="badge badge-info">スクリプト</span></div>
+    </div>
+
+    <!-- 設定 -->
+    <div class="doc-card" data-category="config" data-name="devrag-config 設定ファイル" style="cursor:default;">
+      <div class="card-header">
+        <div class="icon" style="background:rgba(139,92,246,0.15);color:#c4b5fd;">CFG</div>
+        <div><div class="title">devrag-config.json / config.json</div><div class="id-tag">D:\CIDLS\</div></div>
+      </div>
+      <div class="desc">devragインデックス設定・チャンクサイズ・検索件数・モデル定義などの設定ファイル群。</div>
+      <div class="footer-row"><span class="badge badge-violet">設定</span></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- シームレス生成5種 -->
+<div id="seamless" class="section">
+  <div class="card">
+    <h2>シームレス生成5種</h2>
+    <p style="font-size:0.83rem;color:var(--muted);margin-bottom:16px;">CIDLSパイプラインが自動生成する標準ドキュメント5種。AGENTS.md [CIDLS.3] 準拠。</p>
+    <table>
+      <tr><th>No.</th><th>ドキュメント名</th><th>ファイル名</th><th>ID</th><th>アクセントカラー</th><th>タブ数</th><th>状態</th></tr>
+      <tr><td>1</td><td><a href="要求要件定義書.html">要求要件定義書</a></td><td>要求要件定義書.html</td><td>CIDLS-REQ-002</td><td><span class="badge badge-indigo">インジゴ</span></td><td>10</td><td><span class="badge badge-ok">完成</span></td></tr>
+      <tr><td>2</td><td><a href="構成定義書 兼 運用保守手順書.html">構成定義書 兼 運用保守手順書</a></td><td>構成定義書 兼 運用保守手順書.html</td><td>CIDLS-OPS-002</td><td><span class="badge badge-ok">エメラルド</span></td><td>10</td><td><span class="badge badge-ok">完成</span></td></tr>
+      <tr><td>3</td><td><a href="テストシナリオ兼結果チェックリスト.html">テストシナリオ兼結果チェックリスト</a></td><td>テストシナリオ兼結果チェックリスト.html</td><td>CIDLS-TEST-001</td><td><span class="badge badge-warn">アンバー</span></td><td>10</td><td><span class="badge badge-ok">完成</span></td></tr>
+      <tr><td>4</td><td><a href="ユーザーマニュアル.html">ユーザーマニュアル</a></td><td>ユーザーマニュアル.html</td><td>CIDLS-MAN-001</td><td><span class="badge badge-info">スカイブルー</span></td><td>10</td><td><span class="badge badge-ok">完成</span></td></tr>
+      <tr><td>5</td><td><a href="ドキュメント一覧.html">ドキュメント一覧</a></td><td>ドキュメント一覧.html</td><td>CIDLS-IDX-001</td><td><span class="badge badge-violet">バイオレット</span></td><td>6</td><td><span class="badge badge-ok">完成</span></td></tr>
+    </table>
+  </div>
+</div>
+
+<!-- 既存ドキュメント -->
+<div id="existing" class="section">
+  <div class="card">
+    <h2>既存ドキュメント一覧</h2>
+    <table>
+      <tr><th>ドキュメント名</th><th>ファイル名</th><th>種類</th><th>リンク</th></tr>
+      <tr><td>クイックアクセスナビ</td><td>index.html</td><td><span class="badge badge-indigo">ナビ</span></td><td><a href="index.html">開く</a></td></tr>
+      <tr><td>タスク管理 kanban</td><td>project_kanban.html</td><td><span class="badge badge-warn">ナビ</span></td><td><a href="project_kanban.html">開く</a></td></tr>
+      <tr><td>CIDLSプラットフォーム全体像</td><td>cidls_platform_overview.html</td><td><span class="badge badge-info">ナビ</span></td><td><a href="cidls_platform_overview.html">開く</a></td></tr>
+      <tr><td>PJグラフマインドマップ</td><td>graph_project_mindmap.html</td><td><span class="badge badge-violet">ナビ</span></td><td><a href="graph_project_mindmap.html">開く</a></td></tr>
+      <tr><td>要求定義書</td><td>要求定義書.html</td><td><span class="badge badge-muted">既存</span></td><td><a href="要求定義書.html">開く</a></td></tr>
+      <tr><td>要求仕様書</td><td>要求仕様書.html</td><td><span class="badge badge-muted">既存</span></td><td><a href="要求仕様書.html">開く</a></td></tr>
+      <tr><td>システム要件定義書</td><td>システム要件定義書.html</td><td><span class="badge badge-muted">既存</span></td><td><a href="システム要件定義書.html">開く</a></td></tr>
+      <tr><td>基本設計書</td><td>基本設計書.html</td><td><span class="badge badge-muted">既存</span></td><td><a href="基本設計書.html">開く</a></td></tr>
+      <tr><td>運用手順書</td><td>運用手順書.html</td><td><span class="badge badge-muted">既存</span></td><td><a href="運用手順書.html">開く</a></td></tr>
+      <tr><td>CIDLSパイプラインマインドマップ</td><td>CIDLSパイプラインマインドマップ.html</td><td><span class="badge badge-info">ナビ</span></td><td><a href="CIDLSパイプラインマインドマップ.html">開く</a></td></tr>
+      <tr><td>コンセプトスライド</td><td>コンセプトスライド.html</td><td><span class="badge badge-violet">スライド</span></td><td><a href="コンセプトスライド.html">開く</a></td></tr>
+      <tr><td>STORY</td><td>STORY.html</td><td><span class="badge badge-indigo">ストーリー</span></td><td><a href="STORY.html">開く</a></td></tr>
+    </table>
+  </div>
+</div>
+
+<!-- スクリプト -->
+<div id="scripts" class="section">
+  <div class="card">
+    <h2>生成スクリプト一覧</h2>
+    <table>
+      <tr><th>スクリプト名</th><th>生成物</th><th>実行コマンド（抜粋）</th></tr>
+      <tr><td>generate_cidls_platform_overview.py</td><td>cidls_platform_overview.html</td><td>python scripts\generate_cidls_platform_overview.py</td></tr>
+      <tr><td>generate_project_kanban.py</td><td>project_kanban.html</td><td>python scripts\generate_project_kanban.py</td></tr>
+      <tr><td>generate_commercial_delivery_pack.py</td><td>reports\commercial_delivery\ (Excel)</td><td>python scripts\generate_commercial_delivery_pack.py</td></tr>
+      <tr><td>generate_graph_project_mindmap.py</td><td>graph_project_mindmap.html</td><td>python scripts\generate_graph_project_mindmap.py</td></tr>
+      <tr><td>generate_sw_docs_xlsx.py</td><td>SW納品Excel</td><td>python scripts\generate_sw_docs_xlsx.py</td></tr>
+      <tr><td>run_daily_self_evolution.cmd</td><td>日次自律進化実行</td><td>scripts\run_daily_self_evolution.cmd</td></tr>
+      <tr><td>register_daily_self_evolution_task.ps1</td><td>Task Scheduler登録</td><td>powershell -f scripts\register_daily_self_evolution_task.ps1</td></tr>
+      <tr><td>setup_devrag.ps1</td><td>devragセットアップ</td><td>powershell -f setup_devrag.ps1</td></tr>
+    </table>
+  </div>
+</div>
+
+<!-- 設定・定義ファイル -->
+<div id="config" class="section">
+  <div class="card">
+    <h2>設定・定義ファイル一覧</h2>
+    <table>
+      <tr><th>ファイル名</th><th>用途</th><th>場所</th></tr>
+      <tr><td>AGENTS.md</td><td>全ルールのSoT</td><td>D:\CIDLS\</td></tr>
+      <tr><td>devrag-config.json</td><td>devragインデックス設定</td><td>D:\CIDLS\</td></tr>
+      <tr><td>config.json</td><td>プラットフォーム設定</td><td>D:\CIDLS\</td></tr>
+      <tr><td>.mcp.json</td><td>MCPサーバー登録</td><td>D:\CIDLS\</td></tr>
+      <tr><td>documents\*.md</td><td>devrag知識ベース(9テーマ)</td><td>D:\CIDLS\documents\</td></tr>
+      <tr><td>.github\copilot-instructions.md</td><td>Copilot全チャット適用ルール</td><td>D:\CIDLS\.github\</td></tr>
+      <tr><td>.github\instructions\*.instructions.md</td><td>言語・テスト別自動適用ルール</td><td>D:\CIDLS\.github\instructions\</td></tr>
+      <tr><td>.github\agents\*.agent.md</td><td>CAPDkAエージェント定義</td><td>D:\CIDLS\.github\agents\</td></tr>
+      <tr><td>.github\prompts\*.prompt.md</td><td>スラッシュコマンド定義</td><td>D:\CIDLS\.github\prompts\</td></tr>
+    </table>
+  </div>
+</div>
+
+<!-- インデックス表 -->
+<div id="index" class="section">
+  <div class="card">
+    <h2>完全インデックス表</h2>
+    <table>
+      <tr><th>ID</th><th>名称</th><th>ファイル</th><th>種類</th><th>バージョン</th><th>最終更新</th></tr>
+      <tr><td>CIDLS-IDX-001</td><td>ドキュメント一覧</td><td><a href="ドキュメント一覧.html">ドキュメント一覧.html</a></td><td><span class="badge badge-violet">シームレス</span></td><td>v1.0.0</td><td>2026-05-13</td></tr>
+      <tr><td>CIDLS-REQ-002</td><td>要求要件定義書</td><td><a href="要求要件定義書.html">要求要件定義書.html</a></td><td><span class="badge badge-indigo">シームレス</span></td><td>v1.0.0</td><td>2026-05-13</td></tr>
+      <tr><td>CIDLS-OPS-002</td><td>構成定義書 兼 運用保守手順書</td><td><a href="構成定義書 兼 運用保守手順書.html">構成定義書 兼 運用保守手順書.html</a></td><td><span class="badge badge-ok">シームレス</span></td><td>v1.0.0</td><td>2026-05-13</td></tr>
+      <tr><td>CIDLS-TEST-001</td><td>テストシナリオ兼結果チェックリスト</td><td><a href="テストシナリオ兼結果チェックリスト.html">テストシナリオ兼結果チェックリスト.html</a></td><td><span class="badge badge-warn">シームレス</span></td><td>v1.0.0</td><td>2026-05-13</td></tr>
+      <tr><td>CIDLS-MAN-001</td><td>ユーザーマニュアル</td><td><a href="ユーザーマニュアル.html">ユーザーマニュアル.html</a></td><td><span class="badge badge-info">シームレス</span></td><td>v1.0.0</td><td>2026-05-13</td></tr>
+      <tr><td>-</td><td>クイックアクセスナビ</td><td><a href="index.html">index.html</a></td><td><span class="badge badge-indigo">ナビ</span></td><td>-</td><td>2026-05-13</td></tr>
+      <tr><td>-</td><td>タスク管理 kanban</td><td><a href="project_kanban.html">project_kanban.html</a></td><td><span class="badge badge-warn">ナビ</span></td><td>v13</td><td>2026-05-13</td></tr>
+      <tr><td>-</td><td>CIDLSプラットフォーム全体像</td><td><a href="cidls_platform_overview.html">cidls_platform_overview.html</a></td><td><span class="badge badge-info">ナビ</span></td><td>v2.2.2</td><td>2026-05-13</td></tr>
+      <tr><td>-</td><td>PJグラフマインドマップ</td><td><a href="graph_project_mindmap.html">graph_project_mindmap.html</a></td><td><span class="badge badge-violet">ナビ</span></td><td>-</td><td>2026-05-13</td></tr>
+      <tr><td>-</td><td>要求定義書</td><td><a href="要求定義書.html">要求定義書.html</a></td><td><span class="badge badge-muted">既存</span></td><td>-</td><td>-</td></tr>
+      <tr><td>-</td><td>要求仕様書</td><td><a href="要求仕様書.html">要求仕様書.html</a></td><td><span class="badge badge-muted">既存</span></td><td>-</td><td>-</td></tr>
+      <tr><td>-</td><td>システム要件定義書</td><td><a href="システム要件定義書.html">システム要件定義書.html</a></td><td><span class="badge badge-muted">既存</span></td><td>-</td><td>-</td></tr>
+      <tr><td>-</td><td>基本設計書</td><td><a href="基本設計書.html">基本設計書.html</a></td><td><span class="badge badge-muted">既存</span></td><td>-</td><td>-</td></tr>
+      <tr><td>-</td><td>運用手順書</td><td><a href="運用手順書.html">運用手順書.html</a></td><td><span class="badge badge-muted">既存</span></td><td>-</td><td>-</td></tr>
+      <tr><td>-</td><td>コンセプトスライド</td><td><a href="コンセプトスライド.html">コンセプトスライド.html</a></td><td><span class="badge badge-violet">スライド</span></td><td>-</td><td>-</td></tr>
+      <tr><td>-</td><td>STORY</td><td><a href="STORY.html">STORY.html</a></td><td><span class="badge badge-indigo">ストーリー</span></td><td>-</td><td>-</td></tr>
+    </table>
+  </div>
+</div>
+
+</div>
+
+<footer>
+  CIDLS-IDX-001 ドキュメント一覧 v1.0.0 &nbsp;|&nbsp; 2026-05-13 &nbsp;|&nbsp; CAPDkA 第13回 &nbsp;|&nbsp;
+  <a href="index.html" style="color:#8b5cf6;">index.html</a>
+</footer>
+
+<script>
+function show(id, btn) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  if (btn) btn.classList.add('active');
+}
+
+var currentFilter = 'all';
+function filterCards() {
+  var q = document.getElementById('search-input').value.toLowerCase();
+  document.querySelectorAll('.doc-card').forEach(function(card) {
+    var name = (card.getAttribute('data-name') || '').toLowerCase();
+    var cat  = (card.getAttribute('data-category') || '');
+    var catMatch = (currentFilter === 'all') || (cat === currentFilter);
+    var textMatch = (q === '') || (name.indexOf(q) !== -1);
+    card.style.display = (catMatch && textMatch) ? '' : 'none';
+  });
+}
+function setFilter(f, btn) {
+  currentFilter = f;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active-f'));
+  if (btn) btn.classList.add('active-f');
+  filterCards();
+}
+</script>
+</body>
+</html>

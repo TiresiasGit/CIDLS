@@ -1,0 +1,36 @@
+# CIDLS TODO
+
+- [x] `CIDLS-123`: repair future global devrag runtime rewrite when `.codex` ACL denies `runtime-devrag-config.json`
+- [x] `CIDLS-124`: remove launcher stdout preamble so devrag MCP handshake succeeds
+- [x] `CIDLS-125`: scrub remaining mojibake from `project_kanban.html`
+- [x] `CIDLS-126`: package the Windows 11 OCR pipeline and CIDLS maintenance CLI
+- [x] `CIDLS-127`: capture one policy-free desktop OCR smoke with Snipping Tool template evidence
+- [x] `CIDLS-128`: repair uv cache ACL denial for automation verification
+- [x] `CIDLS-139`: repair or define `%CODEX_HOME%\AGENTS.md` byte-mirror drift
+- [x] `CIDLS-145`: repair global devrag vectors DB write-deny ACL for automation memory indexing
+- [x] `CIDLS-130`: add Stripe subscription `STORY.html` deliverable and app surface
+- [x] `CIDLS-131`: merge security distribution addendum into AGENTS/CIDLS, global guidance, docs, audit gate, and tests
+- [x] `CIDLS-132`: decide active-session devrag cleanup threshold so wiring audit clears process-count pressure
+- [x] `CIDLS-138`: make global wiring audit derive paths from repo and Codex home
+
+- [x] multi-persona council is reflected on the board
+- [x] the CIDD / GraphRAG pipeline scene is represented on the board
+- [x] `project_kanban.html` is the primary source-of-truth board
+- [x] `project.md` is maintained as a compact mirror
+- [x] `CIDLS-105`: `CIDLS生成プロンプト.txt` is stored in the repo
+- [x] `CIDLS-106`: `agents-sw-cycle` automation is designed and scheduled
+- [x] `CIDLS-111`: repo-local `AGENTS.md` is present
+- [x] `scripts/sync_agents_cidls_policy.py` keeps AGENTS sync observable
+- [x] `CIDLS-113`: root `pre_prompt_cycle.bat` and `installer.bat` are the stable entrypoints
+- [x] `CIDLS-109`: QA matrix / scenario sheet is visible on the board
+- [x] `CIDLS-110`: alaya / DuckDB log intake is implemented
+- [x] `CIDLS-115`: the P1 docs pack exists under `docs/`
+- [x] `CIDLS-107`: CIDLS devrag indexing covers markdown beyond code
+- [x] `CIDLS-108`: browser review was removed from the gate
+- [x] `CIDLS-112`: `agents-sw-cycle` observation flow is verified
+- [x] `CIDLS-118`: no-op AGENTS sync no longer creates backup churn
+- [x] `CIDLS-119`: global `cidls_global` runtime config is CIDLS-only
+- [x] `CIDLS-120`: `build-runtime-config.py` no longer injects bare `%CODEX_HOME%`
+- [x] `CIDLS-114`: devrag markdown document roots are configured
+- [x] `CIDLS-116`: the automation prompt matches the current root/devrag workflow
+- [x] `CIDLS-117`: ClaudeCowork scheduler payload generation is available

@@ -1,0 +1,8 @@
+CIDLS観点で企画・開発・運用・保守・販売・LP・改善・生成物欠落を確認し、既存システムの40年の歴史と設計思想を温故知新で整理し、現行機能維持・低負荷運用・有用性・セキュリティ・コンプライアンスを前提に事実ベースで批判・アセスメント・将来リスク予測を行い、段階的改善策と今すぐの具体アクションを示し、「コンセプトイメージ.png」実現まで商用可能知見を反証統合し複利的自律進化せよ。完璧に実行せよ。本ルーチンの改良修正もかまわない。
+以下の優先順位で確認・実行すること:
+1. project_kanban.html の成果物ステータスを最新化 (generate_project_kanban.py 実行)
+2. documents/system-assessment.md のアセスメント結果を最新CAPDkAサイクルに同期
+3. 未完了のTodo（FR-008/009 Done化 / DA-017/018 mindmap追加 / pytest導入）を1件以上前進
+4. devrag インデックス確認 (index-code禁止厳守・similarity 0.91+ 維持)
+5. logs/daily_self_evolution/daily_self_evolution_context_latest.md に今回サイクル記録追加
+6. MO CHECK 4成果物チェックリストを応答末尾に必ず出力

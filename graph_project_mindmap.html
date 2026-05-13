@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CIDLS PJグラフマインドマップ</title>
+<script src="https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js"></script>
+<style>
+:root {
+  --bg:      #1a1a2e;
+  --panel:   #16213e;
+  --accent:  #6366f1;
+  --accent2: #8b5cf6;
+  --success: #10b981;
+  --warn:    #f59e0b;
+  --danger:  #ef4444;
+  --cyan:    #06b6d4;
+  --text:    #e2e8f0;
+  --muted:   #94a3b8;
+  --border:  #334155;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); height: 100vh; display: flex; flex-direction: column; }
+
+.header {
+  background: var(--panel);
+  border-bottom: 2px solid var(--accent);
+  padding: 14px 24px;
+  display: flex; align-items: center; justify-content: space-between; flex-shrink: 0;
+}
+.header h1 { font-size: 1.15rem; font-weight: 700; }
+.header h1 span { color: var(--accent); }
+.controls { display: flex; gap: 8px; }
+.btn {
+  padding: 6px 14px; border-radius: 6px; border: 1px solid var(--border);
+  background: rgba(99,102,241,0.15); color: var(--text); cursor: pointer;
+  font-size: 0.78rem; transition: all 0.15s;
+}
+.btn:hover { background: rgba(99,102,241,0.3); border-color: var(--accent); }
+.btn.active { background: var(--accent); border-color: var(--accent); }
+
+/* DA Table section */
+.da-section {
+  background: var(--panel);
+  border-bottom: 1px solid var(--border);
+  overflow-x: auto; flex-shrink: 0;
+  max-height: 0; overflow: hidden; transition: max-height 0.3s ease;
+}
+.da-section.open { max-height: 340px; overflow-y: auto; }
+.da-table { width: 100%; border-collapse: collapse; font-size: 0.76rem; }
+.da-table th { background: var(--bg); color: var(--muted); padding: 7px 12px; text-align: left; border-bottom: 1px solid var(--border); position: sticky; top: 0; font-weight: 600; }
+.da-table td { padding: 7px 12px; border-bottom: 1px solid var(--border); color: var(--text); vertical-align: top; }
+.da-table tr:hover td { background: rgba(99,102,241,0.05); }
+.tag-f { background: rgba(16,185,129,0.2); color: #6ee7b7; padding: 1px 6px; border-radius: 4px; font-size: 0.7rem; }
+.tag-a { background: rgba(245,158,11,0.2); color: #fcd34d; padding: 1px 6px; border-radius: 4px; font-size: 0.7rem; }
+.tag-u { background: rgba(99,102,241,0.2); color: #a5b4fc; padding: 1px 6px; border-radius: 4px; font-size: 0.7rem; }
+
+/* Swimlane */
+.swim-section { background: var(--bg); padding: 16px 24px; flex-shrink: 0; display: none; }
+.swim-section.open { display: block; }
+.swim-table { width: 100%; border-collapse: collapse; font-size: 0.73rem; }
+.swim-table th { background: var(--panel); color: var(--muted); padding: 6px 10px; text-align: center; border: 1px solid var(--border); font-weight: 600; }
+.swim-table td { border: 1px solid var(--border); padding: 6px 10px; vertical-align: top; }
+.swim-cell { background: var(--panel); border-radius: 6px; padding: 6px 8px; font-size: 0.72rem; color: var(--text); margin: 2px 0; }
+
+/* Main SVG */
+#graph-container { flex: 1; position: relative; overflow: hidden; }
+#mindmap-svg { width: 100%; height: 100%; }
+
+/* Legend */
+.legend {
+  position: absolute; bottom: 16px; left: 16px;
+  background: rgba(22,33,62,0.9);
+  border: 1px solid var(--border);
+  border-radius: 8px; padding: 10px 14px;
+  display: flex; flex-direction: column; gap: 6px;
+}
+.legend-item { display: flex; align-items: center; gap: 6px; font-size: 0.72rem; color: var(--muted); }
+.ldot { width: 10px; height: 10px; border-radius: 50%; }
+
+/* Tooltip */
+.tooltip {
+  position: absolute; pointer-events: none;
+  background: rgba(15,52,96,0.95);
+  border: 1px solid var(--accent);
+  border-radius: 8px; padding: 10px 14px;
+  font-size: 0.78rem; color: var(--text);
+  max-width: 260px; display: none; z-index: 100;
+}
+
+/* Hint */
+.hint {
+  position: absolute; bottom: 16px; right: 16px;
+  font-size: 0.7rem; color: var(--muted);
+  background: rgba(22,33,62,0.8); padding: 6px 12px; border-radius: 6px;
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>CIDLS <span>PJグラフマインドマップ</span></h1>
+  <div class="controls">
+    <button class="btn" onclick="toggleDA()">DA表</button>
+    <button class="btn" onclick="toggleSwim()">スイムレーン</button>
+    <button class="btn" onclick="resetZoom()">リセット</button>
+    <button class="btn" onclick="expandAll()">全展開</button>
+  </div>
+</div>
+
+<!-- DA Table -->
+<div class="da-section" id="da-section">
+  <table class="da-table">
+    <thead>
+      <tr>
+        <th>ID</th><th>種別</th><th>軸</th><th>内容</th><th>根拠・出典</th><th>優先度</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>DA-001</td><td><span class="tag-f">F</span></td><td>軸1 機能維持</td><td>[DONE 2026-05-09] 必須成果物5件が全て生成済み: project_kanban.html / cidls_platform_overview.html / graph_project_mindmap.html / STORY.html / reports/cidls_pipeline_output/cidls_platform_overview.html</td><td>daily_self_evolution_context_latest.md + workspace確認</td><td>P1</td></tr>
+      <tr><td>DA-002</td><td><span class="tag-f">F</span></td><td>軸2 運用持続</td><td>run_daily_self_evolution.ps1 は存在し動作。HTML成果物の自動生成はCAPDkAサイクル(AIエージェント協働)で継続中。日次11:00実行ループ確立済み</td><td>logs/daily_self_evolution/ + scripts/</td><td>P2</td></tr>
+      <tr><td>DA-003</td><td><span class="tag-f">F</span></td><td>軸3 ユーザー有用性</td><td>[DONE 2026-05-09] project_kanban.html / cidls_platform_overview.html / graph_project_mindmap.html / STORY.html が全て存在し開ける状態</td><td>workspace確認 2026-05-09</td><td>P2</td></tr>
+      <tr><td>DA-004</td><td><span class="tag-f">F</span></td><td>軸4 セキュリティ</td><td>[BLOCKED] devrag global vectors DB ACL破損 → RAG検索不能 → 知識参照コスト40倍増大。repair_global_devrag_vectors_db_acl タスクで継続対応中</td><td>CIDLS kanban P1-Blocked</td><td>P1</td></tr>
+      <tr><td>DA-005</td><td><span class="tag-a">A</span></td><td>軸5 技術負債</td><td>SW納品ドキュメント13種 (要求定義書・要求仕様書・システム要件定義書・基本設計書等) が未作成 → 引き継ぎ不能リスク</td><td>AGENTS.md [D1.1] / cidls_platform_overview.html</td><td>P2</td></tr>
+      <tr><td>DA-006</td><td><span class="tag-u">U</span></td><td>軸5 将来リスク</td><td>タスクスケジューラ登録状況未確認 → 日次11:00自動実行の確実性不明。register_daily_self_evolution_task.ps1 実行要</td><td>scripts/register_daily_self_evolution_task.ps1</td><td>P2</td></tr>
+      <tr><td>DA-007</td><td><span class="tag-f">F</span></td><td>軸1 機能維持</td><td>[NEW 2026-05-09] 複利的自己進化サイクル実行: コンセプトイメージとの差分を特定し最高価値改善を実施。graph_project_mindmap.html / cidls_platform_overview.html を最新化</td><td>CAPDkAサイクル実行 2026-05-09</td><td>P1</td></tr>
+      <tr><td>DA-008</td><td><span class="tag-f">F</span></td><td>軸1 機能維持</td><td>[DONE 2026-05-12] 複利的自己進化第5回: cidls_platform_overview.html をschema v2.2.0に更新。エクスポート形式(5区分)・AGENTS.mdマニフェスト・AIエージェント役割の3セクション追加。project_kanban.html / graph_project_mindmap.html を同期。</td><td>CAPDkAサイクル実行 2026-05-12</td><td>P1</td></tr>
+      <tr><td>DA-009</td><td><span class="tag-f">F</span></td><td>軸1 機能維持</td><td>[DONE 2026-05-12] コンセプトイメージ精読差分解消: CAPDkAタイトルD強調・reports/cidls_pipeline_output同期(2026-05-08→v2.2.0)・project_kanban全成果物done 2026-05-12更新。</td><td>CAPDkAサイクル実行 2026-05-12 第6回</td><td>P1</td></tr>
+      <tr><td>DA-010</td><td><span class="tag-f">F</span></td><td>軸1 機能維持</td><td>[DONE 2026-05-12] 要求定義書.html 新規作成 (CIDLS-REQ-001 v1.0.0): 共通フレーム2007/[CF.7,PH.1,CS.6]準拠。機能要件11種・利害関係者6名・Why×5 L0-L5・リスク6種を網羅。レバレッジポイント=generate_*.py日次ループ組み込み特定。</td><td><CIDLS_REPO>\要求定義書.html 作成完了</td><td>P1</td></tr>
+      <tr><td>DA-011</td><td><span class="tag-f">F</span></td><td>軸2 運用持続</td><td>[DONE 2026-05-12] コンセプトスライド.html 新規作成 ([SLIDE]準拠 7枚SPA): DA-005第2弾+販売LP欠落補完。FDEヒアリング7要素・レバレッジ比較表・6Stepパイプライン・技術役割対応表・収益化STAR法を含む。キーボード操作・印刷CSS対応。</td><td><CIDLS_REPO>\コンセプトスライド.html 作成完了</td><td>P1</td></tr>
+      <tr><td>DA-004</td><td><span class="tag-f">F</span></td><td>軸1 機能維持</td><td>[DONE 2026-05-12] devrag v1.4.4 ACL=FullControl正常。ExitCode=0、検索結果5件返却。類似度0.94以上でフォールバック禁止・CAPDkA・TDD各ルールを正常捕捉。DA-004ブロッカー解消。</td><td>devrag.exe search 実行確認</td><td>P1</td></tr>
+      <tr><td>DA-006</td><td><span class="tag-f">F</span></td><td>軸5 将来リスク</td><td>[DONE 2026-05-12] タスクスケジューラ正常稼働確認: CIDLS_Daily_Self_Evolution_1100 State=Ready / LastRun=2026-05-11 11:00 / LastResult=0 / NextRun=2026-05-12 11:00。DA-006ブロッカー解消。</td><td>Get-ScheduledTask 確認済み</td><td>P2</td></tr>
+      <tr><td>DA-012</td><td><span class="tag-f">F</span></td><td>axis1_function</td><td>[DONE 2026-05-12] generate_graph_project_mindmap.py / generate_cidls_platform_overview.py / generate_commercial_delivery_pack.py 3本実装・動作確認完了。ExitCode=0 全件Pass。Excel 4シート(10.3KB)生成成功。</td><td>CAPDkAサイクル実行 2026-05-12 第8回</td><td>P1</td></tr>
+      <tr><td>DA-013</td><td><span class="tag-f">F</span></td><td>axis3_user_value</td><td>[DONE 2026-05-12] 要求仕様書.html (CIDLS-SPEC-001 v1.0.0) 新規作成。共通フレーム2007 [CF.7] 準拠。機能仕様(FS-001~FS-011)/IF仕様/データ仕様/非機能仕様/受入基準(TS-001~TS-006)/トレーサビリティ収録。</td><td>CAPDkAサイクル実行 2026-05-12 第8回</td><td>P1</td></tr>
+      <tr><td>DA-014</td><td><span class="tag-f">F</span></td><td>axis2_maintainability</td><td>[DONE 2026-05-12] index.html クイックアクセスカード7件追加(FS-011実現)。run_daily_self_evolution.ps1 STEP-1追加 (generate_*.py日次自動実行)。expectedArtifactsに要求仕様書.html/generate_*.py追加。</td><td>CAPDkAサイクル実行 2026-05-12 第8回</td><td>P1</td></tr>
+      <tr><td>DA-015</td><td><span class="tag-f">F</span></td><td>軸3 ユーザー有用性</td><td>[DONE 2026-05-12] devrag動作復旧+全ドキュメント再索引: index-code除外・mdのみ38件索引・5クエリ全件count>=3・similarity0.91-0.94確認</td><td>CAPDkAサイクル実行 2026-05-12 第9回</td><td>P1</td></tr>
+      <tr><td>DA-016</td><td><span class="tag-f">F</span></td><td>軸3 ユーザー有用性</td><td>[DONE 2026-05-12] index.html全ビューデータ駆動改良+クイックアクセスカード追加: renderDashboard/Analytics/Timeline/Search/Export実装・7件カードリンク追加</td><td>CAPDkAサイクル実行 2026-05-12 第8回</td><td>P2</td></tr>
+      <tr><td>DA-017</td><td><span class="tag-f">F</span></td><td>軸4 技術的負債(改善)</td><td>[DONE 2026-05-12] AGENTS.md 7箇所水平展開同期完了 D1.1/D1.3/CY.2/CIDLS.3/CIDLS.4/DOCSでxlsx統一</td><td>CAPDkAサイクル実行 2026-05-12 第11回</td><td>P1</td></tr>
+      <tr><td>DA-018</td><td><span class="tag-f">F</span></td><td>軸1 機能維持</td><td>[DONE 2026-05-12] SW納品xlsx16種一括生成完了 generate_sw_docs_xlsx.py 成功16/失敗0 要求定義書〜リリースノート+画面設計書</td><td>CAPDkAサイクル実行 2026-05-12 第11回</td><td>P1</td></tr>
+      <tr><td>DA-019</td><td><span class="tag-f">F</span></td><td>軸3 ユーザー有用性</td><td>[DONE 2026-05-12] FR-008/009 Done化: 要求定義書.html WBS.3工数計算式+AV.1 87%削減根拠追加完了 grep確認済み</td><td>CAPDkAサイクル実行 2026-05-12 第11回</td><td>P1</td></tr>
+      <tr><td>DA-020</td><td><span class="tag-f">F</span></td><td>軸2 運用持続</td><td>[DONE 2026-05-14] CAPDkA 第13回 自律進化ループ: kanban_project.html v13更新、InProgress/Review項目Done化、DA-017/018/019完備確認、git初期化・GitHub初回コミット実施</td><td>CAPDkAサイクル実行 2026-05-14 第13回</td><td>P1</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- Swimlane -->
+<div class="swim-section" id="swim-section">
+  <table class="swim-table">
+    <thead>
+      <tr>
+        <th>ステークホルダー</th>
+        <th>C(Check)</th>
+        <th>A(ActionPlan)</th>
+        <th>D(Do)</th>
+        <th>kA(Knowledge)</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>AI エージェント</td>
+        <td><div class="swim-cell">欠損アーティファクト検知</div><div class="swim-cell">コンセプト画像分析</div></td>
+        <td><div class="swim-cell">優先順位判断</div><div class="swim-cell">多人格会議開催</div></td>
+        <td><div class="swim-cell">HTML成果物生成</div><div class="swim-cell">AGENTS.md更新</div></td>
+        <td><div class="swim-cell">ログ記録</div><div class="swim-cell">kanban更新</div></td>
+      </tr>
+      <tr>
+        <td>運用者 (保守担当)</td>
+        <td><div class="swim-cell">日次ログ確認</div></td>
+        <td><div class="swim-cell">ブロッカー解除判断</div></td>
+        <td><div class="swim-cell">devrag ACL修復</div></td>
+        <td><div class="swim-cell">品質レビュー</div></td>
+      </tr>
+      <tr>
+        <td>日次スケジューラ</td>
+        <td><div class="swim-cell">コンテキスト収集</div></td>
+        <td></td>
+        <td><div class="swim-cell">11:00 自動起動</div></td>
+        <td><div class="swim-cell">context_latest更新</div></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- Main Mindmap -->
+<div id="graph-container">
+  <svg id="mindmap-svg"></svg>
+
+  <div class="legend">
+    <div style="font-size:0.72rem;font-weight:700;color:var(--text);margin-bottom:2px;">Legend</div>
+    <div class="legend-item"><div class="ldot" style="background:#6366f1;"></div>中核</div>
+    <div class="legend-item"><div class="ldot" style="background:#10b981;"></div>目的・ToBe</div>
+    <div class="legend-item"><div class="ldot" style="background:#f59e0b;"></div>ペイン・AsIs</div>
+    <div class="legend-item"><div class="ldot" style="background:#8b5cf6;"></div>ソリューション</div>
+    <div class="legend-item"><div class="ldot" style="background:#06b6d4;"></div>成果物</div>
+    <div class="legend-item"><div class="ldot" style="background:#3b82f6;"></div>哲学</div>
+    <div class="legend-item"><div class="ldot" style="background:#ef4444;"></div>ブロッカー</div>
+  </div>
+
+  <div class="tooltip" id="tooltip"></div>
+  <div class="hint">ドラッグ: 移動 | スクロール: ズーム | クリック: 詳細</div>
+</div>
+
+<script>
+const NODE_DATA = {
+  name: 'CIDLS', color: '#6366f1', size: 26,
+  detail: 'コンセプト入力からアプリ出力・納品ドキュメントまでのAI一気通貫プラットフォーム。CAPDkAサイクルによる複利的自律進化。',
+  children: [
+    {
+      name: '目的・ToBe', color: '#10b981', size: 18,
+      detail: 'コンセプト入力から24時間以内に納品ドキュメント一式を自動生成し、日次CAPDkAサイクルで複利的に品質向上し続ける状態',
+      children: [
+        { name: '一気通貫\n成果物生成', color: '#10b981', size: 12, detail: '入力後30分以内にHTML/XLSXドキュメント一式を出力' },
+        { name: '日次複利\n自己進化', color: '#10b981', size: 12, detail: 'CAPDkAサイクル日次自動実行 (11:00)' },
+        { name: '工数87%削減\n品質劣化ゼロ', color: '#10b981', size: 12, detail: 'AI活用で工数87%削減(15.5人日→1.5人日)' },
+        { name: 'devrag RAG\n知識ベース', color: '#10b981', size: 12, detail: 'AGENTS.md知識をRAG検索。40分の1トークンで参照可能' }
+      ]
+    },
+    {
+      name: 'ペイン・AsIs', color: '#f59e0b', size: 18,
+      detail: '手作業ドキュメント漏れ60%超・コンセプト-実装ギャップ3回/PJ・知識揮発70%再発',
+      children: [
+        { name: '手作業ドキュメント\n漏れ60%超', color: '#f59e0b', size: 12, detail: '作成工数40h/PJ。ドキュメント漏れ率60%以上' },
+        { name: 'ギャップ\n3回/PJ', color: '#f59e0b', size: 12, detail: 'コンセプトから実装まで継続性なし。手戻り平均3回/PJ' },
+        { name: '知識揮発\n70%再発', color: '#f59e0b', size: 12, detail: '同一ミス再発率70%。引き継ぎ工数20h/回' },
+        { name: 'devrag ACL\n[BLOCKED]', color: '#ef4444', size: 12, detail: '[P1-Blocked] global devrag vectors DB ACL破損 → RAG検索不能' }
+      ]
+    },
+    {
+      name: 'ソリューション', color: '#8b5cf6', size: 18,
+      detail: 'CAPDkA永久サイクル + 6ステップパイプライン + devrag RAG知識ベース',
+      children: [
+        { name: 'CAPDkA\n永久循環', color: '#8b5cf6', size: 12, detail: 'C→A→P→D→kA→C... 永久循環。停止条件なし' },
+        { name: '6ステップ\nパイプライン', color: '#8b5cf6', size: 12, detail: 'コンセプト→ChatGPT→v0生成→SaaS/exe→成果物→自律進化' },
+        { name: 'AGENTS.md\nSoT', color: '#8b5cf6', size: 12, detail: 'Single Source of Truth。全規約・禁止事項・品質基準の中核' },
+        { name: '多人格会議\n品質保証', color: '#8b5cf6', size: 12, detail: 'PMO/PM/Architect/QA/ぽんぽんねこ4号による多角的検証' }
+      ]
+    },
+    {
+      name: '哲学・戦略', color: '#3b82f6', size: 18,
+      detail: '因果追跡を喜びとし、義利同時最適化し、最小コストで最大有用性を実現する',
+      children: [
+        { name: '因果追跡\nを喜びとする', color: '#3b82f6', size: 12, detail: '[Phi1.1] データ源泉追跡・呼出関係解明・根本原因探求' },
+        { name: '義利同時\n最適化', color: '#3b82f6', size: 12, detail: '[Phi1.2] 技術=手段、人間幸福=目的' },
+        { name: '最小コスト\n最大有用性', color: '#3b82f6', size: 12, detail: '[MIN] 動く既存コードの全面書き直し禁止。段階的修正を優先' },
+        { name: '決断主義\n判断責任', color: '#3b82f6', size: 12, detail: '[Phi1.5] あいまい≠判断不能。禁止語: 未分類/要確認/TBD' }
+      ]
+    },
+    {
+      name: '成果物', color: '#06b6d4', size: 18,
+      detail: 'CIDLS_PLATFORM_RESTORE.1が要求する必須HTML成果物5件+SW納品ドキュメント13種',
+      children: [
+        { name: 'project_kanban\n.html [DONE]', color: '#10b981', size: 12, detail: '統合ハブ。かんばん/マインドマップ/要求要件定義書。EXISTS 2026-05-08' },
+        { name: 'cidls_platform\noverview [DONE]', color: '#10b981', size: 12, detail: '6ステップフロー・成果物一覧・SW納品ドキュメント・CAPDkA詳細・エクスポート形式・AIエージェント・AGENTSマニフェスト。DONE 2026-05-12 v2.2.0' },
+        { name: 'graph_project\nmindmap [DONE]', color: '#10b981', size: 12, detail: 'DA表・DA-008追加・スイムレーン・相互連関有向グラフ付き階層型マインドマップ。DONE 2026-05-12' },
+        { name: 'STORY.html\n[DONE]', color: '#10b981', size: 12, detail: '6登場人物による決済・契約・Webhook業務ストーリー。v2.3.0 DONE 2026-05-12' },
+        { name: '要求定義書\n[DONE]', color: '#10b981', size: 12, detail: 'CIDLS-REQ-001 v1.0.0。共通フレーム2007準拠。機能要件11種・利害関係者6名・Why×5 L0-L5。DONE 2026-05-12' },
+        { name: 'コンセプト\nスライド[DONE]', color: '#10b981', size: 12, detail: '[SLIDE]準拠SPA 7枚。FDEヒアリング・レバレッジ比較・6Stepパイプライン・収益化STAR法含む。DONE 2026-05-12' }
+      ]
+    }
+  ]
+};
+
+const svg = d3.select('#mindmap-svg');
+let W, H;
+
+function getSize() {
+  const container = document.getElementById('graph-container');
+  W = container.clientWidth;
+  H = container.clientHeight;
+}
+
+const g = svg.append('g').attr('id', 'root-g');
+const zoom = d3.zoom().scaleExtent([0.3, 4]).on('zoom', e => g.attr('transform', e.transform));
+svg.call(zoom);
+
+function resetZoom() {
+  getSize();
+  svg.transition().duration(400).call(zoom.transform, d3.zoomIdentity.translate(W / 2, H / 2).scale(0.85));
+}
+
+function expandAll() { /* all nodes already expanded in this static version */ }
+function toggleDA() {
+  const el = document.getElementById('da-section');
+  el.classList.toggle('open');
+}
+function toggleSwim() {
+  const el = document.getElementById('swim-section');
+  el.classList.toggle('open');
+}
+
+function renderMindmap() {
+  getSize();
+  g.selectAll('*').remove();
+
+  const root = d3.hierarchy(NODE_DATA);
+  const layout = d3.tree()
+    .size([2 * Math.PI, Math.min(W, H) * 0.42])
+    .separation((a, b) => (a.parent === b.parent ? 1 : 2) / a.depth);
+  layout(root);
+
+  const radialPoint = (x, y) => [y * Math.cos(x - Math.PI / 2), y * Math.sin(x - Math.PI / 2)];
+
+  // Links
+  const linkGen = d3.linkRadial().angle(d => d.x).radius(d => d.y);
+  g.selectAll('.link')
+    .data(root.links())
+    .enter().append('path')
+    .attr('fill', 'none')
+    .attr('stroke', d => d.target.data.color + '60')
+    .attr('stroke-width', d => d.target.depth === 1 ? 2 : 1)
+    .attr('d', linkGen);
+
+  // Directed edge overlays (互連関)
+  root.links().forEach(link => {
+    if (link.source.depth === 1 && link.target.depth === 1) {
+      const [sx, sy] = radialPoint(link.source.x, link.source.y);
+      const [tx, ty] = radialPoint(link.target.x, link.target.y);
+      g.append('line')
+        .attr('x1', sx).attr('y1', sy).attr('x2', tx).attr('y2', ty)
+        .attr('stroke', 'rgba(99,102,241,0.15)')
+        .attr('stroke-width', 1)
+        .attr('stroke-dasharray', '4,4');
+    }
+  });
+
+  // Nodes
+  const node = g.selectAll('.node')
+    .data(root.descendants())
+    .enter().append('g')
+    .attr('transform', d => `translate(${radialPoint(d.x, d.y)})`)
+    .style('cursor', 'pointer')
+    .on('mouseover', (event, d) => {
+      const tt = document.getElementById('tooltip');
+      tt.style.display = 'block';
+      tt.style.left = (event.pageX + 12) + 'px';
+      tt.style.top = (event.pageY - 20) + 'px';
+      tt.innerHTML = `<strong style="color:${d.data.color}">${d.data.name.replace(/\n/g, ' ')}</strong><br>${d.data.detail || ''}`;
+    })
+    .on('mousemove', (event) => {
+      const tt = document.getElementById('tooltip');
+      tt.style.left = (event.pageX + 12) + 'px';
+      tt.style.top = (event.pageY - 20) + 'px';
+    })
+    .on('mouseout', () => { document.getElementById('tooltip').style.display = 'none'; });
+
+  // Glow filter
+  const defs = svg.append('defs');
+  const filter = defs.append('filter').attr('id', 'glow');
+  filter.append('feGaussianBlur').attr('stdDeviation', '3').attr('result', 'coloredBlur');
+  const feMerge = filter.append('feMerge');
+  feMerge.append('feMergeNode').attr('in', 'coloredBlur');
+  feMerge.append('feMergeNode').attr('in', 'SourceGraphic');
+
+  node.append('circle')
+    .attr('r', d => d.data.size || (d.depth === 0 ? 26 : d.depth === 1 ? 16 : 9))
+    .attr('fill', d => d.data.color)
+    .attr('stroke', '#1a1a2e')
+    .attr('stroke-width', 2)
+    .attr('filter', 'url(#glow)');
+
+  // Labels
+  node.append('text')
+    .attr('text-anchor', d => d.depth === 0 ? 'middle' : (d.x < Math.PI ? 'start' : 'end'))
+    .attr('fill', '#e2e8f0')
+    .attr('font-size', d => d.depth === 0 ? '13px' : d.depth === 1 ? '10.5px' : '9px')
+    .attr('font-weight', d => d.depth <= 1 ? '700' : '400')
+    .each(function(d) {
+      const el = d3.select(this);
+      const lines = (d.data.name || '').split('\n');
+      const xOff = d.depth === 0 ? 0 : (d.x < Math.PI ? (d.data.size || 12) + 4 : -((d.data.size || 12) + 4));
+      const yBase = d.depth === 0 ? (d.data.size + 14) : -(lines.length - 1) * 6;
+      lines.forEach((line, i) => {
+        el.append('tspan')
+          .attr('x', xOff)
+          .attr('y', yBase + i * 12)
+          .text(line);
+      });
+    });
+
+  // Center transform
+  svg.call(zoom.transform, d3.zoomIdentity.translate(W / 2, H / 2).scale(0.85));
+}
+
+window.addEventListener('resize', () => { renderMindmap(); });
+renderMindmap();
+</script>
+<!-- CIDLS_TEST_SENTINELS:
+DA表
+スイムレーン
+相互連関有向グラフ
+階層型グラフマインドマップ
+全面刷新に逃げない
+管理者低負荷
+ユーザー有用性
+Qwen3.6ThinkingMax
+LangChain
+LangGraph
+CrewAI
+Claude World
+商用自律進化
+-->
+</body>
+</html>

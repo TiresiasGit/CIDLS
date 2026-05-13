@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CIDLSとは何か - コンセプトスライド</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #f8f9fa; --card: #ffffff; --dark: #1a1a2e;
+    --accent: #6366f1; --accent2: #8b5cf6; --success: #10b981;
+    --warn: #f59e0b; --danger: #ef4444; --text: #1e293b;
+    --muted: #64748b; --border: #e2e8f0;
+    --shadow: 0 4px 24px rgba(0,0,0,0.10);
+    --slide-w: 900px;
+  }
+  body { font-family: 'Segoe UI', -apple-system, sans-serif; background: var(--bg); color: var(--text); padding: 40px 20px; }
+
+  /* Slide Container */
+  .slides-nav { display: flex; justify-content: center; gap: 8px; margin-bottom: 24px; flex-wrap: wrap; }
+  .nav-btn { background: var(--border); border: none; border-radius: 999px; padding: 6px 16px; font-size: 12px; cursor: pointer; color: var(--muted); transition: all 0.2s; }
+  .nav-btn.active, .nav-btn:hover { background: var(--accent); color: #fff; }
+
+  .slide { display: none; max-width: var(--slide-w); margin: 0 auto; background: var(--card); border-radius: 20px; box-shadow: var(--shadow); overflow: hidden; min-height: 500px; }
+  .slide.active { display: block; }
+
+  /* Slide Header */
+  .slide-header { padding: 36px 48px 24px; border-bottom: 2px solid var(--border); position: relative; }
+  .slide-num { position: absolute; top: 20px; right: 32px; font-size: 12px; color: var(--muted); }
+  .slide-category { display: inline-block; background: linear-gradient(90deg, var(--accent), var(--accent2)); color: #fff; border-radius: 999px; padding: 4px 14px; font-size: 11px; font-weight: 700; margin-bottom: 12px; }
+  .slide-title { font-size: 26px; font-weight: 800; color: var(--dark); line-height: 1.3; }
+  .slide-subtitle { font-size: 14px; color: var(--muted); margin-top: 6px; }
+
+  /* Slide Body */
+  .slide-body { padding: 32px 48px; }
+
+  /* Cards */
+  .card-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-top: 16px; }
+  .card { background: var(--bg); border: 1px solid var(--border); border-radius: 12px; padding: 20px; }
+  .card-icon { font-size: 28px; margin-bottom: 10px; }
+  .card-label { font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+  .card-val { font-size: 18px; font-weight: 800; color: var(--dark); }
+  .card-desc { font-size: 12px; color: var(--muted); margin-top: 4px; }
+
+  /* Lists */
+  .point-list { list-style: none; margin-top: 16px; }
+  .point-list li { display: flex; gap: 12px; align-items: flex-start; padding: 10px 0; border-bottom: 1px solid var(--border); font-size: 14px; }
+  .point-list li:last-child { border-bottom: none; }
+  .point-list .icon { width: 28px; height: 28px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0; }
+  .icon-ok { background: rgba(16,185,129,0.15); color: var(--success); }
+  .icon-bad { background: rgba(239,68,68,0.15); color: var(--danger); }
+  .icon-tip { background: rgba(99,102,241,0.15); color: var(--accent); }
+
+  /* Flow */
+  .flow { display: flex; gap: 0; align-items: stretch; margin-top: 16px; flex-wrap: wrap; }
+  .flow-item { flex: 1; min-width: 130px; padding: 16px; text-align: center; border: 1px solid var(--border); position: relative; }
+  .flow-item:not(:last-child)::after { content: '→'; position: absolute; right: -14px; top: 50%; transform: translateY(-50%); font-size: 20px; color: var(--accent); z-index: 1; }
+  .flow-item:first-child { border-radius: 12px 0 0 12px; }
+  .flow-item:last-child { border-radius: 0 12px 12px 0; }
+  .flow-icon { font-size: 24px; margin-bottom: 8px; }
+  .flow-label { font-size: 11px; font-weight: 700; color: var(--accent); }
+  .flow-desc { font-size: 11px; color: var(--muted); margin-top: 4px; }
+
+  /* Example Box */
+  .example { background: linear-gradient(135deg, rgba(99,102,241,0.08), rgba(139,92,246,0.05)); border: 1px solid rgba(99,102,241,0.2); border-radius: 12px; padding: 20px; margin-top: 20px; }
+  .example-title { font-size: 11px; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px; }
+  .example-content { font-size: 14px; color: var(--text); line-height: 1.7; }
+
+  /* Table */
+  table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 16px; }
+  th { background: var(--bg); color: var(--muted); font-weight: 700; padding: 10px 14px; text-align: left; border-bottom: 2px solid var(--border); font-size: 11px; text-transform: uppercase; }
+  td { padding: 10px 14px; border-bottom: 1px solid var(--border); }
+  .badge { display: inline-block; border-radius: 999px; padding: 2px 10px; font-size: 11px; font-weight: 700; }
+  .badge-g { background: rgba(16,185,129,0.15); color: var(--success); }
+  .badge-y { background: rgba(245,158,11,0.15); color: var(--warn); }
+  .badge-r { background: rgba(239,68,68,0.15); color: var(--danger); }
+
+  /* Quote */
+  .quote { border-left: 4px solid var(--accent); padding: 16px 20px; background: rgba(99,102,241,0.05); border-radius: 0 8px 8px 0; font-size: 16px; font-style: italic; color: var(--dark); margin: 20px 0; }
+
+  /* Slide Footer */
+  .slide-footer { padding: 16px 48px; background: var(--bg); border-top: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+  .slide-footer button { background: var(--accent); color: #fff; border: none; border-radius: 8px; padding: 8px 20px; cursor: pointer; font-size: 13px; font-weight: 600; }
+  .slide-footer button:disabled { background: var(--border); color: var(--muted); cursor: default; }
+
+  /* Print */
+  @media print {
+    .slides-nav, .slide-footer { display: none; }
+    .slide { display: block !important; page-break-after: always; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Navigation -->
+<div class="slides-nav" id="nav">
+  <button class="nav-btn active" onclick="go(0)">1. CIDLSとは</button>
+  <button class="nav-btn" onclick="go(1)">2. 現場の困りごと</button>
+  <button class="nav-btn" onclick="go(2)">3. レバレッジポイント</button>
+  <button class="nav-btn" onclick="go(3)">4. CIDLSの解決策</button>
+  <button class="nav-btn" onclick="go(4)">5. 技術の役割</button>
+  <button class="nav-btn" onclick="go(5)">6. 始め方・収益化</button>
+  <button class="nav-btn" onclick="go(6)">参考リンク</button>
+</div>
+
+<!-- Slide 1: CIDLSとは -->
+<div class="slide active" id="s0">
+  <div class="slide-header">
+    <div class="slide-num">1 / 7</div>
+    <div class="slide-category">今日の目的</div>
+    <div class="slide-title">CIDLSとは何か</div>
+    <div class="slide-subtitle">「コンセプト入力 → アプリ生成 → 自律進化」を一気通貫でつなぐパイプライン</div>
+  </div>
+  <div class="slide-body">
+    <div class="quote">「言葉で祈るだけで商用品質の成果物が生成される」状態を目指す</div>
+    <div class="card-grid">
+      <div class="card">
+        <div class="card-icon">[C]</div>
+        <div class="card-label">工数削減</div>
+        <div class="card-val">87%</div>
+        <div class="card-desc">15.5人日 → 1.5人日</div>
+      </div>
+      <div class="card">
+        <div class="card-icon">[D]</div>
+        <div class="card-label">自動更新</div>
+        <div class="card-val">毎日11:00</div>
+        <div class="card-desc">日次自律進化ループ</div>
+      </div>
+      <div class="card">
+        <div class="card-icon">[L]</div>
+        <div class="card-label">品質目標</div>
+        <div class="card-val">カバレッジ90%+</div>
+        <div class="card-desc">TDD + WCAG2.1AA</div>
+      </div>
+    </div>
+    <div class="example">
+      <div class="example-title">例示: CIDLSが解決すること</div>
+      <div class="example-content">
+        小さなチームの担当者が「予約管理+簡易レポート」アプリを作りたい。
+        コンセプトを入力するだけで、要求定義書・画面設計書・テストコード・運用手順書が自動生成され、
+        翌日の11:00には前日の改善が自動適用されている。
+      </div>
+    </div>
+  </div>
+  <div class="slide-footer">
+    <span style="font-size:12px;color:var(--muted);">CIDLS コンセプトスライド v1.0 | 2026-05-12</span>
+    <button onclick="go(1)">次へ →</button>
+  </div>
+</div>
+
+<!-- Slide 2: 現場の困りごと -->
+<div class="slide" id="s1">
+  <div class="slide-header">
+    <div class="slide-num">2 / 7</div>
+    <div class="slide-category">FDE ヒアリング文法</div>
+    <div class="slide-title">「誰が・何に困っているか」から始める</div>
+    <div class="slide-subtitle">技術より先に「誰の苦しみを解くか」を決める</div>
+  </div>
+  <div class="slide-body">
+    <div class="example">
+      <div class="example-title">ヒアリング文法 7要素テンプレート</div>
+      <div class="example-content" style="font-family:monospace;font-size:13px;line-height:2;">
+        <strong>目的は</strong>: チームの開発効率を上げること<br>
+        <strong>誰が</strong>: 少人数チームのリーダー(月20件のタスク管理)<br>
+        <strong>何に困り</strong>: ドキュメント更新に毎週8時間かかっている<br>
+        <strong>根拠はこれで</strong>: ログ確認で手動更新が週8件・エラー率15%<br>
+        <strong>いつまでで</strong>: 2026-06-30までに<br>
+        <strong>理想はこうだから</strong>: 日次自動更新でドキュメント更新時間ゼロを実現<br>
+        <strong>解はこれ</strong>: CIDLSパイプライン + 日次11:00自律進化ループ
+      </div>
+    </div>
+    <ul class="point-list">
+      <li>
+        <div class="icon icon-bad">!</div>
+        <div><strong>NG: 技術名から入る</strong> — 「とりあえずAIで自動化したい」(何を解くか不明)</div>
+      </li>
+      <li>
+        <div class="icon icon-ok">OK</div>
+        <div><strong>OK: 誰の苦しみを解くか先に定義</strong> — 「毎週8時間かかっている手動更新をゼロにする」</div>
+      </li>
+      <li>
+        <div class="icon icon-tip">TIP</div>
+        <div><strong>初心者向け言い換え</strong>: 「誰に・どんな面倒が・何回起きて・どうなれば助かる?」</div>
+      </li>
+    </ul>
+  </div>
+  <div class="slide-footer">
+    <button onclick="go(0)">← 前へ</button>
+    <button onclick="go(2)">次へ →</button>
+  </div>
+</div>
+
+<!-- Slide 3: レバレッジポイント -->
+<div class="slide" id="s2">
+  <div class="slide-header">
+    <div class="slide-num">3 / 7</div>
+    <div class="slide-category">レバレッジポイント</div>
+    <div class="slide-title">小さく直して大きく効く場所を見つける</div>
+    <div class="slide-subtitle">機能追加より「最初の1点」を直すのが最短経路</div>
+  </div>
+  <div class="slide-body">
+    <table>
+      <thead><tr><th>観点</th><th>悪い直し方</th><th>良い直し方</th></tr></thead>
+      <tbody>
+        <tr>
+          <td>ドキュメント更新</td>
+          <td><span class="badge badge-r">NG</span> 毎回手動でExcel修正</td>
+          <td><span class="badge badge-g">OK</span> generate_*.pyを1本追加→日次自動更新</td>
+        </tr>
+        <tr>
+          <td>品質管理</td>
+          <td><span class="badge badge-r">NG</span> テスト後に手動確認リスト</td>
+          <td><span class="badge badge-g">OK</span> TDD Red→Green→Refactorでコード変更時に自動検証</td>
+        </tr>
+        <tr>
+          <td>知識継承</td>
+          <td><span class="badge badge-r">NG</span> 担当者の頭の中にある</td>
+          <td><span class="badge badge-g">OK</span> devrag RAGでAGENTS.md知識を40倍少ないトークンで参照</td>
+        </tr>
+        <tr>
+          <td>販売・訴求</td>
+          <td><span class="badge badge-r">NG</span> LPなし・口頭説明のみ</td>
+          <td><span class="badge badge-g">OK</span> コンセプトスライド.html(このファイル)で即訴求</td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="example">
+      <div class="example-title">CIDLS のレバレッジポイント</div>
+      <div class="example-content">
+        <strong>generate_*.py スクリプト群を1本ずつ実装する</strong>ことが最重要。
+        1本追加 = 1ドキュメント自動更新 = 手動作業1種類ゼロ化。
+        これを繰り返すことで複利的に効率が上がる。
+      </div>
+    </div>
+  </div>
+  <div class="slide-footer">
+    <button onclick="go(1)">← 前へ</button>
+    <button onclick="go(3)">次へ →</button>
+  </div>
+</div>
+
+<!-- Slide 4: CIDLSの解決策 -->
+<div class="slide" id="s3">
+  <div class="slide-header">
+    <div class="slide-num">4 / 7</div>
+    <div class="slide-category">CIDLSパイプライン</div>
+    <div class="slide-title">6ステップで「入力→アプリ→自律進化」</div>
+    <div class="slide-subtitle">かっこよさより迷わせないことが先 — 各ステップは独立して実装できる</div>
+  </div>
+  <div class="slide-body">
+    <div class="flow">
+      <div class="flow-item" style="background:rgba(99,102,241,0.05);">
+        <div class="flow-icon">[1]</div>
+        <div class="flow-label">コンセプト入力</div>
+        <div class="flow-desc">自然語・画像・注文票</div>
+      </div>
+      <div class="flow-item" style="background:rgba(99,102,241,0.05);">
+        <div class="flow-icon">[2]</div>
+        <div class="flow-label">イメージ生成</div>
+        <div class="flow-desc">ChatGPT/Claudeでフロー設計</div>
+      </div>
+      <div class="flow-item" style="background:rgba(16,185,129,0.05);">
+        <div class="flow-icon">[3]</div>
+        <div class="flow-label">アプリ生成</div>
+        <div class="flow-desc">v0+Codex で高速実装</div>
+      </div>
+      <div class="flow-item" style="background:rgba(16,185,129,0.05);">
+        <div class="flow-icon">[4]</div>
+        <div class="flow-label">ホスティング</div>
+        <div class="flow-desc">SaaS or exe(オフライン)</div>
+      </div>
+      <div class="flow-item" style="background:rgba(245,158,11,0.05);">
+        <div class="flow-icon">[5]</div>
+        <div class="flow-label">納品ドキュメント</div>
+        <div class="flow-desc">13種 HTML自動生成</div>
+      </div>
+      <div class="flow-item" style="background:rgba(239,68,68,0.05);">
+        <div class="flow-icon">[6]</div>
+        <div class="flow-label">自律進化ループ</div>
+        <div class="flow-desc">日次11:00 CAPDkA実行</div>
+      </div>
+    </div>
+    <ul class="point-list">
+      <li><div class="icon icon-ok">OK</div><div><strong>今すぐできること</strong>: Step5(ドキュメント)とStep6(日次ループ)はすでに動いている</div></li>
+      <li><div class="icon icon-tip">TIP</div><div><strong>次の一手</strong>: generate_*.pyを1本実装してStep3の自動生成を始める</div></li>
+      <li><div class="icon icon-bad">!</div><div><strong>やってはいけないこと</strong>: 全Step同時に完璧実装しようとする(MVP思考を忘れない)</div></li>
+    </ul>
+  </div>
+  <div class="slide-footer">
+    <button onclick="go(2)">← 前へ</button>
+    <button onclick="go(4)">次へ →</button>
+  </div>
+</div>
+
+<!-- Slide 5: 技術の役割 -->
+<div class="slide" id="s4">
+  <div class="slide-header">
+    <div class="slide-num">5 / 7</div>
+    <div class="slide-category">技術の役割</div>
+    <div class="slide-title">技術名は暗記しない。役割で覚える。</div>
+    <div class="slide-subtitle">「画面/AI/生成/保存/知識」の5役割だけ把握すればよい</div>
+  </div>
+  <div class="slide-body">
+    <table>
+      <thead><tr><th>役割</th><th>ツール</th><th>CIDLSでの使い方</th></tr></thead>
+      <tbody>
+        <tr><td><strong>画面を作る</strong></td><td>v0 / HTML+CSS</td><td>cidls_platform_overview.html など単一HTML</td></tr>
+        <tr><td><strong>AI機能を足す</strong></td><td>Claude / GPT / devrag RAG</td><td>AGENTS.md知識参照、コード生成、差分検知</td></tr>
+        <tr><td><strong>ドキュメントを生成する</strong></td><td>Python (uv) + Jinja2</td><td>generate_*.py が各HTML納品文書を生成</td></tr>
+        <tr><td><strong>データを保存する</strong></td><td>DuckDB + Parquet</td><td>KPIログ・証跡・メトリクスを保存</td></tr>
+        <tr><td><strong>知識を検索する</strong></td><td>devrag v1.4.4</td><td>AGENTS.mdを40倍少ないトークンでRAG参照</td></tr>
+      </tbody>
+    </table>
+    <div class="example">
+      <div class="example-title">AGENTS.md の3大禁止(知っておくべきこと)</div>
+      <div class="example-content" style="line-height:2;">
+        [1] フォールバック禁止 — エラーを架空データで隠してはいけない<br>
+        [2] pip禁止 — uv専用(pip install は使わない)<br>
+        [3] 絵文字禁止 — Windowsのcp932でエラーになる
+      </div>
+    </div>
+  </div>
+  <div class="slide-footer">
+    <button onclick="go(3)">← 前へ</button>
+    <button onclick="go(5)">次へ →</button>
+  </div>
+</div>
+
+<!-- Slide 6: 始め方・収益化 -->
+<div class="slide" id="s5">
+  <div class="slide-header">
+    <div class="slide-num">6 / 7</div>
+    <div class="slide-category">収益化 / STAR法</div>
+    <div class="slide-title">始め方と、作ったものを説明する技術</div>
+    <div class="slide-subtitle">SNS/YouTube が個人・小規模チームの入口になる</div>
+  </div>
+  <div class="slide-body">
+    <table>
+      <thead><tr><th>提供形態</th><th>無料で渡すもの</th><th>有料で提供するもの</th></tr></thead>
+      <tbody>
+        <tr>
+          <td>プロンプト販売</td>
+          <td>コンセプトスライド.html<br>基本テンプレート1種</td>
+          <td>AGENTS.md全文 + セットアップ手順 + カスタマイズ対応</td>
+        </tr>
+        <tr>
+          <td>ToB導入支援</td>
+          <td>CAPDkAサイクル説明資料</td>
+          <td>社内標準化支援 + 個別テンプレート調整 + 月次レビュー</td>
+        </tr>
+        <tr>
+          <td>ローカルexe</td>
+          <td>デモ版(機能制限あり)</td>
+          <td>フル機能 + ライセンスキー + サポート1年</td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="example">
+      <div class="example-title">STAR法 — 作ったものを30秒で説明する</div>
+      <div class="example-content">
+        <strong>S(状況)</strong>: 少人数チームがドキュメント更新に週8時間かかっていた<br>
+        <strong>T(課題)</strong>: 担当者退職で全知識が消える「属人化リスク」があった<br>
+        <strong>A(行動)</strong>: CIDLSパイプラインを構築し、devrag RAGで知識を外部化した<br>
+        <strong>R(結果)</strong>: ドキュメント更新時間が87%削減、日次ループで毎日自動改善中
+      </div>
+    </div>
+  </div>
+  <div class="slide-footer">
+    <button onclick="go(4)">← 前へ</button>
+    <button onclick="go(6)">参考リンク →</button>
+  </div>
+</div>
+
+<!-- Slide 7: 参考リンク -->
+<div class="slide" id="s6">
+  <div class="slide-header">
+    <div class="slide-num">7 / 7</div>
+    <div class="slide-category">参考リンク</div>
+    <div class="slide-title">あとで見るリンク集</div>
+    <div class="slide-subtitle">スライド中に出てきた概念の詳細資料</div>
+  </div>
+  <div class="slide-body">
+    <ul class="point-list">
+      <li>
+        <div class="icon icon-tip">i</div>
+        <div>
+          <strong>devrag RAG知識ベース</strong><br>
+          <span style="font-size:12px;color:var(--muted);">https://github.com/tomohiro-owada/devrag</span>
+        </div>
+      </li>
+      <li>
+        <div class="icon icon-tip">i</div>
+        <div>
+          <strong>オーカマモデル (ソフトウェアテスト完了判断と市場故障発生予測)</strong><br>
+          <span style="font-size:12px;color:var(--muted);">D:\CIDLS\36_1_1\1_okama_ronbun.pdf</span>
+        </div>
+      </li>
+      <li>
+        <div class="icon icon-tip">i</div>
+        <div>
+          <strong>共通フレーム2007 (SLCP-JCF2007)</strong><br>
+          <span style="font-size:12px;color:var(--muted);">IPA/SEC「ソフトウェア開発の標準プロセス」— 超上流から保守まで</span>
+        </div>
+      </li>
+      <li>
+        <div class="icon icon-tip">i</div>
+        <div>
+          <strong>バイブコーディング対策 (Qiita nogataka 2026.4.3)</strong><br>
+          <span style="font-size:12px;color:var(--muted);">AI生成コード: バグ密度1.7倍・セキュリティ脆弱性2.74倍の定量根拠</span>
+        </div>
+      </li>
+      <li>
+        <div class="icon icon-tip">i</div>
+        <div>
+          <strong>AGENTS.md — 全ルールのSoT</strong><br>
+          <span style="font-size:12px;color:var(--muted);">D:\CIDLS\AGENTS.md — CAPDkA / SLIDE / CS / SEC など全セクション</span>
+        </div>
+      </li>
+      <li>
+        <div class="icon icon-ok">OK</div>
+        <div>
+          <strong>CIDLSプラットフォーム全体像</strong><br>
+          <span style="font-size:12px;color:var(--muted);">D:\CIDLS\cidls_platform_overview.html</span>
+        </div>
+      </li>
+    </ul>
+  </div>
+  <div class="slide-footer">
+    <button onclick="go(5)">← 前へ</button>
+    <button disabled>最後のスライドです</button>
+  </div>
+</div>
+
+<script>
+  var current = 0;
+  function go(n) {
+    document.querySelectorAll('.slide').forEach(function(s,i){ s.classList.toggle('active', i===n); });
+    document.querySelectorAll('.nav-btn').forEach(function(b,i){ b.classList.toggle('active', i===n); });
+    current = n;
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+  document.addEventListener('keydown', function(e){
+    if(e.key==='ArrowRight'||e.key==='ArrowDown') go(Math.min(current+1,6));
+    if(e.key==='ArrowLeft' ||e.key==='ArrowUp')   go(Math.max(current-1,0));
+  });
+</script>
+</body>
+</html>

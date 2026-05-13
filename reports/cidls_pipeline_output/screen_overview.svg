@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720">
+<rect width="1280" height="720" fill="#f7f1e6"/>
+<text x="60" y="70" font-family="Meiryo" font-size="34" fill="#173f4a">CIDLS商用請負納品パッケージ 全画面設計図</text>
+<g font-family="Meiryo" font-size="22" fill="#172326">
+<rect x="70" y="130" width="260" height="160" rx="22" fill="#fff8ef" stroke="#c45c2d"/><text x="105" y="215">ダッシュボード</text>
+<rect x="370" y="130" width="260" height="160" rx="22" fill="#fff8ef" stroke="#c45c2d"/><text x="440" y="215">注文票</text>
+<rect x="670" y="130" width="260" height="160" rx="22" fill="#fff8ef" stroke="#c45c2d"/><text x="745" y="215">カンバン</text>
+<rect x="970" y="130" width="240" height="160" rx="22" fill="#fff8ef" stroke="#c45c2d"/><text x="1030" y="215">成果物</text>
+<rect x="220" y="410" width="340" height="160" rx="22" fill="#ffffff" stroke="#173f4a"/><text x="285" y="500">QA / テスト証跡</text>
+<rect x="710" y="410" width="340" height="160" rx="22" fill="#ffffff" stroke="#173f4a"/><text x="770" y="500">運用保守 / 検収</text>
+</g>
+</svg>

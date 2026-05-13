@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CIDLS テストシナリオ兼結果チェックリスト CIDLS-TEST-001 v1.0.0</title>
+<style>
+:root {
+  --bg:      #130f02;
+  --panel:   #1e1803;
+  --accent:  #f59e0b;
+  --accent2: #fcd34d;
+  --success: #10b981;
+  --danger:  #ef4444;
+  --indigo:  #6366f1;
+  --sky:     #38bdf8;
+  --text:    #f1f5f9;
+  --muted:   #94a3b8;
+  --border:  #2d2005;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+.page-header { background: var(--panel); border-bottom: 3px solid var(--accent); padding: 20px 40px; }
+.page-header h1 { font-size: 1.35rem; font-weight: 800; color: var(--accent); }
+.page-header .meta { font-size: 0.78rem; color: var(--muted); margin-top: 4px; }
+
+.nav-tabs { display: flex; background: var(--panel); border-bottom: 1px solid var(--border); padding: 0 40px; overflow-x: auto; }
+.tab-btn { padding: 10px 18px; font-size: 0.82rem; font-weight: 600; color: var(--muted); background: transparent; border: none; border-bottom: 3px solid transparent; cursor: pointer; white-space: nowrap; transition: color .2s; }
+.tab-btn:hover { color: var(--text); }
+.tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+.content { max-width: 1100px; margin: 0 auto; padding: 32px 40px; }
+.section { display: none; }
+.section.active { display: block; }
+
+.card { background: var(--panel); border: 1px solid var(--border); border-radius: 10px; padding: 20px 24px; margin-bottom: 20px; }
+.card h2 { font-size: 1.1rem; color: var(--accent); margin-bottom: 14px; border-bottom: 1px solid var(--border); padding-bottom: 8px; }
+.card h3 { font-size: 0.95rem; color: var(--accent2); margin: 14px 0 8px; }
+
+table { width: 100%; border-collapse: collapse; font-size: 0.82rem; margin: 10px 0; }
+th { background: rgba(245,158,11,0.12); color: var(--accent); padding: 8px 10px; text-align: left; border: 1px solid var(--border); }
+td { padding: 7px 10px; border: 1px solid var(--border); vertical-align: top; line-height: 1.5; }
+tr:hover td { background: rgba(255,255,255,0.03); }
+
+.badge { display: inline-block; border-radius: 999px; padding: 2px 10px; font-size: 11px; font-weight: 700; }
+.badge-pass   { background: rgba(16,185,129,0.2);  color: #6ee7b7; border: 1px solid rgba(16,185,129,0.3); }
+.badge-fail   { background: rgba(239,68,68,0.2);   color: #fca5a5; border: 1px solid rgba(239,68,68,0.3); }
+.badge-block  { background: rgba(245,158,11,0.2);  color: #fcd34d; border: 1px solid rgba(245,158,11,0.3); }
+.badge-todo   { background: rgba(99,102,241,0.2);  color: #a5b4fc; border: 1px solid rgba(99,102,241,0.3); }
+.badge-must   { background: rgba(239,68,68,0.2);   color: #fca5a5; border: 1px solid rgba(239,68,68,0.3); }
+.badge-should { background: rgba(245,158,11,0.2);  color: #fcd34d; border: 1px solid rgba(245,158,11,0.3); }
+
+.chk-item { display: flex; align-items: flex-start; gap: 10px; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.04); font-size: 0.84rem; }
+.chk-box { width: 18px; height: 18px; border: 2px solid var(--accent); border-radius: 4px; flex-shrink: 0; cursor: pointer; display: flex; align-items: center; justify-content: center; margin-top: 1px; transition: background .15s; }
+.chk-box.checked { background: var(--accent); }
+.chk-box.checked::after { content: 'V'; color: #000; font-weight: 900; font-size: 12px; }
+.chk-label { flex: 1; line-height: 1.5; }
+.chk-label .chk-sub { font-size: 0.75rem; color: var(--muted); display: block; margin-top: 2px; }
+
+.step-block { background: rgba(245,158,11,0.06); border-left: 3px solid var(--accent); border-radius: 0 8px 8px 0; padding: 14px 18px; margin: 10px 0; }
+.step-block h4 { color: var(--accent); font-size: 0.9rem; margin-bottom: 6px; }
+.step-block p  { font-size: 0.82rem; color: var(--muted); line-height: 1.6; }
+
+.code-block { background: #080600; border: 1px solid var(--border); border-radius: 6px; padding: 14px; font-family: 'Consolas', 'Courier New', monospace; font-size: 0.78rem; color: #fde68a; white-space: pre; overflow-x: auto; margin: 8px 0; }
+
+.kv-row { display: flex; gap: 12px; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.04); font-size: 0.82rem; }
+.kv-key { width: 180px; flex-shrink: 0; color: var(--muted); }
+.kv-val { flex: 1; }
+
+.grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
+.stat-card { background: rgba(245,158,11,0.08); border: 1px solid rgba(245,158,11,0.2); border-radius: 8px; padding: 16px; text-align: center; }
+.stat-num  { font-size: 2rem; font-weight: 800; color: var(--accent); }
+.stat-lbl  { font-size: 0.78rem; color: var(--muted); margin-top: 4px; }
+
+footer { text-align: center; padding: 24px 0 16px; color: var(--muted); font-size: 0.75rem; border-top: 1px solid var(--border); margin-top: 40px; }
+</style>
+</head>
+<body>
+
+<div class="page-header">
+  <h1>CIDLS テストシナリオ兼結果チェックリスト</h1>
+  <div class="meta">CIDLS-TEST-001 &nbsp;|&nbsp; v1.0.0 &nbsp;|&nbsp; 2026-05-13 &nbsp;|&nbsp; CAPDkA 第13回</div>
+</div>
+
+<nav class="nav-tabs">
+  <button class="tab-btn active" onclick="show('overview',this)">概要・目次</button>
+  <button class="tab-btn" onclick="show('checklist',this)">結果チェックリスト</button>
+  <button class="tab-btn" onclick="show('periodic',this)">定期チェック</button>
+  <button class="tab-btn" onclick="show('source',this)">ソースコード確認</button>
+  <button class="tab-btn" onclick="show('log',this)">ログ・イベント</button>
+  <button class="tab-btn" onclick="show('db',this)">DB変数確認</button>
+  <button class="tab-btn" onclick="show('perf',this)">性能・リソース</button>
+  <button class="tab-btn" onclick="show('env',this)">テスト環境</button>
+  <button class="tab-btn" onclick="show('data',this)">テストデータ</button>
+  <button class="tab-btn" onclick="show('criteria',this)">判定基準</button>
+</nav>
+
+<div class="content">
+
+<!-- 概要・目次 -->
+<div id="overview" class="section active">
+  <div class="card">
+    <h2>ドキュメント概要</h2>
+    <div class="kv-row"><div class="kv-key">ドキュメントID</div><div class="kv-val">CIDLS-TEST-001</div></div>
+    <div class="kv-row"><div class="kv-key">ドキュメント名</div><div class="kv-val">CIDLS プラットフォーム テストシナリオ兼結果チェックリスト</div></div>
+    <div class="kv-row"><div class="kv-key">バージョン</div><div class="kv-val">v1.0.0</div></div>
+    <div class="kv-row"><div class="kv-key">作成日</div><div class="kv-val">2026-05-13</div></div>
+    <div class="kv-row" style="border:none;"><div class="kv-key">関連文書</div><div class="kv-val">CIDLS-REQ-002 要求要件定義書 / CIDLS-OPS-002 構成定義書兼運用保守手順書</div></div>
+  </div>
+  <div class="card">
+    <h2>テスト概要</h2>
+    <div class="grid3">
+      <div class="stat-card"><div class="stat-num">42</div><div class="stat-lbl">総テスト項目数</div></div>
+      <div class="stat-card"><div class="stat-num">90%</div><div class="stat-lbl">ユニットテスト目標カバレッジ</div></div>
+      <div class="stat-card"><div class="stat-num">0</div><div class="stat-lbl">未解決ブロッカー</div></div>
+    </div>
+  </div>
+  <div class="card">
+    <h2>テストシナリオ一覧</h2>
+    <table>
+      <tr><th>ID</th><th>シナリオ名</th><th>優先度</th><th>状態</th></tr>
+      <tr><td>TS-001</td><td>シームレスドキュメント5種の存在確認</td><td><span class="badge badge-must">Must</span></td><td><span class="badge badge-pass">Pass</span></td></tr>
+      <tr><td>TS-002</td><td>日次自律進化ループの正常実行確認</td><td><span class="badge badge-must">Must</span></td><td><span class="badge badge-pass">Pass</span></td></tr>
+      <tr><td>TS-003</td><td>devragインデックス検索正常動作確認</td><td><span class="badge badge-must">Must</span></td><td><span class="badge badge-pass">Pass</span></td></tr>
+      <tr><td>TS-004</td><td>Excel生成スクリプト正常完了確認</td><td><span class="badge badge-should">Should</span></td><td><span class="badge badge-pass">Pass</span></td></tr>
+      <tr><td>TS-005</td><td>Unicode絵文字ゼロ確認（全ファイル）</td><td><span class="badge badge-must">Must</span></td><td><span class="badge badge-pass">Pass</span></td></tr>
+      <tr><td>TS-006</td><td>水平展開同期完全確認（index/overview/生成スクリプト）</td><td><span class="badge badge-must">Must</span></td><td><span class="badge badge-todo">Todo</span></td></tr>
+      <tr><td>TS-007</td><td>kanban SoT確認（全タスク状態整合）</td><td><span class="badge badge-must">Must</span></td><td><span class="badge badge-todo">Todo</span></td></tr>
+      <tr><td>TS-008</td><td>Secret情報非包含確認（全配布物）</td><td><span class="badge badge-must">Must</span></td><td><span class="badge badge-pass">Pass</span></td></tr>
+    </table>
+  </div>
+</div>
+
+<!-- 結果チェックリスト -->
+<div id="checklist" class="section">
+  <div class="card">
+    <h2>結果チェックリスト</h2>
+    <p style="font-size:0.8rem;color:var(--muted);margin-bottom:14px;">チェックボックスをクリックして確認状態を切り替えられます。</p>
+    <h3>シームレス生成ドキュメント</h3>
+    <div class="chk-item"><div class="chk-box checked" onclick="toggle(this)"></div><div class="chk-label">要求要件定義書.html が D:\CIDLS\ に存在する<span class="chk-sub">CIDLS-REQ-002 v1.0.0</span></div></div>
+    <div class="chk-item"><div class="chk-box checked" onclick="toggle(this)"></div><div class="chk-label">構成定義書 兼 運用保守手順書.html が D:\CIDLS\ に存在する<span class="chk-sub">CIDLS-OPS-002 v1.0.0</span></div></div>
+    <div class="chk-item"><div class="chk-box checked" onclick="toggle(this)"></div><div class="chk-label">テストシナリオ兼結果チェックリスト.html が D:\CIDLS\ に存在する<span class="chk-sub">CIDLS-TEST-001 v1.0.0</span></div></div>
+    <div class="chk-item"><div class="chk-box checked" onclick="toggle(this)"></div><div class="chk-label">ユーザーマニュアル.html が D:\CIDLS\ に存在する<span class="chk-sub">CIDLS-MAN-001 v1.0.0</span></div></div>
+    <div class="chk-item"><div class="chk-box checked" onclick="toggle(this)"></div><div class="chk-label">ドキュメント一覧.html が D:\CIDLS\ に存在する<span class="chk-sub">CIDLS-IDX-001 v1.0.0</span></div></div>
+    <h3>水平展開同期</h3>
+    <div class="chk-item"><div class="chk-box" onclick="toggle(this)"></div><div class="chk-label">index.html に5種のカードが追加されている<span class="chk-sub">Quick Access セクション確認</span></div></div>
+    <div class="chk-item"><div class="chk-box" onclick="toggle(this)"></div><div class="chk-label">cidls_platform_overview.html の成果物リストが5種を含む<span class="chk-sub">CIDLS標準成果物セクション確認</span></div></div>
+    <div class="chk-item"><div class="chk-box" onclick="toggle(this)"></div><div class="chk-label">generate_cidls_platform_overview.py の ARTIFACT_FILES に5種が含まれる<span class="chk-sub">grep ARTIFACT_FILES で確認</span></div></div>
+    <div class="chk-item"><div class="chk-box" onclick="toggle(this)"></div><div class="chk-label">ドキュメント一覧.html に全成果物のカードが存在する<span class="chk-sub">索引完全性確認</span></div></div>
+    <h3>品質ゲート</h3>
+    <div class="chk-item"><div class="chk-box checked" onclick="toggle(this)"></div><div class="chk-label">全HTMLファイルにUnicode絵文字が含まれない<span class="chk-sub">grep -r を使って全ファイル確認</span></div></div>
+    <div class="chk-item"><div class="chk-box checked" onclick="toggle(this)"></div><div class="chk-label">全Pythonスクリプトにpip使用箇所がない<span class="chk-sub">uv専用確認</span></div></div>
+    <div class="chk-item"><div class="chk-box checked" onclick="toggle(this)"></div><div class="chk-label">Secret情報が配布物に含まれない<span class="chk-sub">DISTSEC.2 準拠確認</span></div></div>
+    <div class="chk-item"><div class="chk-box checked" onclick="toggle(this)"></div><div class="chk-label">AGENTS.md のSoT整合性が維持されている<span class="chk-sub">AGENTS.md.bak との差分確認</span></div></div>
+    <h3>ガバコンリスク4大パターン</h3>
+    <div class="chk-item"><div class="chk-box checked" onclick="toggle(this)"></div><div class="chk-label">課金数量・金額がサーバーサイドのみで決定されている（BILLING_ENFORCE）<span class="chk-sub">クライアント側で課金値を操作できないこと</span></div></div>
+    <div class="chk-item"><div class="chk-box checked" onclick="toggle(this)"></div><div class="chk-label">未認証状態でPIIが0フィールドも返らない（PII_AUTH_GATE）<span class="chk-sub">未認証アクセス時はHTTP 401のみ返ること</span></div></div>
+    <div class="chk-item"><div class="chk-box checked" onclick="toggle(this)"></div><div class="chk-label">資格・ドメイン判定がサーバーサイド許可リストで実施されている（VERIFY_INTEGRITY）<span class="chk-sub">クライアント側制限をバイパスできないこと</span></div></div>
+    <div class="chk-item"><div class="chk-box checked" onclick="toggle(this)"></div><div class="chk-label">認証フラグがクライアントから書き換え不可（NEVER_TRUST_CLIENT）<span class="chk-sub">is_verified/admin等の自己申告拒否確認</span></div></div>
+  </div>
+</div>
+
+<!-- 定期チェック -->
+<div id="periodic" class="section">
+  <div class="card">
+    <h2>定期チェック</h2>
+    <h3>日次チェック項目</h3>
+    <table>
+      <tr><th>項目</th><th>確認方法</th><th>合格基準</th></tr>
+      <tr><td>日次進化ログ</td><td>logs\daily_self_evolution\ 確認</td><td>当日付ログが存在し ERROR 0件</td></tr>
+      <tr><td>kanban最終更新</td><td>project_kanban.html の更新日確認</td><td>前日以内に更新されている</td></tr>
+      <tr><td>シームレスドキュメント5種</td><td>全5ファイルの存在確認</td><td>全ファイル存在</td></tr>
+    </table>
+    <h3>週次チェック項目</h3>
+    <table>
+      <tr><th>項目</th><th>確認方法</th><th>合格基準</th></tr>
+      <tr><td>devragインデックス件数</td><td>devrag list 実行</td><td>38件以上</td></tr>
+      <tr><td>Python仮想環境</td><td>D:\production\.venv 存在確認</td><td>.venv 存在</td></tr>
+      <tr><td>水平展開同期</td><td>index.html と ドキュメント一覧.html の整合確認</td><td>全カードリンク正常</td></tr>
+      <tr><td>Unicode絵文字ゼロ</td><td>全htmlファイルをgrep検索</td><td>絵文字0件</td></tr>
+    </table>
+    <h3>月次チェック項目</h3>
+    <table>
+      <tr><th>項目</th><th>確認方法</th><th>合格基準</th></tr>
+      <tr><td>AGENTS.md棚卸し</td><td>陳腐化・矛盾・重複を手動確認</td><td>SoT整合性100%</td></tr>
+      <tr><td>依存ライブラリEOL</td><td>各ライブラリの公式サポート状況確認</td><td>EOL対象なし</td></tr>
+      <tr><td>品質KPI集計</td><td>日次ループ成功率・成果物完全性集計</td><td>日次ループ稼働率99%以上</td></tr>
+    </table>
+  </div>
+</div>
+
+<!-- ソースコード確認 -->
+<div id="source" class="section">
+  <div class="card">
+    <h2>ソースコード確認</h2>
+    <h3>コードレビューチェックリスト</h3>
+    <div class="chk-item"><div class="chk-box" onclick="toggle(this)"></div><div class="chk-label">PEP8準拠（インデント・命名規則）<span class="chk-sub">flake8 実行で確認</span></div></div>
+    <div class="chk-item"><div class="chk-box" onclick="toggle(this)"></div><div class="chk-label">typing モジュール使用なし（AGENTS.md [T1.3]）<span class="chk-sub">grep -r "from typing" / "import typing"</span></div></div>
+    <div class="chk-item"><div class="chk-box" onclick="toggle(this)"></div><div class="chk-label">フォールバック処理なし（SimpleFallback等）<span class="chk-sub">grep -r "fallback\|Fallback\|dummy\|mock_data"</span></div></div>
+    <div class="chk-item"><div class="chk-box" onclick="toggle(this)"></div><div class="chk-label">エラー隠蔽なし（except で握り潰しなし）<span class="chk-sub">except: pass や except Exception: pass の不在確認</span></div></div>
+    <div class="chk-item"><div class="chk-box" onclick="toggle(this)"></div><div class="chk-label">pip使用なし（uv専用）<span class="chk-sub">grep -r "pip install" / "subprocess.*pip"</span></div></div>
+    <div class="chk-item"><div class="chk-box" onclick="toggle(this)"></div><div class="chk-label">Unicode絵文字なし<span class="chk-sub">コード内の絵文字ゼロ確認</span></div></div>
+    <div class="chk-item"><div class="chk-box" onclick="toggle(this)"></div><div class="chk-label">TODO/FIXME/WIP/XXX放置なし<span class="chk-sub">grep -r "TODO\|FIXME\|WIP\|XXX"</span></div></div>
+    <div class="chk-item"><div class="chk-box" onclick="toggle(this)"></div><div class="chk-label">絶対パスのハードコードなし<span class="chk-sub">os.environ.get + デフォルト値パターン使用</span></div></div>
+    <h3>grep確認コマンド例</h3>
+    <div class="code-block">cd D:\CIDLS
+# フォールバック確認
+grep -r "fallback\|Fallback\|SimpleFallback" scripts/
+# pip確認
+grep -r "pip install\|subprocess.*pip" scripts/
+# typing確認
+grep -r "from typing\|import typing" scripts/
+# TODO残留確認
+grep -r "TODO\|FIXME\|WIP\|XXX" scripts/ documents/</div>
+  </div>
+</div>
+
+<!-- ログ・イベント -->
+<div id="log" class="section">
+  <div class="card">
+    <h2>ログ・イベント</h2>
+    <h3>ログタグ仕様（AGENTS.md [K1.1]）</h3>
+    <table>
+      <tr><th>タグ</th><th>意味</th><th>出力タイミング</th></tr>
+      <tr><td>[PROCESS_START]</td><td>処理全体の開始</td><td>スクリプト/ループ起動時</td></tr>
+      <tr><td>[PROCESS_END]</td><td>処理全体の終了</td><td>スクリプト/ループ完了時</td></tr>
+      <tr><td>[PROCESSING]</td><td>各アイテム処理開始</td><td>各ファイル生成前</td></tr>
+      <tr><td>[STEP]</td><td>処理内各ステップ</td><td>主要フェーズ移行時</td></tr>
+      <tr><td>[SUCCESS]</td><td>処理成功</td><td>各ファイル生成成功時</td></tr>
+      <tr><td>[FAILED]</td><td>処理失敗</td><td>例外発生時</td></tr>
+      <tr><td>[PROGRESS]</td><td>進捗（X/Y形式）</td><td>繰り返し処理内</td></tr>
+      <tr><td>[WARNING]</td><td>警告</td><td>非致命的異常検出時</td></tr>
+      <tr><td>[ERROR]</td><td>エラー</td><td>致命的異常発生時</td></tr>
+    </table>
+    <h3>ログ確認手順</h3>
+    <div class="code-block">cd D:\CIDLS\logs\daily_self_evolution
+# 最新ログ確認
+dir
+# エラー有無確認
+findstr /i "ERROR\|FAILED" *.log</div>
+    <h3>イベントチェック項目</h3>
+    <table>
+      <tr><th>イベント</th><th>期待ログ</th><th>確認方法</th></tr>
+      <tr><td>日次ループ開始</td><td>[PROCESS_START] CIDLS Daily Self Evolution</td><td>ログ先頭行確認</td></tr>
+      <tr><td>ドキュメント生成成功</td><td>[SUCCESS] ファイル名.html 生成完了</td><td>全5ファイル分のSUCCESS確認</td></tr>
+      <tr><td>ループ正常完了</td><td>[PROCESS_END] 全処理完了</td><td>ログ末尾行確認</td></tr>
+      <tr><td>エラー発生</td><td>[ERROR] / [FAILED]</td><td>エラー0件であること</td></tr>
+    </table>
+  </div>
+</div>
+
+<!-- DB変数確認 -->
+<div id="db" class="section">
+  <div class="card">
+    <h2>DB変数確認</h2>
+    <h3>DuckDB 動作確認</h3>
+    <div class="step-block"><h4>接続確認</h4><p>DuckDBへの接続が正常に行われることを確認する。</p></div>
+    <div class="code-block">cd D:\CIDLS
+# DuckDB 接続テスト
+D:\production\.venv\Scripts\python.exe -c "import duckdb; con = duckdb.connect(); print('OK:', con.execute('SELECT 42').fetchone())"</div>
+    <h3>Parquet形式確認</h3>
+    <div class="step-block"><h4>Parquet読み書き確認</h4><p>データをParquet形式で保存・読み込みできることを確認する。</p></div>
+    <div class="code-block">cd D:\CIDLS
+D:\production\.venv\Scripts\python.exe -c "
+import pandas as pd, pyarrow as pa, pyarrow.parquet as pq
+df = pd.DataFrame({'id': [1, 2], 'val': ['test1', 'test2']})
+pq.write_table(pa.Table.from_pandas(df), 'test_pq.parquet')
+df2 = pq.read_table('test_pq.parquet').to_pandas()
+print('Parquet OK:', df2.shape)
+import os; os.remove('test_pq.parquet')
+"</div>
+    <h3>主要変数・定数確認</h3>
+    <table>
+      <tr><th>変数/定数名</th><th>期待値</th><th>確認方法</th></tr>
+      <tr><td>ARTIFACT_FILES（generate_cidls_platform_overview.py）</td><td>シームレス5種含む全リスト</td><td>スクリプト先頭grep</td></tr>
+      <tr><td>kanban_version（generate_project_kanban.py）</td><td>13以上</td><td>スクリプト内grep</td></tr>
+    </table>
+  </div>
+</div>
+
+<!-- 性能・リソース -->
+<div id="perf" class="section">
+  <div class="card">
+    <h2>性能・リソース</h2>
+    <h3>性能目標値</h3>
+    <table>
+      <tr><th>項目</th><th>目標値</th><th>測定方法</th></tr>
+      <tr><td>HTML生成時間（1ファイル）</td><td>5秒以内</td><td>スクリプト実行時間計測</td></tr>
+      <tr><td>Excel生成時間（13シート）</td><td>30秒以内</td><td>スクリプト実行時間計測</td></tr>
+      <tr><td>UI応答時間</td><td>全操作 1秒以内</td><td>ブラウザ DevTools Network</td></tr>
+      <tr><td>devrag検索応答時間</td><td>3秒以内</td><td>コマンド実行時間計測</td></tr>
+      <tr><td>日次進化ループ全体</td><td>30分以内</td><td>ログのタイムスタンプ差分</td></tr>
+    </table>
+    <h3>リソース使用率チェック</h3>
+    <table>
+      <tr><th>リソース</th><th>上限目標</th><th>確認方法</th></tr>
+      <tr><td>CPU使用率（スクリプト実行時）</td><td>80%以内</td><td>タスクマネージャー確認</td></tr>
+      <tr><td>メモリ使用量（ピーク）</td><td>4GB以内</td><td>タスクマネージャー確認</td></tr>
+      <tr><td>ディスク使用量（D:\CIDLS）</td><td>1GB以内</td><td>dir /s 確認</td></tr>
+    </table>
+    <h3>性能計測コマンド</h3>
+    <div class="code-block">cd D:\CIDLS
+# HTML生成スクリプト実行時間計測
+Measure-Command { D:\production\.venv\Scripts\python.exe scripts\generate_cidls_platform_overview.py }
+# ディスク使用量確認
+Get-ChildItem D:\CIDLS -Recurse | Measure-Object -Property Length -Sum</div>
+  </div>
+</div>
+
+<!-- テスト環境 -->
+<div id="env" class="section">
+  <div class="card">
+    <h2>テスト環境</h2>
+    <h3>環境定義</h3>
+    <table>
+      <tr><th>項目</th><th>本番環境</th></tr>
+      <tr><td>OS</td><td>Windows 10/11</td></tr>
+      <tr><td>Python</td><td>3.11.x</td></tr>
+      <tr><td>パッケージ管理</td><td>uv専用</td></tr>
+      <tr><td>仮想環境</td><td>D:\production\.venv</td></tr>
+      <tr><td>devrag</td><td>v1.4.4 (%LOCALAPPDATA%\devrag\devrag.exe)</td></tr>
+      <tr><td>VSCode</td><td>最新安定版 + GitHub Copilot</td></tr>
+      <tr><td>作業ディレクトリ</td><td>D:\CIDLS\</td></tr>
+    </table>
+    <h3>環境確認コマンド</h3>
+    <div class="code-block">cd D:\CIDLS
+# Python バージョン確認
+D:\production\.venv\Scripts\python.exe --version
+# uv バージョン確認
+uv --version
+# devrag バージョン確認
+%LOCALAPPDATA%\devrag\devrag.exe --version
+# 仮想環境パッケージ一覧
+D:\production\.venv\Scripts\pip.exe list</div>
+    <h3>テスト実行前チェック</h3>
+    <div class="chk-item"><div class="chk-box" onclick="toggle(this)"></div><div class="chk-label">D:\production\.venv が存在する</div></div>
+    <div class="chk-item"><div class="chk-box" onclick="toggle(this)"></div><div class="chk-label">devrag.exe が %LOCALAPPDATA%\devrag\ に存在する</div></div>
+    <div class="chk-item"><div class="chk-box" onclick="toggle(this)"></div><div class="chk-label">D:\CIDLS\devrag-config.json が存在する</div></div>
+    <div class="chk-item"><div class="chk-box" onclick="toggle(this)"></div><div class="chk-label">Task Scheduler タスク「CIDLS_Daily_Self_Evolution_1100」が登録済み</div></div>
+  </div>
+</div>
+
+<!-- テストデータ -->
+<div id="data" class="section">
+  <div class="card">
+    <h2>テストデータ</h2>
+    <h3>テストデータ管理方針</h3>
+    <div class="step-block"><h4>実データ使用原則</h4><p>テストは実際のD:\CIDLS\配下のファイルを対象として実行する。モックデータでの検証完了宣言は禁止（AGENTS.md [G1]）。</p></div>
+    <div class="step-block"><h4>Secret情報の扱い</h4><p>テストデータにAPIキー・パスワード・個人情報を含めない。テスト用の値を使用する場合は明示的にダミー文字列を使用する（ただし実機能テストには使用しない）。</p></div>
+    <h3>各スクリプトのテストデータ</h3>
+    <table>
+      <tr><th>スクリプト</th><th>テスト対象データ</th><th>確認内容</th></tr>
+      <tr><td>generate_cidls_platform_overview.py</td><td>D:\CIDLS\*.html</td><td>ARTIFACT_FILES全件の存在確認</td></tr>
+      <tr><td>generate_project_kanban.py</td><td>スクリプト内HTMLテンプレート</td><td>第13回以降の版数・バッジ整合</td></tr>
+      <tr><td>generate_commercial_delivery_pack.py</td><td>reports\commercial_delivery\</td><td>xlsx生成完了・シート数13以上</td></tr>
+      <tr><td>generate_graph_project_mindmap.py</td><td>D:\CIDLS\*.html 一覧</td><td>graph_project_mindmap.html 再生成成功</td></tr>
+    </table>
+  </div>
+</div>
+
+<!-- 判定基準 -->
+<div id="criteria" class="section">
+  <div class="card">
+    <h2>判定基準</h2>
+    <h3>Pass/Fail/Blocked/Todo 定義</h3>
+    <table>
+      <tr><th>判定</th><th>条件</th></tr>
+      <tr><td><span class="badge badge-pass">Pass</span></td><td>合格基準を全て満たし、エビデンス（ログ/grep出力/スクリーンショット）が存在する</td></tr>
+      <tr><td><span class="badge badge-fail">Fail</span></td><td>合格基準を1つ以上満たさない。根本原因特定・修正後に再テストが必要</td></tr>
+      <tr><td><span class="badge badge-block">Blocked</span></td><td>外部依存・環境問題でテスト実行不可。原因と代替手段を明記すること</td></tr>
+      <tr><td><span class="badge badge-todo">Todo</span></td><td>テスト未実施。次CAPDkAサイクル内に実施予定</td></tr>
+    </table>
+    <h3>完了判定条件（リリース前必須）</h3>
+    <table>
+      <tr><th>条件</th><th>確認方法</th></tr>
+      <tr><td>シームレスドキュメント5種が全て存在する</td><td>ファイル存在確認</td></tr>
+      <tr><td>Unicode絵文字ゼロ（全ファイル）</td><td>grep -r</td></tr>
+      <tr><td>ガバコンリスク4大パターン全Pass</td><td>結果チェックリストタブ確認</td></tr>
+      <tr><td>水平展開同期完了（index/overview/生成スクリプト/ドキュメント一覧）</td><td>各ファイル手動確認</td></tr>
+      <tr><td>Secret情報非包含（配布物全て）</td><td>DISTSEC.6 品質ゲート実行</td></tr>
+      <tr><td>日次ループが正常実行される</td><td>直近ログでERROR 0件確認</td></tr>
+    </table>
+    <h3>品質ゲート数値目標</h3>
+    <table>
+      <tr><th>指標</th><th>目標値</th></tr>
+      <tr><td>ユニットテストカバレッジ</td><td>90%以上</td></tr>
+      <tr><td>日次ループ稼働率</td><td>99%以上（月次）</td></tr>
+      <tr><td>HTML生成成功率</td><td>100%</td></tr>
+      <tr><td>水平展開同期漏れ</td><td>0件</td></tr>
+      <tr><td>TODO/FIXME残留</td><td>0件</td></tr>
+    </table>
+  </div>
+</div>
+
+</div>
+
+<footer>
+  CIDLS-TEST-001 テストシナリオ兼結果チェックリスト v1.0.0 &nbsp;|&nbsp; 2026-05-13 &nbsp;|&nbsp; CAPDkA 第13回 &nbsp;|&nbsp;
+  <a href="index.html" style="color:#f59e0b;">index.html</a> &nbsp;|&nbsp;
+  <a href="ドキュメント一覧.html" style="color:#f59e0b;">ドキュメント一覧</a>
+</footer>
+
+<script>
+function show(id, btn) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  if (btn) btn.classList.add('active');
+}
+function toggle(el) {
+  el.classList.toggle('checked');
+}
+</script>
+</body>
+</html>

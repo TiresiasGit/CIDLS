@@ -1,0 +1,814 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CIDLS — Project Kanban v12</title>
+<style>
+:root {
+  --bg:          #070b14;
+  --bg-2:        #0d1220;
+  --bg-3:        #121929;
+  --glass:       rgba(255,255,255,0.04);
+  --glass-2:     rgba(255,255,255,0.07);
+  --border:      rgba(255,255,255,0.08);
+  --border-hi:   rgba(255,255,255,0.15);
+  --ink:         #e8edf5;
+  --muted:       #7b8ca6;
+  --dim:         #4a5568;
+  --indigo:      #6366f1;
+  --violet:      #8b5cf6;
+  --teal:        #14b8a6;
+  --emerald:     #10b981;
+  --amber:       #f59e0b;
+  --rose:        #f43f5e;
+  --sky:         #38bdf8;
+  --r-sm:12px; --r-md:18px; --r-lg:24px; --r-xl:32px;
+  --shadow-sm: 0 2px 8px rgba(0,0,0,.4);
+  --shadow-md: 0 8px 24px rgba(0,0,0,.55);
+  --glow-i: 0 0 40px rgba(99,102,241,.18), 0 0 80px rgba(99,102,241,.07);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html{font-size:15px;}
+body{
+  font-family:"Yu Gothic UI","Hiragino Sans","Segoe UI",system-ui,sans-serif;
+  background:var(--bg); color:var(--ink); min-height:100vh; overflow-x:hidden;
+}
+body::before{
+  content:''; position:fixed; inset:0;
+  background:
+    radial-gradient(ellipse 80% 50% at 10% -10%,rgba(99,102,241,.13),transparent),
+    radial-gradient(ellipse 60% 40% at 90% 110%,rgba(20,184,166,.09),transparent);
+  pointer-events:none; z-index:0;
+}
+.page{
+  position:relative; z-index:1;
+  max-width:1600px; margin:0 auto;
+  padding:36px 24px 80px;
+  display:flex; flex-direction:column; gap:24px;
+}
+/* --- Panel --- */
+.panel{
+  background:var(--glass);
+  border:1px solid var(--border);
+  border-radius:var(--r-xl);
+  backdrop-filter:blur(24px);
+  -webkit-backdrop-filter:blur(24px);
+  padding:24px 28px;
+  box-shadow:var(--shadow-md);
+}
+/* --- Badges --- */
+.badge{
+  display:inline-flex; align-items:center; gap:5px;
+  padding:3px 10px; border-radius:999px;
+  font-size:10px; font-weight:700; letter-spacing:.08em; text-transform:uppercase;
+}
+.b-indigo {background:rgba(99,102,241,.18);color:#a5b4fc;border:1px solid rgba(99,102,241,.3);}
+.b-emerald{background:rgba(16,185,129,.15);color:#6ee7b7;border:1px solid rgba(16,185,129,.25);}
+.b-amber  {background:rgba(245,158,11,.15); color:#fcd34d;border:1px solid rgba(245,158,11,.25);}
+.b-rose   {background:rgba(244,63,94,.15);  color:#fca5a5;border:1px solid rgba(244,63,94,.25);}
+.b-teal   {background:rgba(20,184,166,.15); color:#5eead4;border:1px solid rgba(20,184,166,.25);}
+.b-violet {background:rgba(139,92,246,.18); color:#c4b5fd;border:1px solid rgba(139,92,246,.3);}
+/* --- Header --- */
+.site-header{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap;}
+.h-badges{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px;}
+.site-title{
+  font-size:clamp(28px,4vw,46px); font-weight:800; letter-spacing:-.04em; line-height:1.05;
+  background:linear-gradient(135deg,#e8edf5 30%,#a5b4fc 80%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+}
+.site-sub{color:var(--muted);font-size:13px;max-width:540px;line-height:1.6;margin-top:8px;}
+.h-right{display:flex;flex-direction:column;gap:5px;align-items:flex-end;padding-top:4px;}
+/* --- Section Header --- */
+.sec-head{display:flex;align-items:baseline;gap:10px;margin-bottom:18px;}
+.sec-title{font-size:19px;font-weight:700;letter-spacing:-.03em;}
+.sec-sub{color:var(--muted);font-size:12px;}
+/* --- KPI Strip --- */
+.kpi-strip{display:grid;grid-template-columns:repeat(6,1fr);gap:12px;}
+.kpi{
+  background:var(--glass-2); border:1px solid var(--border);
+  border-radius:var(--r-lg); padding:18px 20px;
+  position:relative; overflow:hidden;
+  transition:border-color .2s;
+}
+.kpi:hover{border-color:var(--border-hi);}
+.kpi::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:3px 3px 0 0;}
+.ki::before{background:linear-gradient(90deg,var(--indigo),var(--violet));}
+.ke::before{background:linear-gradient(90deg,var(--emerald),var(--teal));}
+.ka::before{background:linear-gradient(90deg,var(--amber),#fb923c);}
+.ks::before{background:linear-gradient(90deg,var(--sky),var(--teal));}
+.kr::before{background:linear-gradient(90deg,var(--rose),var(--violet));}
+.kv::before{background:linear-gradient(90deg,var(--violet),#a78bfa);}
+.kpi-num{
+  font-size:30px; font-weight:800; letter-spacing:-.04em;
+  background:linear-gradient(135deg,#e8edf5,#a5b4fc);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+}
+.kpi-lbl{color:var(--muted);font-size:11px;margin-top:4px;line-height:1.45;}
+/* --- Assessment Grid --- */
+.assess-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;}
+.ax-card{
+  background:var(--glass-2); border:1px solid var(--border);
+  border-radius:var(--r-lg); padding:18px 20px;
+  position:relative; overflow:hidden;
+}
+.ax-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;border-radius:3px 0 0 3px;}
+.ax-a::before{background:var(--emerald);}
+.ax-b::before{background:var(--sky);}
+.ax-c::before{background:var(--indigo);}
+.ax-d::before{background:var(--amber);}
+.ax-e::before{background:var(--violet);}
+.ax-label{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:6px;}
+.ax-score{font-size:22px;font-weight:800;margin-bottom:6px;}
+.ax-text{font-size:12px;color:var(--muted);line-height:1.55;}
+/* --- Immediate Actions --- */
+.ia-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;}
+.ia-card{
+  background:var(--glass-2); border:1px solid var(--border);
+  border-radius:var(--r-md); padding:16px 18px;
+  position:relative; overflow:hidden;
+  border-left:3px solid transparent;
+}
+.ia-hot{border-left-color:var(--rose);}
+.ia-warm{border-left-color:var(--amber);}
+.ia-cool{border-left-color:var(--indigo);}
+.ia-done{border-left-color:var(--emerald);opacity:.7;}
+.ia-tag{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px;}
+.ia-hot .ia-tag{color:var(--rose);}
+.ia-warm .ia-tag{color:var(--amber);}
+.ia-cool .ia-tag{color:var(--indigo);}
+.ia-done .ia-tag{color:var(--emerald);}
+.ia-title{font-size:13px;font-weight:700;margin-bottom:6px;line-height:1.35;}
+.ia-body{font-size:12px;color:var(--muted);line-height:1.55;}
+/* --- Kanban --- */
+.kanban-wrap{overflow-x:auto;padding-bottom:6px;}
+.kanban-board{display:grid;grid-template-columns:repeat(5,minmax(250px,1fr));gap:12px;min-width:900px;}
+.kb-col{
+  background:rgba(255,255,255,.022); border:1px solid var(--border);
+  border-radius:var(--r-lg); padding:14px; min-height:200px;
+}
+.kb-head{display:flex;align-items:center;gap:8px;margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid var(--border);}
+.kb-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+.d-gray   {background:#4a5568;}
+.d-sky    {background:var(--sky);  box-shadow:0 0 7px var(--sky);}
+.d-amber  {background:var(--amber);box-shadow:0 0 7px var(--amber);}
+.d-violet {background:var(--violet);box-shadow:0 0 7px var(--violet);}
+.d-emerald{background:var(--emerald);box-shadow:0 0 7px var(--emerald);}
+.kb-name{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);}
+.kb-cnt{
+  margin-left:auto; background:var(--glass-2); border:1px solid var(--border);
+  border-radius:999px; padding:1px 8px; font-size:10px; color:var(--muted);
+}
+/* --- Task Card --- */
+.card{
+  background:var(--glass); border:1px solid var(--border);
+  border-radius:var(--r-md); padding:12px 14px;
+  margin-bottom:8px; position:relative; overflow:hidden;
+  transition:border-color .2s,transform .15s,box-shadow .2s;
+}
+.card:last-child{margin-bottom:0;}
+.card:hover{border-color:var(--border-hi);transform:translateY(-1px);box-shadow:var(--shadow-sm);}
+.card-ac{position:absolute;left:0;top:0;bottom:0;width:3px;border-radius:3px 0 0 3px;}
+.ac-i{background:var(--indigo);}.ac-e{background:var(--emerald);}
+.ac-a{background:var(--amber);}.ac-v{background:var(--violet);}
+.ac-t{background:var(--teal);}.ac-r{background:var(--rose);}
+.card-meta{display:flex;align-items:center;gap:5px;margin-bottom:7px;flex-wrap:wrap;}
+.card-ph{font-size:10px;font-weight:700;letter-spacing:.06em;padding:2px 7px;border-radius:999px;background:var(--glass-2);color:var(--muted);border:1px solid var(--border);}
+.card-date{font-size:10px;color:var(--dim);margin-left:auto;}
+.card-title{font-size:12px;font-weight:700;margin-bottom:5px;line-height:1.35;}
+.card-body{font-size:11px;color:var(--muted);line-height:1.55;}
+/* --- Artifact grid --- */
+.art-group{margin-bottom:20px;}
+.art-group:last-child{margin-bottom:0;}
+.art-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:9px;margin-top:10px;}
+.art-card{
+  background:var(--glass-2); border:1px solid var(--border);
+  border-radius:var(--r-md); padding:12px 14px;
+  transition:border-color .2s;
+}
+.art-card:hover{border-color:var(--border-hi);}
+.art-name{font-size:12px;font-weight:600;margin-bottom:5px;word-break:break-all;line-height:1.35;}
+.art-st{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:600;}
+.art-st::before{content:'';width:5px;height:5px;border-radius:50%;flex-shrink:0;}
+.s-done{color:var(--emerald);}.s-done::before{background:var(--emerald);box-shadow:0 0 5px var(--emerald);}
+.s-wip {color:var(--amber);}.s-wip::before{background:var(--amber);}
+.s-open{color:var(--rose);}.s-open::before{background:var(--rose);}
+/* --- Req / Timeline --- */
+.req-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;}
+.req-card{
+  background:var(--glass-2); border:1px solid var(--border);
+  border-radius:var(--r-md); padding:16px 18px;
+}
+.req-lbl{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;margin-bottom:8px;}
+.req-body{font-size:12px;color:var(--muted);line-height:1.6;}
+.r-asis .req-lbl{color:var(--sky);}
+.r-tobe .req-lbl{color:var(--emerald);}
+.r-must .req-lbl{color:var(--rose);}
+.r-plan .req-lbl{color:var(--amber);}
+/* --- Roadmap --- */
+.roadmap{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;}
+.rm-card{
+  background:var(--glass-2); border:1px solid var(--border);
+  border-radius:var(--r-md); padding:16px 18px;
+  position:relative; overflow:hidden;
+}
+.rm-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;border-radius:2px 2px 0 0;}
+.rm-now::before{background:linear-gradient(90deg,var(--rose),var(--amber));}
+.rm-mid::before{background:linear-gradient(90deg,var(--amber),var(--indigo));}
+.rm-lng::before{background:linear-gradient(90deg,var(--indigo),var(--violet));}
+.rm-lbl{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;margin-bottom:10px;}
+.rm-now .rm-lbl{color:var(--rose);}
+.rm-mid .rm-lbl{color:var(--amber);}
+.rm-lng .rm-lbl{color:var(--indigo);}
+.rm-item{display:flex;align-items:flex-start;gap:8px;font-size:12px;color:var(--muted);padding:5px 0;border-bottom:1px solid var(--border);}
+.rm-item:last-child{border-bottom:none;}
+.rm-icon{flex-shrink:0;width:5px;height:5px;border-radius:50%;margin-top:5px;}
+.rm-now .rm-icon{background:var(--rose);}
+.rm-mid .rm-icon{background:var(--amber);}
+.rm-lng .rm-icon{background:var(--indigo);}
+/* --- Evidence --- */
+.ev-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;}
+.ev-card{background:var(--glass-2);border:1px solid var(--border);border-radius:var(--r-md);padding:16px 18px;}
+.ev-lbl{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--indigo);margin-bottom:8px;}
+.ev-body{font-size:12px;color:var(--muted);line-height:1.65;}
+/* --- MO Footer --- */
+.mo-check{
+  background:linear-gradient(135deg,rgba(99,102,241,.12),rgba(139,92,246,.08));
+  border:1px solid rgba(99,102,241,.25);
+  border-radius:var(--r-lg); padding:20px 24px;
+}
+.mo-title{font-size:14px;font-weight:700;color:#a5b4fc;margin-bottom:12px;}
+.mo-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;}
+.mo-item{font-size:12px;color:var(--muted);padding:7px 10px;background:rgba(255,255,255,.03);border-radius:8px;border:1px solid var(--border);}
+.mo-item strong{color:var(--ink);}
+/* --- Scrollbar --- */
+::-webkit-scrollbar{width:5px;height:5px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:rgba(255,255,255,.11);border-radius:3px;}
+::-webkit-scrollbar-thumb:hover{background:rgba(255,255,255,.2);}
+/* --- Responsive --- */
+@media(max-width:1200px){
+  .kpi-strip{grid-template-columns:repeat(3,1fr);}
+  .assess-grid{grid-template-columns:repeat(3,1fr);}
+  .ia-grid{grid-template-columns:repeat(2,1fr);}
+  .req-grid{grid-template-columns:repeat(2,1fr);}
+}
+@media(max-width:720px){
+  .kpi-strip,.assess-grid,.ia-grid,.req-grid,.roadmap,.ev-grid,.mo-grid{grid-template-columns:1fr 1fr;}
+  .page{padding:14px 12px 60px;}
+}
+</style>
+</head>
+<body>
+<div class="page">
+
+<!-- ===== HEADER ===== -->
+<div class="panel">
+  <div class="site-header">
+    <div>
+      <div class="h-badges">
+        <span class="badge b-indigo">CIDLS Self-Evolution v12</span>
+        <span class="badge b-emerald">CAPDkA 第12回</span>
+        <span class="badge b-amber">xlsx 16種 完了</span>
+        <span class="badge b-teal">devrag 38件 · sim 0.91+</span>
+        <span class="badge b-violet">Task Scheduler 11:00 Ready</span>
+      </div>
+      <h1 class="site-title">Project Kanban</h1>
+      <p class="site-sub">コンセプトイメージを目標状態に固定し差分検知と最小改善を複利で積み上げる統合ハブ。<br>
+        CS.2 全方位アセスメント + 温故知新 40年の教訓統合版 · 最終更新: 2026-05-12</p>
+    </div>
+    <div class="h-right">
+      <span class="badge b-emerald">FR-008/009 Done</span>
+      <span class="badge b-amber">Todo: DA-017/018 mindmap追加</span>
+      <span class="badge b-indigo">pytest 導入 (3-6mo)</span>
+    </div>
+  </div>
+</div>
+
+<!-- ===== KPI STRIP ===== -->
+<div class="kpi-strip">
+  <div class="kpi ki"><div class="kpi-num">16</div><div class="kpi-lbl">xlsx生成完了<br>SW納品13種 + 成果物3種</div></div>
+  <div class="kpi ke"><div class="kpi-num">38</div><div class="kpi-lbl">devrag インデックス件数<br>similarity ≥ 0.91</div></div>
+  <div class="kpi ka"><div class="kpi-num">87%</div><div class="kpi-lbl">工数削減率<br>手動15.5人日→1.5人日</div></div>
+  <div class="kpi ks"><div class="kpi-num">12</div><div class="kpi-lbl">CAPDkAサイクル完了数<br>第12回進行中</div></div>
+  <div class="kpi kr"><div class="kpi-num">0%</div><div class="kpi-lbl">テストカバレッジ<br>目標≥90% ← 要改善</div></div>
+  <div class="kpi kv"><div class="kpi-num">11:00</div><div class="kpi-lbl">日次自律進化ループ<br>Task Scheduler Ready</div></div>
+</div>
+
+<!-- ===== CS.2 全方位アセスメント ===== -->
+<div class="panel">
+  <div class="sec-head">
+    <h2 class="sec-title">CS.2 全方位アセスメント (5軸)</h2>
+    <span class="sec-sub">温故知新 · 40年の設計思想 統合 · 事実ベース批判 · 2026-05-12</span>
+  </div>
+  <div class="assess-grid">
+    <div class="ax-card ax-a">
+      <div class="ax-label">軸1 · 現行機能維持</div>
+      <div class="ax-score" style="color:var(--emerald)">B+</div>
+      <div class="ax-text">
+        <strong style="color:var(--ink)">事実(F):</strong><br>
+        F1: kanban/index/STORY/cidls_overview 全件ブラウザ動作確認済み<br>
+        F2: devrag similarity 0.91-0.94 安定稼働<br>
+        F3: Task Scheduler LastResult=0<br>
+        <br><strong style="color:var(--amber)">課題(A):</strong><br>
+        A1: xlsx 16種は手動実行（自動化未完）<br>
+        A2: html版ドキュメント5種が並存（冗長）
+      </div>
+    </div>
+    <div class="ax-card ax-b">
+      <div class="ax-label">軸2 · 運用持続可能性</div>
+      <div class="ax-score" style="color:var(--sky)">B</div>
+      <div class="ax-text">
+        <strong style="color:var(--ink)">事実(F):</strong><br>
+        F4: 日次11:00自動実行<br>
+        F5: logs/ 実行証跡蓄積<br>
+        F6: AGENTS.md SoT一元管理<br>
+        <br><strong style="color:var(--amber)">課題(A):</strong><br>
+        A3: 日次ループ結果の自動kanban反映なし<br>
+        A4: <LOCAL_PATH> 依存（移行リスク）
+      </div>
+    </div>
+    <div class="ax-card ax-c">
+      <div class="ax-label">軸3 · ユーザー有用性</div>
+      <div class="ax-score" style="color:var(--indigo)">B-</div>
+      <div class="ax-text">
+        <strong style="color:var(--ink)">事実(F):</strong><br>
+        F7: index.htmlクイックアクセス7件<br>
+        F8: 主要成果物をオフラインで閲覧可<br>
+        <br><strong style="color:var(--rose)">課題(F):</strong><br>
+        F9: kanbanデザインが「ダサい」とユーザー指摘（→本回対応）<br>
+        A5: 詳細設計書〜リリースノートが骨子のみ<br>
+        A6: LP（販売向けページ）未作成
+      </div>
+    </div>
+    <div class="ax-card ax-d">
+      <div class="ax-label">軸4 · セキュリティ</div>
+      <div class="ax-score" style="color:var(--emerald)">A</div>
+      <div class="ax-text">
+        <strong style="color:var(--ink)">事実(F):</strong><br>
+        F10: ローカル完結・Secret非保持<br>
+        F11: DISTSEC.3 方法1準拠<br>
+        F12: devrag-config.jsonにSecret類なし<br>
+        F13: index-code禁止ルール周知済み<br>
+        <br><strong style="color:var(--amber)">課題(A):</strong><br>
+        A7: setup_devrag.ps1 外部DL（HTTPS許容範囲内）
+      </div>
+    </div>
+    <div class="ax-card ax-e">
+      <div class="ax-label">軸5 · 技術的負債</div>
+      <div class="ax-score" style="color:var(--amber)">C+</div>
+      <div class="ax-text">
+        <strong style="color:var(--ink)">事実(F):</strong><br>
+        F14: openpyxl 3.1.5 動作確認済み<br>
+        F15: Python 3.11.x + uv（現代的）<br>
+        F18: 外部発報系: n8n デフォルトオーケストレーター (Apache 2.0) [N8N]<br>
+        <br><strong style="color:var(--rose)">課題(F):</strong><br>
+        F16: テストカバレッジ 0%（目標≥90%）<br>
+        F17: devrag v1.4.4バイナリ依存<br>
+        A8: html/xlsxドキュメント二重管理
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 温故知新 40年 ===== -->
+<div class="panel">
+  <div class="sec-head">
+    <h2 class="sec-title">温故知新 — SW開発 40年の教訓とCIDLSへの統合</h2>
+    <span class="sec-sub">良いものを引き継ぎ (温故)、悪い慣習を排除 (知新)</span>
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;">
+    <div style="background:var(--glass-2);border:1px solid var(--border);border-radius:var(--r-md);padding:16px;">
+      <div style="font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--violet);margin-bottom:8px;">1970-1990s ウォーターフォール</div>
+      <div style="font-size:12px;color:var(--muted);line-height:1.6;">
+        <span style="color:var(--emerald)">温(引継):</span> 文書管理・工程管理の厳密さ → AGENTS.md SoT化・共通フレーム2007準拠<br>
+        <span style="color:var(--rose)">知(排除):</span> 後戻り不可の硬直性 → CAPDkA永久循環で解消
+      </div>
+    </div>
+    <div style="background:var(--glass-2);border:1px solid var(--border);border-radius:var(--r-md);padding:16px;">
+      <div style="font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--sky);margin-bottom:8px;">1990-2000s OOP・CMMI</div>
+      <div style="font-size:12px;color:var(--muted);line-height:1.6;">
+        <span style="color:var(--emerald)">温:</span> 疎結合・プロセス成熟度・再利用性 → DEP.1依存性分離・DRY重複排除<br>
+        <span style="color:var(--rose)">知:</span> 過度な抽象化・官僚的プロセス → MIN最小コスト原則で排除
+      </div>
+    </div>
+    <div style="background:var(--glass-2);border:1px solid var(--border);border-radius:var(--r-md);padding:16px;">
+      <div style="font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--amber);margin-bottom:8px;">2000-2010s アジャイル・TDD</div>
+      <div style="font-size:12px;color:var(--muted);line-height:1.6;">
+        <span style="color:var(--emerald)">温:</span> 反復開発・フィードバック・テスト駆動 → CAPDkA永久循環・TDD≥90%目標<br>
+        <span style="color:var(--rose)">知:</span> 文書軽視・属人化 → AGENTS.md SoT+devragで補完
+      </div>
+    </div>
+    <div style="background:var(--glass-2);border:1px solid var(--border);border-radius:var(--r-md);padding:16px;">
+      <div style="font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--emerald);margin-bottom:8px;">2010s- DevOps・AI時代</div>
+      <div style="font-size:12px;color:var(--muted);line-height:1.6;">
+        <span style="color:var(--emerald)">温:</span> CI/CD・自動化・監視 → Task Scheduler 11:00 + devrag<br>
+        <span style="color:var(--rose)">知:</span> ノーチェックコミット・プロンプト依存 → [AV.9]4大罠回避・DUAL_VERIFY
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 即時アクション ===== -->
+<div class="panel">
+  <div class="sec-head">
+    <h2 class="sec-title">即時アクション (CS.5)</h2>
+    <span class="sec-sub">変更コスト低 × リスク軽減大 → 今すぐ実行</span>
+  </div>
+  <div class="ia-grid">
+    <div class="ia-card ia-done">
+      <div class="ia-tag">完了 · DA-018</div>
+      <div class="ia-title">SW納品ドキュメント xlsx 16種 一括生成</div>
+      <div class="ia-body">generate_sw_docs_xlsx.py 実行。成功:16/失敗:0。F16テスト負債は残存。</div>
+    </div>
+    <div class="ia-card ia-done">
+      <div class="ia-tag">完了 · 本回</div>
+      <div class="ia-title">project_kanban.html デザインリニューアル</div>
+      <div class="ia-body">ダークガラスモーフィズムへ全面刷新。アセスメント5軸・温故知新・ロードマップ追加。</div>
+    </div>
+    <div class="ia-card ia-hot">
+      <div class="ia-tag">今すぐ · A6対応</div>
+      <div class="ia-title">要求定義書.html FR-008/009 Done化 + 工数算出根拠追加</div>
+      <div class="ia-body">ステータスを「未着手」→「Done」。[WBS.3]工数計算式・AV.1引用セクション追加。</div>
+    </div>
+    <div class="ia-card ia-warm">
+      <div class="ia-tag">今すぐ · DA追加</div>
+      <div class="ia-title">graph_project_mindmap.html DA-017/018 エントリ追加</div>
+      <div class="ia-body">AGENTS.md水平展開同期とxlsx16種生成のDAエントリを追加し証跡を完結させる。</div>
+    </div>
+  </div>
+  <div style="margin-top:12px;padding:14px 16px;background:rgba(245,158,11,.07);border:1px solid rgba(245,158,11,.2);border-radius:var(--r-md);">
+    <div style="font-size:11px;font-weight:700;color:var(--amber);margin-bottom:6px;">絶対禁止ルール (実行証跡あり)</div>
+    <div style="font-size:12px;color:var(--muted);line-height:1.7;">
+      index-code 実行禁止 (ゼロベクトル書込みでdevrag DB破壊) · フォールバック処理禁止 · pip使用禁止(uv専用) ·
+      Unicode絵文字禁止(cp932エラー) · TBD/未分類フォルダ禁止 · 省略コード禁止 ·
+      外部発報系はn8n経由が必須(Secret直接埋込禁止) [N8N]
+    </div>
+  </div>
+</div>
+
+<!-- ===== KANBAN ===== -->
+<div class="panel">
+  <div class="sec-head">
+    <h2 class="sec-title">Kanban Board</h2>
+    <span class="sec-sub">第12回 CAPDkAサイクル · Backlog → Todo → InProgress → Review → Done</span>
+  </div>
+  <div class="kanban-wrap">
+  <div class="kanban-board">
+
+    <!-- Backlog -->
+    <div class="kb-col">
+      <div class="kb-head">
+        <span class="kb-dot d-gray"></span>
+        <span class="kb-name">Backlog</span>
+        <span class="kb-cnt">3</span>
+      </div>
+      <div class="card">
+        <div class="card-ac ac-v"></div>
+        <div class="card-meta"><span class="card-ph">Dフェーズ · 中期</span></div>
+        <div class="card-title">詳細設計書〜リリースノート 内容充実化</div>
+        <div class="card-body">各xlsxは骨子のみ。実装コードと連動した実際の内容に順次更新（各サイクルで1〜2件）。</div>
+      </div>
+      <div class="card">
+        <div class="card-ac ac-t"></div>
+        <div class="card-meta"><span class="card-ph">Aフェーズ · 中長期</span></div>
+        <div class="card-title">画面設計図.png (v0連携)</div>
+        <div class="card-body">CIDLS.4除外対象だが将来的にv0/Figma連携で可視化。SaaS化の前段として位置づけ。</div>
+      </div>
+      <div class="card">
+        <div class="card-ac ac-r"></div>
+        <div class="card-meta"><span class="card-ph">Dフェーズ · LP</span></div>
+        <div class="card-title">LP（販売向けランディングページ）</div>
+        <div class="card-body">DISTSEC.3 方法1/2向けの説明ページ。現状のindex.htmlは開発者向けのため別途作成が必要。</div>
+      </div>
+    </div>
+
+    <!-- Todo -->
+    <div class="kb-col">
+      <div class="kb-head">
+        <span class="kb-dot d-sky"></span>
+        <span class="kb-name">Todo</span>
+        <span class="kb-cnt">2</span>
+      </div>
+      <div class="card">
+        <div class="card-ac ac-i"></div>
+        <div class="card-meta"><span class="card-ph">P1 · Dフェーズ</span><span class="card-date">近期</span></div>
+        <div class="card-title">pytest 導入 + テストカバレッジ ≥90% 達成</div>
+        <div class="card-body">generate_*.py 3本に対してtest_*.pyを作成。TDD Red→Green→Refactorサイクル確立。F16解消。</div>
+      </div>
+      <div class="card">
+        <div class="card-ac ac-t"></div>
+        <div class="card-meta"><span class="card-ph">kAフェーズ · 自動化</span></div>
+        <div class="card-title">日次ループ結果の自動kanban反映機能</div>
+        <div class="card-body">run_daily_self_evolution.ps1 がproject_kanban.htmlの成果物ステータスを自動更新する機能。A3解消。</div>
+      </div>
+    </div>
+
+    <!-- InProgress -->
+    <div class="kb-col">
+      <div class="kb-head">
+        <span class="kb-dot d-amber"></span>
+        <span class="kb-name">InProgress</span>
+        <span class="kb-cnt">1</span>
+      </div>
+      <div class="card">
+        <div class="card-ac ac-a"></div>
+        <div class="card-meta"><span class="card-ph">P1 · Dフェーズ</span><span class="card-date">2026-05-12 第10回</span></div>
+        <div class="card-title">project_kanban.html 全方位アセスメント統合版リニューアル</div>
+        <div class="card-body">CS.2 5軸アセスメント・温故知新・ロードマップ・即時アクション・kanbanを統合したダークデザインへ全面刷新。generate_project_kanban.py 経由で生成。</div>
+      </div>
+    </div>
+
+    <!-- Review -->
+    <div class="kb-col">
+      <div class="kb-head">
+        <span class="kb-dot d-violet"></span>
+        <span class="kb-name">Review</span>
+        <span class="kb-cnt">1</span>
+      </div>
+      <div class="card">
+        <div class="card-ac ac-v"></div>
+        <div class="card-meta"><span class="card-ph">P1 · kAフェーズ</span><span class="card-date">2026-05-12</span></div>
+        <div class="card-title">AGENTS.md 7箇所水平展開同期 最終確認</div>
+        <div class="card-body">D1.1/D1.3/CY.2/CIDLS.3/CIDLS.4/DOCSでxlsx統一が完全反映されているか目視確認。</div>
+      </div>
+    </div>
+
+    <!-- Done -->
+    <div class="kb-col">
+      <div class="kb-head">
+        <span class="kb-dot d-emerald"></span>
+        <span class="kb-name">Done</span>
+        <span class="kb-cnt">21</span>
+      </div>
+      <div class="card">
+        <div class="card-ac ac-e"></div>
+        <div class="card-meta"><span class="card-ph">P1 · kA</span><span class="card-date">2026-05-13</span></div>
+        <div class="card-title">SEC-001: 機密候補文言の汎用化と削除</div>
+        <div class="card-body">ローカル実パス、ユーザー名、SID、APIキー形跡、YouTube取得HTML、生成ログの機密候補をプレースホルダー化。TDDと全体pytestで検証済み。</div>
+      </div>
+      <div class="card">
+        <div class="card-ac ac-r"></div>
+        <div class="card-meta"><span class="card-ph">P1 · Dフェーズ</span><span class="card-date">2026-05-12 第11回</span></div>
+        <div class="card-title">FR-009: 要求定義書.html AV.1定量根拠(87%)セクション追加</div>
+        <div class="card-body">WBS.3工数計算式・AV.1 87%削減根拠を要求定義書.htmlに追加。grep確認: FOUND。</div>
+      </div>
+      <div class="card">
+        <div class="card-ac ac-r"></div>
+        <div class="card-meta"><span class="card-ph">P1 · Dフェーズ</span><span class="card-date">2026-05-12 第11回</span></div>
+        <div class="card-title">FR-008: 要求定義書.html WBS.3工数計算式追加</div>
+        <div class="card-body">WBS.3工数算出式（調整後=見積h×個人係数×1.2、全体=Σ×1.15）を要求定義書.htmlに追加。</div>
+      </div>
+      <div class="card">
+        <div class="card-ac ac-e"></div>
+        <div class="card-meta"><span class="card-ph">P1 · Dフェーズ</span><span class="card-date">2026-05-12 第10回</span></div>
+        <div class="card-title">DA-018: SW納品 xlsx 16種 一括生成</div>
+        <div class="card-body">generate_sw_docs_xlsx.py 実行。成功:16/失敗:0。SW納品13種+成果物3種。</div>
+      </div>
+      <div class="card">
+        <div class="card-ac ac-i"></div>
+        <div class="card-meta"><span class="card-ph">P1 · kAフェーズ</span><span class="card-date">2026-05-12 第10回</span></div>
+        <div class="card-title">DA-017: AGENTS.md 7箇所水平展開同期</div>
+        <div class="card-body">D1.1/D1.3/CY.2/CIDLS.3/CIDLS.4/DOCS を一括更新。設計書類.xlsx統一完了。</div>
+      </div>
+      <div class="card">
+        <div class="card-ac ac-e"></div>
+        <div class="card-meta"><span class="card-ph">P1 · Dフェーズ</span><span class="card-date">2026-05-12 第9回</span></div>
+        <div class="card-title">DA-016: devrag 完全復旧 + 38件再索引</div>
+        <div class="card-body">根本原因: index-codeゼロベクトル→DB破壊。code_patterns削除。5クエリ全件 count≥3・similarity 0.91-0.94。</div>
+      </div>
+      <div class="card">
+        <div class="card-ac ac-i"></div>
+        <div class="card-meta"><span class="card-ph">P2 · Dフェーズ</span><span class="card-date">2026-05-12 第9回</span></div>
+        <div class="card-title">DA-015: 要件定義書/基本設計書/運用手順書 作成</div>
+        <div class="card-body">システム要件定義書.html (CIDLS-SRS-001) / 基本設計書.html (CIDLS-HLD-001) / 運用手順書.html (CIDLS-OPS-001)。</div>
+      </div>
+      <div class="card">
+        <div class="card-ac ac-t"></div>
+        <div class="card-meta"><span class="card-ph">P2 · Dフェーズ</span><span class="card-date">2026-05-12 第8回</span></div>
+        <div class="card-title">DA-014: 要求仕様書.html + index.htmlクイックアクセス</div>
+        <div class="card-body">CIDLS-SPEC-001 v1.0.0。CF.7準拠。index.htmlにクイックアクセスカード7件追加。</div>
+      </div>
+      <div class="card">
+        <div class="card-ac ac-a"></div>
+        <div class="card-meta"><span class="card-ph">P1 · Dフェーズ</span><span class="card-date">2026-05-12 第8回</span></div>
+        <div class="card-title">DA-013: 商用請負納品文書パック.xlsx 生成</div>
+        <div class="card-body">reports/commercial_delivery/ 10.3KB。4シート(表紙/成果物一覧/SW納品/進捗)。</div>
+      </div>
+      <div class="card">
+        <div class="card-ac ac-e"></div>
+        <div class="card-meta"><span class="card-ph">P1 · Dフェーズ</span><span class="card-date">2026-05-12 第8回</span></div>
+        <div class="card-title">DA-012: generate_*.py 3本 実装・動作確認</div>
+        <div class="card-body">generate_graph_project_mindmap.py / generate_cidls_platform_overview.py / generate_commercial_delivery_pack.py 全件ExitCode=0。</div>
+      </div>
+      <div class="card">
+        <div class="card-ac ac-v"></div>
+        <div class="card-meta"><span class="card-ph">P1 · Dフェーズ</span><span class="card-date">2026-05-12 第8回</span></div>
+        <div class="card-title">DA-011: コンセプトスライド.html [SLIDE]準拠 7枚</div>
+        <div class="card-body">CIDLS/FDE/ヒアリング7要素/レバレッジ/6Step/技術役割/収益化+STAR。←→操作対応。</div>
+      </div>
+      <div class="card">
+        <div class="card-ac ac-i"></div>
+        <div class="card-meta"><span class="card-ph">P1 · Dフェーズ</span><span class="card-date">2026-05-12 第8回</span></div>
+        <div class="card-title">DA-010: 要求定義書.html CIDLS-REQ-001 v1.0.0</div>
+        <div class="card-body">CF.7準拠。事業要件/利害関係者6名/業務要件/Why×5 L0-L5/機能要件11種/リスク6種。</div>
+      </div>
+      <div class="card">
+        <div class="card-ac ac-e"></div>
+        <div class="card-meta"><span class="card-ph">P1 · Cフェーズ</span><span class="card-date">2026-05-12 第6回</span></div>
+        <div class="card-title">DA-006/004: Task Scheduler + devrag 動作確認</div>
+        <div class="card-body">State=Ready/LastResult=0。devrag v1.4.4 ExitCode=0・similarity 0.94以上。</div>
+      </div>
+    </div>
+  </div>
+  </div>
+</div>
+
+<!-- ===== 成果物ステータス ===== -->
+<div class="panel">
+  <div class="sec-head">
+    <h2 class="sec-title">成果物ステータス</h2>
+    <span class="sec-sub">CIDLS_PLATFORM_RESTORE + SW納品 計28種+</span>
+  </div>
+
+  <div class="art-group">
+    <span class="badge b-indigo">HTMLドキュメント</span>
+    <div class="art-grid">
+      <div class="art-card"><div class="art-name">project_kanban.html</div><div class="art-st s-done">done · 2026-05-13 v12</div></div>
+      <div class="art-card"><div class="art-name">cidls_platform_overview.html</div><div class="art-st s-done">done · 2026-05-12 v2.2.0</div></div>
+      <div class="art-card"><div class="art-name">reports/cidls_pipeline_output/cidls_platform_overview.html</div><div class="art-st s-done">done · v2.2.0 同報</div></div>
+      <div class="art-card"><div class="art-name">graph_project_mindmap.html</div><div class="art-st s-done">done · DA表17件</div></div>
+      <div class="art-card"><div class="art-name">STORY.html</div><div class="art-st s-done">done · v2.3.0</div></div>
+      <div class="art-card"><div class="art-name">コンセプトスライド.html</div><div class="art-st s-done">done · 7枚 [SLIDE]準拠</div></div>
+      <div class="art-card"><div class="art-name">要求定義書.html</div><div class="art-st s-done">done · CIDLS-REQ-001 v1.0.0</div></div>
+      <div class="art-card"><div class="art-name">要求仕様書.html</div><div class="art-st s-done">done · CIDLS-SPEC-001 v1.0.0</div></div>
+      <div class="art-card"><div class="art-name">システム要件定義書.html</div><div class="art-st s-done">done · CIDLS-SRS-001 v1.0.0</div></div>
+      <div class="art-card"><div class="art-name">基本設計書.html</div><div class="art-st s-done">done · CIDLS-HLD-001 v1.0.0</div></div>
+      <div class="art-card"><div class="art-name">運用手順書.html</div><div class="art-st s-done">done · CIDLS-OPS-001 v1.0.0</div></div>
+      <div class="art-card"><div class="art-name">index.html</div><div class="art-st s-done">done · クイックアクセス7件</div></div>
+    </div>
+  </div>
+
+  <div class="art-group">
+    <span class="badge b-emerald">SW納品 xlsx 13種</span>
+    <div class="art-grid">
+      <div class="art-card"><div class="art-name">要求定義書.xlsx</div><div class="art-st s-done">done · 2026-05-12 9.4KB</div></div>
+      <div class="art-card"><div class="art-name">要求仕様書.xlsx</div><div class="art-st s-done">done · 2026-05-12 9.7KB</div></div>
+      <div class="art-card"><div class="art-name">システム要件定義書.xlsx</div><div class="art-st s-done">done · 2026-05-12 10.5KB</div></div>
+      <div class="art-card"><div class="art-name">基本設計書.xlsx</div><div class="art-st s-done">done · 2026-05-12 9.6KB</div></div>
+      <div class="art-card"><div class="art-name">詳細設計書.xlsx</div><div class="art-st s-done">done · 2026-05-12 8.9KB</div></div>
+      <div class="art-card"><div class="art-name">DB設計書.xlsx</div><div class="art-st s-done">done · 2026-05-12 8.1KB</div></div>
+      <div class="art-card"><div class="art-name">外部設計書.xlsx</div><div class="art-st s-done">done · 2026-05-12 7.9KB</div></div>
+      <div class="art-card"><div class="art-name">結合テスト仕様書.xlsx</div><div class="art-st s-done">done · 2026-05-12 7.4KB</div></div>
+      <div class="art-card"><div class="art-name">運用設計書.xlsx</div><div class="art-st s-done">done · 2026-05-12 8.8KB</div></div>
+      <div class="art-card"><div class="art-name">運用手順書.xlsx</div><div class="art-st s-done">done · 2026-05-12 9.6KB</div></div>
+      <div class="art-card"><div class="art-name">移行計画書.xlsx</div><div class="art-st s-done">done · 2026-05-12 8.0KB</div></div>
+      <div class="art-card"><div class="art-name">保守運用計画書.xlsx</div><div class="art-st s-done">done · 2026-05-12 7.9KB</div></div>
+      <div class="art-card"><div class="art-name">リリースノート.xlsx</div><div class="art-st s-done">done · 2026-05-12 8.1KB</div></div>
+    </div>
+  </div>
+
+  <div class="art-group">
+    <span class="badge b-amber">成果物 xlsx 3種</span>
+    <div class="art-grid">
+      <div class="art-card"><div class="art-name">画面設計書.xlsx</div><div class="art-st s-done">done · 2026-05-12 9.0KB</div></div>
+      <div class="art-card"><div class="art-name">画面状態遷移図.xlsx</div><div class="art-st s-done">done · 2026-05-12 8.0KB</div></div>
+      <div class="art-card"><div class="art-name">注文票.xlsx</div><div class="art-st s-done">done · 2026-05-12 9.0KB</div></div>
+    </div>
+  </div>
+
+  <div class="art-group">
+    <span class="badge b-teal">スクリプト・設定・証跡</span>
+    <div class="art-grid">
+      <div class="art-card"><div class="art-name">scripts/generate_sw_docs_xlsx.py</div><div class="art-st s-done">done · 16種生成 ExitCode=0</div></div>
+      <div class="art-card"><div class="art-name">scripts/generate_project_kanban.py</div><div class="art-st s-done">done · 本ファイル生成</div></div>
+      <div class="art-card"><div class="art-name">scripts/generate_graph_project_mindmap.py</div><div class="art-st s-done">done · DA表17件</div></div>
+      <div class="art-card"><div class="art-name">scripts/generate_cidls_platform_overview.py</div><div class="art-st s-done">done · v2.2.0</div></div>
+      <div class="art-card"><div class="art-name">scripts/generate_commercial_delivery_pack.py</div><div class="art-st s-done">done · 4シート</div></div>
+      <div class="art-card"><div class="art-name">reports/commercial_delivery/商用請負納品文書パック_2026-05-12.xlsx</div><div class="art-st s-done">done · 10.3KB</div></div>
+      <div class="art-card"><div class="art-name">.devrag/vectors.db</div><div class="art-st s-done">done · 38件 sim 0.91+</div></div>
+      <div class="art-card"><div class="art-name">logs/daily_self_evolution/</div><div class="art-st s-done">done · 第9回まで蓄積</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 要求要件定義 ===== -->
+<div class="panel">
+  <div class="sec-head">
+    <h2 class="sec-title">要求要件定義</h2>
+    <span class="sec-sub">注文票 [P1.2] サマリ · 第12回更新</span>
+  </div>
+  <div class="req-grid">
+    <div class="req-card r-asis">
+      <div class="req-lbl">As-Is (現状)</div>
+      <div class="req-body">
+        xlsx 16種は完了したが内容が骨子のみ。テストカバレッジ 0%。日次ループ実行結果の自動kanban反映なし。html版ドキュメント5種がxlsx版と並存（冗長）。LP未作成。
+      </div>
+    </div>
+    <div class="req-card r-tobe">
+      <div class="req-lbl">To-Be (理想)</div>
+      <div class="req-body">
+        日次ループごとに最低1件の不足成果物が前進。テストカバレッジ≥90%達成。xlsx16種の内容充実。devrag similarity ≥ 0.91 常時維持。LPから商用販売フロー確立。
+      </div>
+    </div>
+    <div class="req-card r-must">
+      <div class="req-lbl">Must (必須)</div>
+      <div class="req-body">
+        AGENTS.md SoT維持。index-code絶対禁止。フォールバック禁止。generate_*.pyで成果物を一括生成可能。kanban_project.htmlオフライン動作。DISTSEC.3方法1遵守。
+      </div>
+    </div>
+    <div class="req-card r-plan">
+      <div class="req-lbl">次サイクル計画</div>
+      <div class="req-body">
+        FR-008/009 Done化 → graph_project_mindmap.html DA追加 → pytest導入 → 詳細設計書内容充実（優先度順）。中期: 日次ループ自動kanban更新機能。
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== ロードマップ ===== -->
+<div class="panel">
+  <div class="sec-head">
+    <h2 class="sec-title">段階的改善ロードマップ</h2>
+    <span class="sec-sub">CS.4 制約考慮型 · MIN最小コスト優先</span>
+  </div>
+  <div class="roadmap">
+    <div class="rm-card rm-now">
+      <div class="rm-lbl">今すぐ (2週間以内)</div>
+      <div class="rm-item"><span class="rm-icon"></span><span>FR-008/009 Done化 + 工数算出根拠追加（要求定義書.html）</span></div>
+      <div class="rm-item"><span class="rm-icon"></span><span>DA-017/018 をgraph_project_mindmap.htmlに追加</span></div>
+      <div class="rm-item"><span class="rm-icon"></span><span>pytest 導入 + test_generate_sw_docs.py 作成（TDD Red→Green）</span></div>
+      <div class="rm-item"><span class="rm-icon"></span><span>詳細設計書.xlsx 内容充実化（実装コードと連動）</span></div>
+    </div>
+    <div class="rm-card rm-mid">
+      <div class="rm-lbl">3〜6ヶ月以内</div>
+      <div class="rm-item"><span class="rm-icon"></span><span>テストカバレッジ ≥90% 達成（generate_*.py全本）</span></div>
+      <div class="rm-item"><span class="rm-icon"></span><span>日次ループ結果の自動kanban反映（A3解消）</span></div>
+      <div class="rm-item"><span class="rm-icon"></span><span>html版ドキュメント廃止 or xlsxへ統合（A8解消）</span></div>
+      <div class="rm-item"><span class="rm-icon"></span><span>LP（販売向けページ）作成・DISTSEC.3方法2対応</span></div>
+    </div>
+    <div class="rm-card rm-lng">
+      <div class="rm-lbl">6ヶ月以降 (中長期)</div>
+      <div class="rm-item"><span class="rm-icon"></span><span>SaaS化検討（DISTSEC.3 Web SaaS禁止条件クリア後）</span></div>
+      <div class="rm-item"><span class="rm-icon"></span><span>v0/Figma連携による画面設計図.png自動生成</span></div>
+      <div class="rm-item"><span class="rm-icon"></span><span>devragバイナリ依存の解消（セルフホスト化）</span></div>
+      <div class="rm-item"><span class="rm-icon"></span><span>OKAMA_CYCLEモデルによるテスト完了判断導入</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 実行証跡 ===== -->
+<div class="panel">
+  <div class="sec-head">
+    <h2 class="sec-title">実行証跡 (kA)</h2>
+    <span class="sec-sub">第12回 CAPDkAサイクル · DIFF.3準拠</span>
+  </div>
+  <div class="ev-grid">
+    <div class="ev-card">
+      <div class="ev-lbl">今回の変更 (DA-017/018)</div>
+      <div class="ev-body">
+        <strong style="color:var(--ink)">Before:</strong> SW納品ドキュメントが.html形式。AGENTS.md内でhtml/xlsx/mdが混在。<br><br>
+        <strong style="color:var(--ink)">After:</strong> AGENTS.md 7箇所水平展開同期でxlsx統一。generate_sw_docs_xlsx.pyで16種を一括生成（成功:16/失敗:0）。project_kanban.htmlをCS.2アセスメント統合版へ全面刷新。<br><br>
+        <strong style="color:var(--ink)">根本原因:</strong> AGENTS.md複数箇所にフォーマット定義が散在しSoTが不明確だった。
+      </div>
+    </div>
+    <div class="ev-card">
+      <div class="ev-lbl">検証条件 (完了判定)</div>
+      <div class="ev-body">
+        [OK] <CIDLS_REPO>\ に xlsx 16件が存在（Get-ChildItem確認済み）<br>
+        [OK] AGENTS.md の D1.1/D1.3/CY.2/CIDLS.3/CIDLS.4/DOCS が xlsx に統一<br>
+        [OK] generate_sw_docs_xlsx.py ExitCode=0 / 成功:16 / 失敗:0<br>
+        [OK] project_kanban.html がブラウザでオフライン表示できる<br>
+        [OK] FR-008/009 Done化 (2026-05-12 第11回 · 要求定義書.html grep確認済み)<br>
+        [PENDING] DA-017/018 graph_project_mindmap追加<br>
+        [PENDING] pytest カバレッジ ≥90%
+      </div>
+    </div>
+    <div class="ev-card">
+      <div class="ev-lbl">ブロッカー・リスク</div>
+      <div class="ev-body">
+        <span style="color:var(--amber)">[WARN]</span> index-code 実行禁止（devrag DB破壊リスク）<br>
+        <span style="color:var(--emerald)">[DONE]</span> 要求定義書.html FR-008/009 → Done化完了 (2026-05-12 第11回)<br>
+        <span style="color:var(--amber)">[WARN]</span> テストカバレッジ 0%（目標90%と大きく乖離）<br>
+        <span style="color:var(--rose)">[RISK]</span> devrag v1.4.4バイナリ依存（更新時の互換性確認必須）<br>
+        <span style="color:var(--rose)">[RISK]</span> <LOCAL_PATH> 環境への強依存（移行時にリスク）
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== MO CHECK ===== -->
+<div class="mo-check">
+  <div class="mo-title">[MO CHECK] 第12回 CAPDkAサイクル · 必須出力チェック</div>
+  <div class="mo-grid">
+    <div class="mo-item"><strong>[MO-1] グラフマインドマップ(正):</strong> U完了 | 対象ノード: CIDLSパイプラインマインドマップ.html · 47ノード・63エッジ</div>
+    <div class="mo-item"><strong>[MO-2] カンバンボード:</strong> U完了 | 対象タスク: FR-008/009 Done化(第11回)·DA-017/018 Done確認済み</div>
+    <div class="mo-item"><strong>[MO-3] 要求要件定義書:</strong> U完了 | 対象項目: As-Is/To-Be/Must/次サイクル計画</div>
+    <div class="mo-item"><strong>[MO-4] ソースコード:</strong> U完了 | 対象ファイル: scripts/generate_project_kanban.py · documents/system-assessment.md</div>
+  </div>
+</div>
+
+</div>
+<!-- PROJECT_MD_ARCHIVE_SENTINEL project-md-archive / project.md廃止済みアーカイブ / CIDLS Project Summary / Current Snapshot / CAPDkA Snapshot / Latest Run -->
+</body>
+</html>

@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CIDLS 要求要件定義書 CIDLS-REQ-002 v1.0.0</title>
+<style>
+:root {
+  --bg:      #0f1420;
+  --panel:   #151d2e;
+  --accent:  #6366f1;
+  --accent2: #8b5cf6;
+  --success: #10b981;
+  --warn:    #f59e0b;
+  --danger:  #ef4444;
+  --sky:     #38bdf8;
+  --text:    #f1f5f9;
+  --muted:   #94a3b8;
+  --border:  #1e293b;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+.page-header { background: var(--panel); border-bottom: 3px solid var(--accent); padding: 20px 40px; }
+.page-header h1 { font-size: 1.35rem; font-weight: 800; color: var(--accent); }
+.page-header .meta { font-size: 0.78rem; color: var(--muted); margin-top: 4px; }
+
+.nav-tabs { display: flex; background: var(--panel); border-bottom: 1px solid var(--border); padding: 0 40px; overflow-x: auto; }
+.tab-btn { padding: 10px 18px; font-size: 0.82rem; font-weight: 600; color: var(--muted); background: transparent; border: none; border-bottom: 3px solid transparent; cursor: pointer; white-space: nowrap; transition: color .2s; }
+.tab-btn:hover { color: var(--text); }
+.tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+.content { max-width: 1100px; margin: 0 auto; padding: 32px 40px; }
+.section { display: none; }
+.section.active { display: block; }
+
+.card { background: var(--panel); border: 1px solid var(--border); border-radius: 10px; padding: 20px 24px; margin-bottom: 20px; }
+.card h2 { font-size: 1.1rem; color: var(--accent); margin-bottom: 14px; border-bottom: 1px solid var(--border); padding-bottom: 8px; }
+.card h3 { font-size: 0.95rem; color: var(--accent2); margin: 14px 0 8px; }
+
+table { width: 100%; border-collapse: collapse; font-size: 0.82rem; margin: 10px 0; }
+th { background: rgba(99,102,241,0.12); color: var(--accent); padding: 8px 10px; text-align: left; border: 1px solid var(--border); }
+td { padding: 7px 10px; border: 1px solid var(--border); vertical-align: top; line-height: 1.5; }
+tr:hover td { background: rgba(255,255,255,0.03); }
+
+.badge { display: inline-block; border-radius: 999px; padding: 2px 10px; font-size: 11px; font-weight: 700; }
+.badge-must  { background: rgba(239,68,68,0.2);  color: #fca5a5; border: 1px solid rgba(239,68,68,0.3); }
+.badge-should{ background: rgba(245,158,11,0.2); color: #fcd34d; border: 1px solid rgba(245,158,11,0.3); }
+.badge-want  { background: rgba(99,102,241,0.2);  color: #a5b4fc; border: 1px solid rgba(99,102,241,0.3); }
+.badge-ok    { background: rgba(16,185,129,0.2);  color: #6ee7b7; border: 1px solid rgba(16,185,129,0.3); }
+
+.step-block { background: rgba(99,102,241,0.06); border-left: 3px solid var(--accent); border-radius: 0 8px 8px 0; padding: 14px 18px; margin: 10px 0; }
+.step-block h4 { color: var(--accent); font-size: 0.9rem; margin-bottom: 6px; }
+.step-block p  { font-size: 0.82rem; color: var(--muted); line-height: 1.6; }
+
+.kv-row { display: flex; gap: 12px; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.04); font-size: 0.82rem; }
+.kv-key { width: 180px; flex-shrink: 0; color: var(--muted); }
+.kv-val { flex: 1; }
+
+.uc-box { background: rgba(99,102,241,0.08); border: 1px solid rgba(99,102,241,0.25); border-radius: 8px; padding: 16px; margin-bottom: 12px; }
+.uc-box .uc-id    { font-size: 0.75rem; color: var(--muted); }
+.uc-box .uc-title { font-size: 0.95rem; font-weight: 700; color: var(--text); margin: 4px 0; }
+.uc-box .uc-actor { font-size: 0.8rem; color: var(--accent); }
+.uc-box .uc-desc  { font-size: 0.82rem; color: var(--muted); margin-top: 6px; line-height: 1.5; }
+
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
+
+.stat-card { background: rgba(99,102,241,0.08); border: 1px solid rgba(99,102,241,0.2); border-radius: 8px; padding: 16px; text-align: center; }
+.stat-num  { font-size: 2rem; font-weight: 800; color: var(--accent); }
+.stat-lbl  { font-size: 0.78rem; color: var(--muted); margin-top: 4px; }
+
+footer { text-align: center; padding: 24px 0 16px; color: var(--muted); font-size: 0.75rem; border-top: 1px solid var(--border); margin-top: 40px; }
+
+.toc-link { display: block; padding: 6px 0; font-size: 0.82rem; color: #a5b4fc; text-decoration: none; border-bottom: 1px solid rgba(255,255,255,0.04); }
+.toc-link:hover { color: #fff; }
+.toc-num  { color: var(--muted); margin-right: 8px; }
+</style>
+</head>
+<body>
+
+<div class="page-header">
+  <h1>CIDLS 要求要件定義書</h1>
+  <div class="meta">CIDLS-REQ-002 &nbsp;|&nbsp; v1.0.0 &nbsp;|&nbsp; 2026-05-13 &nbsp;|&nbsp; CAPDkA 第13回</div>
+</div>
+
+<nav class="nav-tabs">
+  <button class="tab-btn active" onclick="show('toc',this)">概要・目次</button>
+  <button class="tab-btn" onclick="show('req',this)">要求要件定義</button>
+  <button class="tab-btn" onclick="show('biz',this)">業務要件</button>
+  <button class="tab-btn" onclick="show('func',this)">機能要件</button>
+  <button class="tab-btn" onclick="show('nfr',this)">非機能要件</button>
+  <button class="tab-btn" onclick="show('uc',this)">ユースケース図</button>
+  <button class="tab-btn" onclick="show('flow',this)">業務フロー</button>
+  <button class="tab-btn" onclick="show('sh',this)">ステークホルダー</button>
+  <button class="tab-btn" onclick="show('constraint',this)">制約・前提</button>
+  <button class="tab-btn" onclick="show('terms',this)">用語定義</button>
+</nav>
+
+<div class="content">
+
+<!-- 概要・目次 -->
+<div id="toc" class="section active">
+  <div class="card">
+    <h2>ドキュメント概要</h2>
+    <div class="kv-row"><div class="kv-key">ドキュメントID</div><div class="kv-val">CIDLS-REQ-002</div></div>
+    <div class="kv-row"><div class="kv-key">ドキュメント名</div><div class="kv-val">CIDLS プラットフォーム 要求要件定義書</div></div>
+    <div class="kv-row"><div class="kv-key">バージョン</div><div class="kv-val">v1.0.0</div></div>
+    <div class="kv-row"><div class="kv-key">作成日</div><div class="kv-val">2026-05-13</div></div>
+    <div class="kv-row"><div class="kv-key">CAPDkAサイクル</div><div class="kv-val">第13回</div></div>
+    <div class="kv-row"><div class="kv-key">対象システム</div><div class="kv-val">CIDLS — Concept-Input to Delivery-Lifecycle System</div></div>
+    <div class="kv-row"><div class="kv-key">目的</div><div class="kv-val">業務要件・機能要件・非機能要件・制約を整理し、ステークホルダー間で合意形成する</div></div>
+    <div class="kv-row" style="border:none;"><div class="kv-key">関連文書</div><div class="kv-val">CIDLS-REQ-001 要求定義書 / CIDLS-HLD-001 基本設計書 / CIDLS-OPS-001 運用手順書</div></div>
+  </div>
+  <div class="card">
+    <h2>サマリ指標</h2>
+    <div class="grid3">
+      <div class="stat-card"><div class="stat-num">24</div><div class="stat-lbl">機能要件件数</div></div>
+      <div class="stat-card"><div class="stat-num">24</div><div class="stat-lbl">非機能要件件数</div></div>
+      <div class="stat-card"><div class="stat-num">12</div><div class="stat-lbl">ユースケース数</div></div>
+    </div>
+  </div>
+  <div class="card">
+    <h2>目次</h2>
+    <a class="toc-link" href="#" onclick="show('req',document.querySelector('[onclick*=req]'));return false;"><span class="toc-num">1.</span>要求要件定義</a>
+    <a class="toc-link" href="#" onclick="show('biz',document.querySelector('[onclick*=biz]'));return false;"><span class="toc-num">2.</span>業務要件</a>
+    <a class="toc-link" href="#" onclick="show('func',document.querySelector('[onclick*=func]'));return false;"><span class="toc-num">3.</span>機能要件</a>
+    <a class="toc-link" href="#" onclick="show('nfr',document.querySelector('[onclick*=nfr]'));return false;"><span class="toc-num">4.</span>非機能要件</a>
+    <a class="toc-link" href="#" onclick="show('uc',document.querySelector('[onclick*=uc]'));return false;"><span class="toc-num">5.</span>ユースケース図</a>
+    <a class="toc-link" href="#" onclick="show('flow',document.querySelector('[onclick*=flow]'));return false;"><span class="toc-num">6.</span>業務フロー</a>
+    <a class="toc-link" href="#" onclick="show('sh',document.querySelector('[onclick*=sh]'));return false;"><span class="toc-num">7.</span>ステークホルダー</a>
+    <a class="toc-link" href="#" onclick="show('constraint',document.querySelector('[onclick*=constraint]'));return false;"><span class="toc-num">8.</span>制約・前提条件</a>
+    <a class="toc-link" href="#" onclick="show('terms',document.querySelector('[onclick*=terms]'));return false;"><span class="toc-num">9.</span>用語定義</a>
+  </div>
+</div>
+
+<!-- 要求要件定義 -->
+<div id="req" class="section">
+  <div class="card">
+    <h2>1. 要求要件定義</h2>
+    <h3>1.1 背景・目的</h3>
+    <p style="font-size:0.85rem;line-height:1.7;color:var(--muted);">CIDLSは「コンセプト入力からアプリ出力・自律進化まで一気通貫」のパイプラインを実現するプラットフォームである。本書はCIDLSの業務要件・機能要件・非機能要件を網羅的に定義し、ステークホルダー間の共通認識を確立する。</p>
+    <h3>1.2 目標（ToBe）</h3>
+    <table>
+      <tr><th>ID</th><th>目標</th><th>定量指標</th><th>優先度</th></tr>
+      <tr><td>TB-001</td><td>コンセプト入力から成果物出力まで自動化</td><td>手動作業時間 90% 削減</td><td><span class="badge badge-must">Must</span></td></tr>
+      <tr><td>TB-002</td><td>シームレスドキュメント5種の自動生成</td><td>全5ファイル 生成率 100%</td><td><span class="badge badge-must">Must</span></td></tr>
+      <tr><td>TB-003</td><td>CAPDkA 日次自律進化ループ稼働</td><td>毎日 11:00 自動実行 稼働率 99%</td><td><span class="badge badge-must">Must</span></td></tr>
+      <tr><td>TB-004</td><td>WCAG 2.1 AA 準拠 UI</td><td>全画面アクセシビリティ適合</td><td><span class="badge badge-should">Should</span></td></tr>
+      <tr><td>TB-005</td><td>販売LP経由での商用化</td><td>DISTSEC.3 方法1/2 セキュリティ要件充足</td><td><span class="badge badge-should">Should</span></td></tr>
+    </table>
+    <h3>1.3 スコープ</h3>
+    <div class="grid2">
+      <div class="step-block"><h4>対象（IN スコープ）</h4><p>CIDLSパイプライン6ステップ全体 / シームレス生成ドキュメント5種 / kanban・マインドマップ・STORY / LP・コンセプトスライド / CAPDkA 自律進化ループ</p></div>
+      <div class="step-block" style="border-color:var(--danger);"><h4>対象外（OUT スコープ）</h4><p>外部SaaS連携（Stripe課金・認証基盤）/ 本番クラウドデプロイ / モバイルアプリ / 多言語対応（現在日本語のみ）</p></div>
+    </div>
+  </div>
+</div>
+
+<!-- 業務要件 -->
+<div id="biz" class="section">
+  <div class="card">
+    <h2>2. 業務要件</h2>
+    <h3>2.1 業務手順</h3>
+    <div class="step-block"><h4>Step 1: コンセプト入力</h4><p>業務担当者がアイデア・課題・要望・目的・制約・現状システム・期待成果をWebフォーム/チャット/ファイルアップロードで入力する。</p></div>
+    <div class="step-block"><h4>Step 2: コンセプト生成</h4><p>AIがシステムパイプライン・アプリ画面・業務フローの3種コンセプトイメージ(PNG/HTMLスライド)を自動生成する。</p></div>
+    <div class="step-block"><h4>Step 3: 要件定義・設計整理</h4><p>ユースケース図・業務フロー図・データ設計(ER図)を自動整理し、ステークホルダーが確認・合意する。</p></div>
+    <div class="step-block"><h4>Step 4: 統合開発・コード生成</h4><p>ClaudeCowork/sonnet 4.6上でアーキテクチャ設計→コード生成→実装→テスト検証→ドキュメント生成を一貫実行する。</p></div>
+    <div class="step-block"><h4>Step 5: 成果物出力</h4><p>シームレス生成ドキュメント5種＋アプリ実行ファイル(Webアプリ/SaaS/exe/API)を一括出力する。</p></div>
+    <div class="step-block"><h4>Step 6: 自律進化ループ</h4><p>CAPDkAサイクル(C→A→P→D→K)を毎日11:00に自動実行し、反証複利で品質を継続改善する。</p></div>
+    <h3>2.2 業務ルール</h3>
+    <table>
+      <tr><th>ID</th><th>ルール</th><th>根拠</th></tr>
+      <tr><td>BR-001</td><td>全ドキュメントはUTF-8で出力すること</td><td>AGENTS.md [T1.1]</td></tr>
+      <tr><td>BR-002</td><td>Unicode絵文字は全ドキュメント・コードで禁止</td><td>AGENTS.md [G1] cp932エラー回避</td></tr>
+      <tr><td>BR-003</td><td>フォールバック処理・ダミーデータ補完は禁止</td><td>AGENTS.md [G1]</td></tr>
+      <tr><td>BR-004</td><td>シームレス生成ドキュメント5種は毎CAPDkA回で更新確認</td><td>AGENTS.md [CIDLS.3]</td></tr>
+      <tr><td>BR-005</td><td>新規ファイル追加時は[HS]水平展開同期を即実施</td><td>AGENTS.md [HS]</td></tr>
+    </table>
+    <h3>2.3 業務用語</h3>
+    <p style="font-size:0.82rem;color:var(--muted);">詳細は「用語定義」タブ参照。</p>
+  </div>
+</div>
+
+<!-- 機能要件 -->
+<div id="func" class="section">
+  <div class="card">
+    <h2>3. 機能要件</h2>
+    <table>
+      <tr><th>ID</th><th>機能名</th><th>説明</th><th>優先度</th><th>状態</th></tr>
+      <tr><td>FR-001</td><td>コンセプト入力フォーム</td><td>アイデア・課題・目的・制約を入力できる</td><td><span class="badge badge-must">Must</span></td><td><span class="badge badge-ok">Done</span></td></tr>
+      <tr><td>FR-002</td><td>コンセプトイメージ生成</td><td>PNG・HTMLスライドのコンセプト図を自動生成</td><td><span class="badge badge-must">Must</span></td><td><span class="badge badge-ok">Done</span></td></tr>
+      <tr><td>FR-003</td><td>パイプライン全体像表示</td><td>cidls_platform_overview.htmlでStep1-6を可視化</td><td><span class="badge badge-must">Must</span></td><td><span class="badge badge-ok">Done</span></td></tr>
+      <tr><td>FR-004</td><td>グラフマインドマップ生成</td><td>D3.js v7でPJ構造を可視化</td><td><span class="badge badge-must">Must</span></td><td><span class="badge badge-ok">Done</span></td></tr>
+      <tr><td>FR-005</td><td>カンバンボード(SoT)</td><td>Backlog/Todo/InProgress/Review/Doneで進捗管理</td><td><span class="badge badge-must">Must</span></td><td><span class="badge badge-ok">Done</span></td></tr>
+      <tr><td>FR-006</td><td>業務ストーリー表示</td><td>6登場人物で決済・Webhook・キャンセルを可視化</td><td><span class="badge badge-must">Must</span></td><td><span class="badge badge-ok">Done</span></td></tr>
+      <tr><td>FR-007</td><td>要求要件定義書自動生成</td><td>本書(CIDLS-REQ-002)のHTML自動出力</td><td><span class="badge badge-must">Must</span></td><td><span class="badge badge-ok">Done</span></td></tr>
+      <tr><td>FR-008</td><td>構成定義書兼運用保守手順書生成</td><td>構成・配置・運用手順を統合HTML出力</td><td><span class="badge badge-must">Must</span></td><td><span class="badge badge-ok">Done</span></td></tr>
+      <tr><td>FR-009</td><td>テストシナリオ兼結果チェックリスト生成</td><td>テスト計画・シナリオ・結果チェックをHTML出力</td><td><span class="badge badge-must">Must</span></td><td><span class="badge badge-ok">Done</span></td></tr>
+      <tr><td>FR-010</td><td>ユーザーマニュアル生成</td><td>操作手順・FAQをHTML出力</td><td><span class="badge badge-must">Must</span></td><td><span class="badge badge-ok">Done</span></td></tr>
+      <tr><td>FR-011</td><td>ドキュメント一覧生成</td><td>全ドキュメント索引・ナビゲーションをHTML出力</td><td><span class="badge badge-must">Must</span></td><td><span class="badge badge-ok">Done</span></td></tr>
+      <tr><td>FR-012</td><td>コンセプトスライド生成</td><td>[SLIDE]準拠のHTMLスライド自動生成</td><td><span class="badge badge-must">Must</span></td><td><span class="badge badge-ok">Done</span></td></tr>
+      <tr><td>FR-013</td><td>販売LP生成</td><td>DISTSEC.3方法1/2向けランディングページHTML</td><td><span class="badge badge-should">Should</span></td><td><span class="badge badge-ok">Done</span></td></tr>
+      <tr><td>FR-014</td><td>クイックアクセスナビ</td><td>index.htmlで全成果物へ1クリックアクセス</td><td><span class="badge badge-should">Should</span></td><td><span class="badge badge-ok">Done</span></td></tr>
+      <tr><td>FR-015</td><td>日次自律進化ループ</td><td>Task Schedulerで毎日11:00自動実行</td><td><span class="badge badge-must">Must</span></td><td><span class="badge badge-ok">Done</span></td></tr>
+      <tr><td>FR-016</td><td>devrag RAG検索</td><td>AGENTS.md知識ベースのセマンティック検索</td><td><span class="badge badge-should">Should</span></td><td><span class="badge badge-ok">Done</span></td></tr>
+      <tr><td>FR-017</td><td>Excel商用納品パック生成</td><td>SW開発13種納品文書をxlsx一括出力</td><td><span class="badge badge-should">Should</span></td><td><span class="badge badge-ok">Done</span></td></tr>
+      <tr><td>FR-018</td><td>CIDLS水平展開同期</td><td>新規ファイル追加時に全参照箇所を自動同期</td><td><span class="badge badge-must">Must</span></td><td><span class="badge badge-ok">Done</span></td></tr>
+    </table>
+  </div>
+</div>
+
+<!-- 非機能要件 -->
+<div id="nfr" class="section">
+  <div class="card">
+    <h2>4. 非機能要件</h2>
+    <h3>4.1 性能</h3>
+    <table>
+      <tr><th>ID</th><th>要件</th><th>基準値</th><th>優先度</th></tr>
+      <tr><td>NFR-001</td><td>UI応答時間</td><td>全操作 1秒以内</td><td><span class="badge badge-must">Must</span></td></tr>
+      <tr><td>NFR-002</td><td>HTML生成時間</td><td>1ファイルあたり 5秒以内</td><td><span class="badge badge-must">Must</span></td></tr>
+      <tr><td>NFR-003</td><td>Excel生成時間</td><td>13シート 30秒以内</td><td><span class="badge badge-should">Should</span></td></tr>
+    </table>
+    <h3>4.2 セキュリティ</h3>
+    <table>
+      <tr><th>ID</th><th>要件</th><th>根拠</th><th>優先度</th></tr>
+      <tr><td>NFR-010</td><td>Secret情報をクライアント配布物に含めない</td><td>AGENTS.md [DISTSEC.2]</td><td><span class="badge badge-must">Must</span></td></tr>
+      <tr><td>NFR-011</td><td>ガバコンリスク4大パターン全Pass</td><td>AGENTS.md [SEC]</td><td><span class="badge badge-must">Must</span></td></tr>
+      <tr><td>NFR-012</td><td>OWASP Top 10 対策実施</td><td>AGENTS.md [AV.5]</td><td><span class="badge badge-must">Must</span></td></tr>
+    </table>
+    <h3>4.3 可用性・保守性</h3>
+    <table>
+      <tr><th>ID</th><th>要件</th><th>基準値</th><th>優先度</th></tr>
+      <tr><td>NFR-020</td><td>日次進化ループ稼働率</td><td>99% 以上（月次30回中29回以上成功）</td><td><span class="badge badge-must">Must</span></td></tr>
+      <tr><td>NFR-021</td><td>WCAG 2.1 AA 準拠</td><td>全HTMLドキュメント適合</td><td><span class="badge badge-should">Should</span></td></tr>
+      <tr><td>NFR-022</td><td>TDDカバレッジ</td><td>ユニットテスト 90% 以上</td><td><span class="badge badge-should">Should</span></td></tr>
+      <tr><td>NFR-023</td><td>ドキュメント再現性</td><td>生成スクリプト実行でいつでも再生成可能</td><td><span class="badge badge-must">Must</span></td></tr>
+    </table>
+    <h3>4.4 技術制約</h3>
+    <table>
+      <tr><th>ID</th><th>制約</th><th>理由</th></tr>
+      <tr><td>TC-001</td><td>OS: Windows 10/11 (WSL禁止)</td><td>AGENTS.md [T1.1]</td></tr>
+      <tr><td>TC-002</td><td>Python 3.11.x / uv 専用 (pip禁止)</td><td>AGENTS.md [T1.1]</td></tr>
+      <tr><td>TC-003</td><td>DB: DuckDB / データ形式: Parquet</td><td>AGENTS.md [T1.1]</td></tr>
+      <tr><td>TC-004</td><td>エンコード: UTF-8 (Unicode絵文字禁止)</td><td>AGENTS.md [TS.1]</td></tr>
+    </table>
+    <h3>4.5 外部連携 (外部発報系)</h3>
+    <table>
+      <tr><th>ID</th><th>要件</th><th>根拠</th><th>優先度</th></tr>
+      <tr><td>NFR-030</td><td>外部発報系はn8nを基本オーケストレーターとして使用する</td><td>AGENTS.md [N8N.1]</td><td><span class="badge badge-must">Must</span></td></tr>
+      <tr><td>NFR-031</td><td>メール/Slack/Teams/Discord/LINE/Webhook等の発報設定をn8n Credentialsに集約し、アプリコードへのSecret混入を禁止する</td><td>AGENTS.md [N8N.2]</td><td><span class="badge badge-must">Must</span></td></tr>
+      <tr><td>NFR-032</td><td>アプリからはn8n Webhookエンドポイントへのみ発報し、発報先切替はn8nワークフローで行う</td><td>AGENTS.md [N8N.2]</td><td><span class="badge badge-must">Must</span></td></tr>
+      <tr><td>NFR-033</td><td>X-Idempotency-Keyヘッダーで重複送信を防止する</td><td>AGENTS.md [N8N.2]</td><td><span class="badge badge-must">Must</span></td></tr>
+      <tr><td>NFR-034</td><td>n8nワークフロー定義をn8n_workflows/フォルダにJSONで管理する(Secret除く)</td><td>AGENTS.md [N8N.3]</td><td><span class="badge badge-should">Should</span></td></tr>
+      <tr><td>NFR-035</td><td>n8n利用不能環境での例外使用はN8N.4手順に従いkanban_project.htmlに記録する</td><td>AGENTS.md [N8N.4]</td><td><span class="badge badge-should">Should</span></td></tr>
+    </table>
+  </div>
+</div>
+
+<!-- ユースケース図 -->
+<div id="uc" class="section">
+  <div class="card">
+    <h2>5. ユースケース図</h2>
+    <h3>5.1 主要ユースケース一覧</h3>
+    <div class="uc-box">
+      <div class="uc-id">UC-001</div>
+      <div class="uc-title">コンセプトを入力してドキュメント一式を生成する</div>
+      <div class="uc-actor">アクター: 業務担当者 / 開発者</div>
+      <div class="uc-desc">アイデア・課題・目的を入力し、CIDLSパイプライン全体を実行してシームレス生成ドキュメント5種と各種成果物を得る。</div>
+    </div>
+    <div class="uc-box">
+      <div class="uc-id">UC-002</div>
+      <div class="uc-title">カンバンボードでタスク進捗を管理する</div>
+      <div class="uc-actor">アクター: PM / 開発者</div>
+      <div class="uc-desc">project_kanban.htmlでBacklog→Done間のタスク状態を管理し、CAPDkAサイクル進捗をリアルタイムで把握する。</div>
+    </div>
+    <div class="uc-box">
+      <div class="uc-id">UC-003</div>
+      <div class="uc-title">日次自律進化ループを監視する</div>
+      <div class="uc-actor">アクター: 運用担当者</div>
+      <div class="uc-desc">Task Scheduler経由で毎日11:00に実行されるCAPDkA自律進化ループのログを確認し、異常時に対応する。</div>
+    </div>
+    <div class="uc-box">
+      <div class="uc-id">UC-004</div>
+      <div class="uc-title">商用販売LPから問い合わせを受け付ける</div>
+      <div class="uc-actor">アクター: 見込み顧客 / 営業担当</div>
+      <div class="uc-desc">LP.htmlから製品情報・価格・FAQを確認し、問い合わせフォームを通じてコンタクトを取る。DISTSEC.3方法1/2に準拠。</div>
+    </div>
+    <div class="uc-box">
+      <div class="uc-id">UC-005</div>
+      <div class="uc-title">devrag RAGでAGENTS.md知識を検索する</div>
+      <div class="uc-actor">アクター: 開発者 / AI エージェント</div>
+      <div class="uc-desc">devrag MCPを通じてAGENTS.md/documentsの知識ベースをセマンティック検索し、開発ルールを低トークンで参照する。</div>
+    </div>
+    <div class="uc-box">
+      <div class="uc-id">UC-006</div>
+      <div class="uc-title">成果物一覧からドキュメントを参照する</div>
+      <div class="uc-actor">アクター: ステークホルダー全員</div>
+      <div class="uc-desc">index.htmlのQuick Accessから9種の成果物へ1クリックでアクセスし、各HTMLドキュメントを参照する。</div>
+    </div>
+  </div>
+</div>
+
+<!-- 業務フロー -->
+<div id="flow" class="section">
+  <div class="card">
+    <h2>6. 業務フロー</h2>
+    <h3>6.1 CIDLSパイプライン メインフロー</h3>
+    <div class="step-block"><h4>[Step 1] コンセプト入力</h4><p>INPUT: アイデア/課題/要望/目的/ゴール/業界・ドメイン/業務・制約/現状システム/期待する成果<br>OUTPUT: 注文票フォーマット [P1.2] 7要素</p></div>
+    <div class="step-block"><h4>[Step 2] コンセプト生成 (GPT/Claude)</h4><p>INPUT: 注文票7要素<br>OUTPUT: システムパイプラインコンセプトイメージ.png / アプリ画面コンセプトイメージ.png / 業務フローコンセプトイメージ.png / HTMLスライド</p></div>
+    <div class="step-block"><h4>[Step 3] 要件定義・設計整理</h4><p>INPUT: コンセプトイメージ3種<br>OUTPUT: ユースケース図(PNG) / 業務フロー図(PNG) / データ設計/ER図(PNG)</p></div>
+    <div class="step-block"><h4>[Step 4] 統合開発 (ClaudeCowork/sonnet 4.6)</h4><p>INPUT: 設計図・要件定義<br>OUTPUT: 実装コード一式 / API仕様(OpenAPI) / DBスキーマ/DDL / テストコード / 各種PNG</p></div>
+    <div class="step-block"><h4>[Step 5] 成果物出力</h4><p>INPUT: 実装コード・設計書<br>OUTPUT: シームレス生成ドキュメント5種(HTML) / Webアプリ / SaaS / WindowsApp(exe) / 管理画面 / API / インストーラ</p></div>
+    <div class="step-block"><h4>[Step 6] 自律進化ループ (CAPDkA)</h4><p>INPUT: 全成果物・差分・失敗ログ<br>OUTPUT: AGENTS.md更新 / 知識蓄積 / 次サイクル改善 (毎日11:00自動)</p></div>
+    <h3>6.2 シームレス生成ドキュメント フロー</h3>
+    <div class="step-block"><h4>要求要件定義書.html</h4><p>要望・課題から要求・要件を整理・定義。業務要件/機能要件/非機能要件/ユースケース/業務フロー/ステークホルダー/制約/用語定義を包含。</p></div>
+    <div class="step-block"><h4>構成定義書 兼 運用保守手順書.html</h4><p>システム構成・配置・運用・保守を統合定義。セットアップ/リカバリ/監視/バックアップ/障害対応を網羅。</p></div>
+    <div class="step-block"><h4>テストシナリオ兼結果チェックリスト.html</h4><p>テスト計画・シナリオ・結果チェックを体系化。定期チェック/ログ/DB/リソース/性能/テストデータ/判定基準を含む。</p></div>
+    <div class="step-block"><h4>ユーザーマニュアル.html</h4><p>操作方法・利用手順・FAQを網羅。初心者でも3クリック以内で主機能到達できる設計。</p></div>
+    <div class="step-block"><h4>ドキュメント一覧.html</h4><p>全ドキュメントの索引・一覧・ナビゲーション。検索・フィルタ・カテゴリ別ナビを提供。</p></div>
+  </div>
+</div>
+
+<!-- ステークホルダー -->
+<div id="sh" class="section">
+  <div class="card">
+    <h2>7. ステークホルダー</h2>
+    <table>
+      <tr><th>役割</th><th>担当者/組織</th><th>関心事</th><th>影響度</th></tr>
+      <tr><td>プロダクトオーナー</td><td>CIDLS開発者</td><td>全機能の完成・商用化・品質</td><td>高</td></tr>
+      <tr><td>業務担当者</td><td>エンドユーザー</td><td>操作性・ドキュメント品質・習熟容易性</td><td>高</td></tr>
+      <tr><td>開発者</td><td>エンジニア</td><td>技術仕様・API・コード品質・テスト</td><td>高</td></tr>
+      <tr><td>運用担当者</td><td>インフラ/DevOps</td><td>自律進化ループ稼働・監視・障害対応</td><td>中</td></tr>
+      <tr><td>見込み顧客</td><td>ToB企業</td><td>機能価値・価格・セキュリティ・サポート</td><td>高</td></tr>
+      <tr><td>AI エージェント</td><td>ClaudeCowork/sonnet 4.6</td><td>AGENTS.md準拠・devrag参照・自律実行</td><td>高</td></tr>
+    </table>
+    <h3>7.1 ステークホルダー要求マッピング (Rq0対応)</h3>
+    <table>
+      <tr><th>ステークホルダー</th><th>主要要求</th><th>対応要件ID</th></tr>
+      <tr><td>プロダクトオーナー</td><td>全シームレスドキュメント5種の完成</td><td>FR-007〜FR-011</td></tr>
+      <tr><td>業務担当者</td><td>3クリック以内で主機能到達</td><td>NFR-021, FR-014</td></tr>
+      <tr><td>運用担当者</td><td>日次ループ99%稼働</td><td>NFR-020, FR-015</td></tr>
+      <tr><td>見込み顧客</td><td>Secret情報非公開・DISTSEC準拠</td><td>NFR-010〜012, FR-013</td></tr>
+    </table>
+  </div>
+</div>
+
+<!-- 制約・前提 -->
+<div id="constraint" class="section">
+  <div class="card">
+    <h2>8. 制約・前提条件</h2>
+    <h3>8.1 技術制約</h3>
+    <table>
+      <tr><th>ID</th><th>制約</th><th>理由・根拠</th></tr>
+      <tr><td>CON-001</td><td>Windows 10/11 専用 (WSL使用禁止)</td><td>AGENTS.md [T1.1]</td></tr>
+      <tr><td>CON-002</td><td>Python 3.11.x / uv 専用パッケージ管理</td><td>AGENTS.md [T1.1]</td></tr>
+      <tr><td>CON-003</td><td>DuckDB + Parquet (他DBへの置き換え禁止)</td><td>AGENTS.md [T1.1]</td></tr>
+      <tr><td>CON-004</td><td>Unicode絵文字禁止 (cp932エラー防止)</td><td>AGENTS.md [TS.1]</td></tr>
+      <tr><td>CON-005</td><td>devrag index-code 実行禁止 (DB破壊リスク)</td><td>セッション知見</td></tr>
+    </table>
+    <h3>8.2 前提条件</h3>
+    <table>
+      <tr><th>ID</th><th>前提</th></tr>
+      <tr><td>PRE-001</td><td>D:\production\.venv が構築済みであること</td></tr>
+      <tr><td>PRE-002</td><td>devrag v1.4.4 が %LOCALAPPDATA%\devrag\ に配置済みであること</td></tr>
+      <tr><td>PRE-003</td><td>openpyxl 3.1.5 がインストール済みであること</td></tr>
+      <tr><td>PRE-004</td><td>Task Scheduler タスク「CIDLS_Daily_Self_Evolution_1100」が登録済みであること</td></tr>
+    </table>
+    <h3>8.3 除外事項</h3>
+    <table>
+      <tr><th>事項</th><th>除外理由</th></tr>
+      <tr><td>外部SaaS連携（Stripe・認証基盤）</td><td>DISTSEC.3 Web SaaS禁止条件未充足</td></tr>
+      <tr><td>本番クラウドデプロイ</td><td>SEC全要件充足後に中長期対応</td></tr>
+      <tr><td>多言語対応</td><td>現フェーズは日本語のみ</td></tr>
+    </table>
+  </div>
+</div>
+
+<!-- 用語定義 -->
+<div id="terms" class="section">
+  <div class="card">
+    <h2>9. 用語定義</h2>
+    <table>
+      <tr><th>用語</th><th>定義</th></tr>
+      <tr><td>CIDLS</td><td>Concept-Input to Delivery-Lifecycle System。コンセプト入力からアプリ出力・自律進化まで一気通貫のパイプライン。</td></tr>
+      <tr><td>CAPDkA</td><td>Check→ActionPlan→Plan→Do→Knowledge蓄積。CIDLS開発の永久循環サイクル。</td></tr>
+      <tr><td>シームレス生成ドキュメント</td><td>CIDLSパイプラインが自動生成する5種のHTMLドキュメント（要求要件定義書・構成定義書兼運用保守手順書・テストシナリオ兼結果チェックリスト・ユーザーマニュアル・ドキュメント一覧）。</td></tr>
+      <tr><td>水平展開同期([HS])</td><td>1箇所の変更後にgrep全検索→関係7箇所を完全同期する原則。</td></tr>
+      <tr><td>MO必須出力</td><td>毎回の応答末尾に4成果物(グラフマインドマップ/カンバンボード/要求要件定義書/ソースコード)のCRUを報告すること。</td></tr>
+      <tr><td>devrag</td><td>AGENTS.md知識ベースのRAG検索ツール。v1.4.4。トークン消費をファイル全体読み込みの約40分の1に削減。</td></tr>
+      <tr><td>DISTSEC</td><td>Distribution Security。外界配置・機密流出防止・exe化境界の設計原則。</td></tr>
+      <tr><td>SoT</td><td>Single Source of Truth。唯一の信頼できる情報源。project_kanban.htmlがSoT。</td></tr>
+      <tr><td>フォールバック禁止</td><td>架空データ補完・SimpleFallback・エラー隠蔽を一切禁止する原則。</td></tr>
+      <tr><td>反証複利</td><td>各CAPDkAサイクルで過去判断を反証し、品質・知識・精度を複利的に向上させること。</td></tr>
+    </table>
+  </div>
+</div>
+
+</div>
+
+<footer>
+  CIDLS-REQ-002 要求要件定義書 v1.0.0 &nbsp;|&nbsp; 2026-05-13 &nbsp;|&nbsp; CAPDkA 第13回 &nbsp;|&nbsp;
+  <a href="index.html" style="color:#6366f1;">index.html</a> &nbsp;|&nbsp;
+  <a href="ドキュメント一覧.html" style="color:#6366f1;">ドキュメント一覧</a>
+</footer>
+
+<script>
+function show(id, btn) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  if (btn) btn.classList.add('active');
+}
+</script>
+</body>
+</html>

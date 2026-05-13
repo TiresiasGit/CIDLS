@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CIDLS ユーザーマニュアル CIDLS-MAN-001 v1.0.0</title>
+<style>
+:root {
+  --bg:      #091520;
+  --panel:   #0f1d2e;
+  --accent:  #38bdf8;
+  --accent2: #7dd3fc;
+  --success: #10b981;
+  --warn:    #f59e0b;
+  --danger:  #ef4444;
+  --indigo:  #6366f1;
+  --text:    #f1f5f9;
+  --muted:   #94a3b8;
+  --border:  #1a2e3d;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+.page-header { background: var(--panel); border-bottom: 3px solid var(--accent); padding: 20px 40px; }
+.page-header h1 { font-size: 1.35rem; font-weight: 800; color: var(--accent); }
+.page-header .meta { font-size: 0.78rem; color: var(--muted); margin-top: 4px; }
+
+.nav-tabs { display: flex; background: var(--panel); border-bottom: 1px solid var(--border); padding: 0 40px; overflow-x: auto; }
+.tab-btn { padding: 10px 18px; font-size: 0.82rem; font-weight: 600; color: var(--muted); background: transparent; border: none; border-bottom: 3px solid transparent; cursor: pointer; white-space: nowrap; transition: color .2s; }
+.tab-btn:hover { color: var(--text); }
+.tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+.content { max-width: 1100px; margin: 0 auto; padding: 32px 40px; }
+.section { display: none; }
+.section.active { display: block; }
+
+.card { background: var(--panel); border: 1px solid var(--border); border-radius: 10px; padding: 20px 24px; margin-bottom: 20px; }
+.card h2 { font-size: 1.1rem; color: var(--accent); margin-bottom: 14px; border-bottom: 1px solid var(--border); padding-bottom: 8px; }
+.card h3 { font-size: 0.95rem; color: var(--accent2); margin: 14px 0 8px; }
+
+table { width: 100%; border-collapse: collapse; font-size: 0.82rem; margin: 10px 0; }
+th { background: rgba(56,189,248,0.12); color: var(--accent); padding: 8px 10px; text-align: left; border: 1px solid var(--border); }
+td { padding: 7px 10px; border: 1px solid var(--border); vertical-align: top; line-height: 1.5; }
+tr:hover td { background: rgba(255,255,255,0.03); }
+
+.badge { display: inline-block; border-radius: 999px; padding: 2px 10px; font-size: 11px; font-weight: 700; }
+.badge-ok    { background: rgba(16,185,129,0.2);  color: #6ee7b7; border: 1px solid rgba(16,185,129,0.3); }
+.badge-warn  { background: rgba(245,158,11,0.2);  color: #fcd34d; border: 1px solid rgba(245,158,11,0.3); }
+.badge-info  { background: rgba(56,189,248,0.2);  color: #7dd3fc; border: 1px solid rgba(56,189,248,0.3); }
+.badge-new   { background: rgba(99,102,241,0.2);  color: #a5b4fc; border: 1px solid rgba(99,102,241,0.3); }
+
+.step-block { background: rgba(56,189,248,0.06); border-left: 3px solid var(--accent); border-radius: 0 8px 8px 0; padding: 14px 18px; margin: 10px 0; }
+.step-block h4 { color: var(--accent); font-size: 0.9rem; margin-bottom: 6px; }
+.step-block p  { font-size: 0.82rem; color: var(--muted); line-height: 1.6; }
+
+.warn-block { background: rgba(245,158,11,0.06); border-left: 3px solid var(--warn); border-radius: 0 8px 8px 0; padding: 14px 18px; margin: 10px 0; }
+.warn-block h4 { color: var(--warn); font-size: 0.9rem; margin-bottom: 6px; }
+.warn-block p  { font-size: 0.82rem; color: var(--muted); line-height: 1.6; }
+
+.tip-block { background: rgba(16,185,129,0.06); border-left: 3px solid var(--success); border-radius: 0 8px 8px 0; padding: 14px 18px; margin: 10px 0; }
+.tip-block h4 { color: #34d399; font-size: 0.9rem; margin-bottom: 6px; }
+.tip-block p  { font-size: 0.82rem; color: var(--muted); line-height: 1.6; }
+
+.code-block { background: #050e18; border: 1px solid var(--border); border-radius: 6px; padding: 14px; font-family: 'Consolas', 'Courier New', monospace; font-size: 0.78rem; color: #93c5fd; white-space: pre; overflow-x: auto; margin: 8px 0; }
+
+.kv-row { display: flex; gap: 12px; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.04); font-size: 0.82rem; }
+.kv-key { width: 200px; flex-shrink: 0; color: var(--muted); }
+.kv-val { flex: 1; }
+
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
+.stat-card { background: rgba(56,189,248,0.08); border: 1px solid rgba(56,189,248,0.2); border-radius: 8px; padding: 16px; text-align: center; }
+.stat-num  { font-size: 2rem; font-weight: 800; color: var(--accent); }
+.stat-lbl  { font-size: 0.78rem; color: var(--muted); margin-top: 4px; }
+
+.faq-item { border: 1px solid var(--border); border-radius: 8px; margin: 8px 0; overflow: hidden; }
+.faq-q { background: rgba(56,189,248,0.08); padding: 12px 16px; font-size: 0.85rem; font-weight: 600; color: var(--accent2); cursor: pointer; }
+.faq-a { padding: 12px 16px; font-size: 0.82rem; color: var(--muted); line-height: 1.6; border-top: 1px solid var(--border); }
+
+footer { text-align: center; padding: 24px 0 16px; color: var(--muted); font-size: 0.75rem; border-top: 1px solid var(--border); margin-top: 40px; }
+</style>
+</head>
+<body>
+
+<div class="page-header">
+  <h1>CIDLS ユーザーマニュアル</h1>
+  <div class="meta">CIDLS-MAN-001 &nbsp;|&nbsp; v1.0.0 &nbsp;|&nbsp; 2026-05-13 &nbsp;|&nbsp; CAPDkA 第13回</div>
+</div>
+
+<nav class="nav-tabs">
+  <button class="tab-btn active" onclick="show('overview',this)">概要・目次</button>
+  <button class="tab-btn" onclick="show('start',this)">はじめに</button>
+  <button class="tab-btn" onclick="show('system',this)">システム概要</button>
+  <button class="tab-btn" onclick="show('docs',this)">ドキュメント参照</button>
+  <button class="tab-btn" onclick="show('ops',this)">基本操作</button>
+  <button class="tab-btn" onclick="show('scripts',this)">スクリプト実行</button>
+  <button class="tab-btn" onclick="show('kanban',this)">kanban操作</button>
+  <button class="tab-btn" onclick="show('settings',this)">設定・カスタマイズ</button>
+  <button class="tab-btn" onclick="show('trouble',this)">トラブルシューティング</button>
+  <button class="tab-btn" onclick="show('glossary',this)">用語集・FAQ</button>
+</nav>
+
+<div class="content">
+
+<!-- 概要・目次 -->
+<div id="overview" class="section active">
+  <div class="card">
+    <h2>ドキュメント概要</h2>
+    <div class="kv-row"><div class="kv-key">ドキュメントID</div><div class="kv-val">CIDLS-MAN-001</div></div>
+    <div class="kv-row"><div class="kv-key">ドキュメント名</div><div class="kv-val">CIDLS プラットフォーム ユーザーマニュアル</div></div>
+    <div class="kv-row"><div class="kv-key">バージョン</div><div class="kv-val">v1.0.0</div></div>
+    <div class="kv-row"><div class="kv-key">作成日</div><div class="kv-val">2026-05-13</div></div>
+    <div class="kv-row" style="border:none;"><div class="kv-key">対象読者</div><div class="kv-val">CIDLSプラットフォームを利用する開発者・運用担当者・初回セットアップ者</div></div>
+  </div>
+  <div class="card">
+    <h2>クイックスタート（3ステップ）</h2>
+    <div class="grid3">
+      <div class="stat-card"><div class="stat-num">1</div><div class="stat-lbl">index.html を開く</div></div>
+      <div class="stat-card"><div class="stat-num">2</div><div class="stat-lbl">目的のカードをクリック</div></div>
+      <div class="stat-card"><div class="stat-num">3</div><div class="stat-lbl">タブで情報を確認</div></div>
+    </div>
+    <div class="tip-block" style="margin-top:16px;">
+      <h4>初回利用者へ</h4>
+      <p>まず「はじめに」タブを読んでから操作を開始してください。3クリック以内で主機能に到達できるよう設計されています。</p>
+    </div>
+  </div>
+</div>
+
+<!-- はじめに -->
+<div id="start" class="section">
+  <div class="card">
+    <h2>はじめに</h2>
+    <h3>2.1 CIDLSプラットフォームとは</h3>
+    <p style="font-size:0.84rem;line-height:1.7;color:var(--muted);">CIDLSプラットフォームは、コンセプト入力からアプリ生成・ドキュメント一式生成・自律進化保守ループまでを一気通貫で実行するAI駆動開発基盤です。AGENTS.md（全ルールのSoT）を中心に、日次で自律進化しながら商用品質の成果物を継続的に生成します。</p>
+    <h3>2.2 基本的な使い方の流れ</h3>
+    <div class="step-block"><h4>Step 1: index.html を開く</h4><p>D:\CIDLS\index.html をブラウザで開きます。全成果物へのクイックアクセスナビゲーションが表示されます。</p></div>
+    <div class="step-block"><h4>Step 2: 目的の成果物を選ぶ</h4><p>カードをクリックして対象ドキュメントまたはアプリにアクセスします。シームレス生成ドキュメント5種、kanban、マインドマップなどが即座に開けます。</p></div>
+    <div class="step-block"><h4>Step 3: タブで情報を確認・操作</h4><p>各HTMLドキュメントは10タブ構成です。目的に応じたタブをクリックして情報を確認します。</p></div>
+    <div class="step-block"><h4>Step 4: 改善・追加が必要な場合</h4><p>VSCode Copilot AgentにAGENTS.mdのルールを参照させながら指示を出します。全操作はCAPDkAサイクルに従って実行されます。</p></div>
+    <h3>2.3 主要成果物へのアクセス</h3>
+    <table>
+      <tr><th>成果物</th><th>ファイル名</th><th>用途</th></tr>
+      <tr><td>クイックアクセスナビ</td><td>index.html</td><td>全成果物への入口</td></tr>
+      <tr><td>タスク管理</td><td>project_kanban.html</td><td>CAPDkAタスクのBacklog→Done管理</td></tr>
+      <tr><td>要求要件定義書</td><td>要求要件定義書.html</td><td>業務・機能・非機能要件の参照</td></tr>
+      <tr><td>構成定義書兼運用手順書</td><td>構成定義書 兼 運用保守手順書.html</td><td>システム構成・運用手順の参照</td></tr>
+      <tr><td>テストシナリオ</td><td>テストシナリオ兼結果チェックリスト.html</td><td>品質確認・チェックリスト</td></tr>
+      <tr><td>ユーザーマニュアル</td><td>ユーザーマニュアル.html</td><td>このドキュメント</td></tr>
+      <tr><td>ドキュメント一覧</td><td>ドキュメント一覧.html</td><td>全ドキュメントの索引</td></tr>
+    </table>
+  </div>
+</div>
+
+<!-- システム概要 -->
+<div id="system" class="section">
+  <div class="card">
+    <h2>システム概要</h2>
+    <h3>3.1 パイプライン全体像</h3>
+    <p style="font-size:0.84rem;color:var(--muted);line-height:1.7;">CIDLSパイプラインは「コンセプト入力 → AI処理 → アプリ/ドキュメント生成 → 成果物配布 → 自律進化ループ」の6ステップで構成されます。</p>
+    <h3>3.2 CAPDkAサイクル</h3>
+    <table>
+      <tr><th>フェーズ</th><th>内容</th></tr>
+      <tr><td>C (Check)</td><td>現状把握・Why×5根本原因特定</td></tr>
+      <tr><td>A (ActionPlan)</td><td>MECE発散→ECRS収束→ToBe定義</td></tr>
+      <tr><td>P (Plan)</td><td>実装計画・テスト計画</td></tr>
+      <tr><td>D (Do)</td><td>TDD実装・水平展開同期・差分管理</td></tr>
+      <tr><td>kA (Knowledge)</td><td>kanban蓄積・devrag更新・次サイクルへ回帰</td></tr>
+    </table>
+    <h3>3.3 主要コンポーネント</h3>
+    <table>
+      <tr><th>コンポーネント</th><th>役割</th><th>場所</th></tr>
+      <tr><td>AGENTS.md</td><td>全ルールのSoT</td><td>D:\CIDLS\AGENTS.md</td></tr>
+      <tr><td>devrag v1.4.4</td><td>AGENTS.md知識ベースRAG検索</td><td>%LOCALAPPDATA%\devrag\</td></tr>
+      <tr><td>scripts/*.py</td><td>各HTML/Excel自動生成</td><td>D:\CIDLS\scripts\</td></tr>
+      <tr><td>日次進化ループ</td><td>11:00自動実行・複利進化</td><td>Task Scheduler</td></tr>
+    </table>
+  </div>
+</div>
+
+<!-- ドキュメント参照 -->
+<div id="docs" class="section">
+  <div class="card">
+    <h2>ドキュメント参照方法</h2>
+    <h3>4.1 HTMLドキュメントを開く</h3>
+    <div class="step-block"><h4>方法1: index.html から開く（推奨）</h4><p>D:\CIDLS\index.html をブラウザで開き、目的のカードをクリックします。全成果物への直接リンクが一覧で表示されます。</p></div>
+    <div class="step-block"><h4>方法2: ドキュメント一覧.html から開く</h4><p>D:\CIDLS\ドキュメント一覧.html を開き、カード検索・フィルタで目的のドキュメントを探します。</p></div>
+    <div class="step-block"><h4>方法3: ファイルを直接ブラウザで開く</h4><p>エクスプローラーで D:\CIDLS\ を開き、目的のHTMLファイルをダブルクリックします。</p></div>
+    <h3>4.2 タブナビゲーション</h3>
+    <p style="font-size:0.84rem;color:var(--muted);line-height:1.6;">各ドキュメントは10タブ構成です。ページ上部のタブボタンをクリックしてセクションを切り替えます。現在のタブはアクセントカラーで強調表示されます。</p>
+    <h3>4.3 ドキュメント種類と用途</h3>
+    <table>
+      <tr><th>種類</th><th>アクセントカラー</th><th>主な用途</th></tr>
+      <tr><td>要求要件定義書</td><td><span class="badge badge-new">インジゴ</span></td><td>業務・機能・非機能要件の定義・参照</td></tr>
+      <tr><td>構成定義書兼運用手順書</td><td><span class="badge badge-ok">エメラルド</span></td><td>システム構成・運用・保守手順</td></tr>
+      <tr><td>テストシナリオ兼チェックリスト</td><td><span class="badge badge-warn">アンバー</span></td><td>品質確認・チェックリスト</td></tr>
+      <tr><td>ユーザーマニュアル</td><td><span class="badge badge-info">スカイブルー</span></td><td>利用者向け操作ガイド</td></tr>
+      <tr><td>ドキュメント一覧</td><td>バイオレット</td><td>全ドキュメントの索引・検索</td></tr>
+    </table>
+  </div>
+</div>
+
+<!-- 基本操作 -->
+<div id="ops" class="section">
+  <div class="card">
+    <h2>基本操作</h2>
+    <h3>5.1 index.html の使い方</h3>
+    <div class="step-block"><h4>クイックアクセスカード</h4><p>各カードは目的別に色分けされており、クリックすると対象HTMLが直接開きます。カードホバー時にアニメーションで選択可能であることを示します。</p></div>
+    <h3>5.2 project_kanban.html の使い方</h3>
+    <div class="step-block"><h4>タスク状態確認</h4><p>Backlog / Todo / InProgress / Review / Done の各カラムでタスクの進捗状態を確認できます。</p></div>
+    <div class="step-block"><h4>タスク更新方法</h4><p>scripts\generate_project_kanban.py を編集してタスク内容を更新し、HTMLを再生成します。直接HTMLを編集する場合は[DIFF]差分報告を行ってください。</p></div>
+    <h3>5.3 ドキュメント検索</h3>
+    <div class="step-block"><h4>ドキュメント一覧.html での検索</h4><p>ドキュメント一覧.html の検索ボックスにキーワードを入力するとカードがリアルタイムフィルタリングされます。</p></div>
+    <div class="tip-block">
+      <h4>操作ヒント</h4>
+      <p>ブラウザの「戻る」ボタンで前のページに戻れます。各ページのフッターには index.html とドキュメント一覧へのリンクがあります。</p>
+    </div>
+  </div>
+</div>
+
+<!-- スクリプト実行 -->
+<div id="scripts" class="section">
+  <div class="card">
+    <h2>スクリプト実行</h2>
+    <h3>6.1 各生成スクリプトの実行方法</h3>
+    <table>
+      <tr><th>スクリプト</th><th>生成物</th><th>実行コマンド</th></tr>
+      <tr><td>generate_cidls_platform_overview.py</td><td>cidls_platform_overview.html</td><td>下記参照</td></tr>
+      <tr><td>generate_project_kanban.py</td><td>project_kanban.html</td><td>下記参照</td></tr>
+      <tr><td>generate_commercial_delivery_pack.py</td><td>Excel納品パック</td><td>下記参照</td></tr>
+      <tr><td>generate_graph_project_mindmap.py</td><td>graph_project_mindmap.html</td><td>下記参照</td></tr>
+    </table>
+    <div class="code-block">cd D:\CIDLS
+# 各スクリプトの実行例
+D:\production\.venv\Scripts\python.exe scripts\generate_cidls_platform_overview.py
+D:\production\.venv\Scripts\python.exe scripts\generate_project_kanban.py
+D:\production\.venv\Scripts\python.exe scripts\generate_commercial_delivery_pack.py
+D:\production\.venv\Scripts\python.exe scripts\generate_graph_project_mindmap.py</div>
+    <h3>6.2 日次自律進化ループの手動実行</h3>
+    <div class="step-block"><h4>手動実行が必要な場合</h4><p>日次ループが自動実行されなかった場合、または追加の最適化が必要な場合に手動実行します。</p></div>
+    <div class="code-block">cd D:\CIDLS
+scripts\run_daily_self_evolution.cmd</div>
+    <div class="warn-block">
+      <h4>実行前の確認事項</h4>
+      <p>スクリプト実行前に D:\production\.venv が存在することを確認してください。存在しない場合は「はじめに &gt; セットアップ手順」に従って環境を構築してください。</p>
+    </div>
+  </div>
+</div>
+
+<!-- kanban操作 -->
+<div id="kanban" class="section">
+  <div class="card">
+    <h2>kanban操作</h2>
+    <h3>7.1 kanbanのタスク管理フロー</h3>
+    <div class="step-block"><h4>タスク追加（Backlog）</h4><p>新規タスクは scripts\generate_project_kanban.py のテンプレートに追加します。タスクIDはDA-NNN形式で付番します。</p></div>
+    <div class="step-block"><h4>タスク進捗更新</h4><p>CAPDkAサイクルの進行に合わせてタスク状態を Backlog → Todo → InProgress → Review → Done に更新します。</p></div>
+    <div class="step-block"><h4>Done判定条件</h4><p>「no issues自己申告だけでDone禁止」（AGENTS.md [Q4.3]）。客観データ + 第三者レビュー + ユーザー検証が揃った時点でDoneに移動します。</p></div>
+    <h3>7.2 kanban更新時の水平展開同期</h3>
+    <div class="warn-block">
+      <h4>必須: CAPDkA完了時に同時更新</h4>
+      <p>kanban更新時は同時に以下も確認・更新してください:<br>
+      - index.html（新規ファイル追加時のみ）<br>
+      - cidls_platform_overview.html（成果物追加時のみ）<br>
+      - MO必須出力4成果物チェックリスト（毎回）</p>
+    </div>
+  </div>
+</div>
+
+<!-- 設定・カスタマイズ -->
+<div id="settings" class="section">
+  <div class="card">
+    <h2>設定・カスタマイズ</h2>
+    <h3>8.1 devrag設定カスタマイズ</h3>
+    <table>
+      <tr><th>設定ファイル</th><th>設定項目</th><th>説明</th></tr>
+      <tr><td>devrag-config.json</td><td>document_patterns</td><td>インデックス対象ディレクトリ・ファイルパターン</td></tr>
+      <tr><td>devrag-config.json</td><td>chunk_size</td><td>テキスト分割チャンクサイズ（デフォルト: 500）</td></tr>
+      <tr><td>devrag-config.json</td><td>search_top_k</td><td>検索結果上位件数（デフォルト: 5）</td></tr>
+    </table>
+    <h3>8.2 documents/*.md のカスタマイズ</h3>
+    <div class="step-block"><h4>知識ベース強化</h4><p>documents/ 以下に新規 .md ファイルを追加することで devrag の検索精度が向上します。追加後は devrag index コマンドでインデックスを再構築してください。</p></div>
+    <h3>8.3 日次ループスケジュール変更</h3>
+    <div class="step-block"><h4>実行時刻の変更</h4><p>scripts\register_daily_self_evolution_task.ps1 内の時刻設定を変更し、再実行します。デフォルト実行時刻は 11:00 です。</p></div>
+    <h3>8.4 VSCode設定</h3>
+    <table>
+      <tr><th>設定項目</th><th>推奨値</th><th>効果</th></tr>
+      <tr><td>github.copilot.chat.codeGeneration.useInstructionFiles</td><td>true</td><td>instructions/*.md を自動適用</td></tr>
+      <tr><td>chat.useCustomizationsInParentRepositories</td><td>true</td><td>上位ディレクトリのカスタマイズを適用</td></tr>
+    </table>
+  </div>
+</div>
+
+<!-- トラブルシューティング -->
+<div id="trouble" class="section">
+  <div class="card">
+    <h2>トラブルシューティング</h2>
+    <h3>9.1 よくある問題と解決方法</h3>
+    <div class="warn-block">
+      <h4>問題: HTMLがブラウザで正常に開かない</h4>
+      <p>確認: ファイルパスに日本語が含まれている場合、ブラウザが対応しているか確認する。<br>
+      解決: Chrome または Edge で開く。必要であれば http-server などのローカルサーバーを使用する。</p>
+    </div>
+    <div class="warn-block">
+      <h4>問題: Pythonスクリプトが実行できない</h4>
+      <p>確認: D:\production\.venv が存在するか確認する。<br>
+      解決: 「構成定義書兼運用手順書」のセットアップタブを参照して仮想環境を再構築する。</p>
+    </div>
+    <div class="warn-block">
+      <h4>問題: devrag検索が失敗する / 件数が少ない</h4>
+      <p>確認: %LOCALAPPDATA%\devrag\devrag.exe の存在確認。<br>
+      解決: setup_devrag.ps1 を再実行する。index-code は実行禁止。</p>
+    </div>
+    <div class="warn-block">
+      <h4>問題: 日本語ファイル名のHTMLが Windows Task Scheduler で処理できない</h4>
+      <p>確認: run_daily_self_evolution.cmd の文字コードが ANSI (Shift-JIS) であることを確認する。<br>
+      解決: cmd ファイルを Shift-JIS で保存し直す。</p>
+    </div>
+    <h3>9.2 エラーメッセージ対応表</h3>
+    <table>
+      <tr><th>エラー</th><th>原因</th><th>対処</th></tr>
+      <tr><td>UnicodeEncodeError: cp932</td><td>コードまたはファイル内にUnicode絵文字が含まれる</td><td>絵文字を全て削除する（AGENTS.md [TS.1]）</td></tr>
+      <tr><td>ModuleNotFoundError</td><td>仮想環境のパッケージ不足</td><td>uv pip install で対象パッケージを追加</td></tr>
+      <tr><td>FileNotFoundError: devrag.exe</td><td>devragバイナリが未インストール</td><td>setup_devrag.ps1 を実行する</td></tr>
+    </table>
+  </div>
+</div>
+
+<!-- 用語集・FAQ -->
+<div id="glossary" class="section">
+  <div class="card">
+    <h2>用語集</h2>
+    <table>
+      <tr><th>用語</th><th>説明</th></tr>
+      <tr><td>AGENTS.md</td><td>CIDLSプラットフォームの全ルールを定義するSoT（Single Source of Truth）ファイル</td></tr>
+      <tr><td>CAPDkA</td><td>Check→ActionPlan→Plan→Do→Knowledge蓄積 の永久循環開発サイクル</td></tr>
+      <tr><td>devrag</td><td>AGENTS.md知識ベースをRAG検索するローカルバイナリツール（v1.4.4）</td></tr>
+      <tr><td>SoT</td><td>Single Source of Truth。唯一の正本。AGENTS.mdとproject_kanban.htmlがSoT</td></tr>
+      <tr><td>シームレス生成ドキュメント</td><td>CIDLSパイプラインが自動生成する5種のHTMLドキュメント群</td></tr>
+      <tr><td>水平展開同期</td><td>1箇所変更→全関連箇所同期。AGENTS.md [HS]ルール</td></tr>
+      <tr><td>MO必須出力</td><td>毎回の応答末尾に4成果物チェックリストを出力する義務。省略=G1違反</td></tr>
+      <tr><td>ガバコンリスク4大パターン</td><td>BILLING_ENFORCE / PII_AUTH_GATE / VERIFY_INTEGRITY / NEVER_TRUST_CLIENT</td></tr>
+    </table>
+  </div>
+  <div class="card">
+    <h2>FAQ</h2>
+    <div class="faq-item">
+      <div class="faq-q">Q. index.html から全てのドキュメントに一発でアクセスできますか？</div>
+      <div class="faq-a">A. はい。index.html の Quick Access セクションには全主要ドキュメントへのカードが配置されています。目的のカードをクリックすることで3クリック以内で各ドキュメントにアクセスできます。</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q">Q. 日次自律進化ループが実行されたか確認するには？</div>
+      <div class="faq-a">A. D:\CIDLS\logs\daily_self_evolution\ フォルダを開き、当日付のログファイルが存在することを確認します。ログ内に ERROR 文字列がないことも確認してください。</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q">Q. 新しいドキュメントを追加する際に何を同期すればよいですか？</div>
+      <div class="faq-a">A. AGENTS.md [HS] 水平展開同期に従い、以下を同期してください: index.html（カード追加）/ cidls_platform_overview.html（成果物リスト更新）/ generate_cidls_platform_overview.py（ARTIFACT_FILES追加）/ ドキュメント一覧.html（カード追加）/ project_kanban.html（タスク記録）</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q">Q. Unicode絵文字はなぜ使用禁止なのですか？</div>
+      <div class="faq-a">A. Windows環境のcp932エンコーディングでUnicode絵文字を処理するとUnicodeEncodeErrorが発生します。AGENTS.md [G1] により全成果物で禁止されています。代替としてASCII文字（[OK], [ERROR], [INFO]等）を使用してください。</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q">Q. AGENTS.md を変更する際の注意点は？</div>
+      <div class="faq-a">A. AGENTS.md変更前に必ずAGENTS.md.bakを作成してバックアップを取ってください。変更後は[DIFF]差分報告フォーマットで変更内容を記録し、水平展開同期を実施してください。</div>
+    </div>
+  </div>
+</div>
+
+</div>
+
+<footer>
+  CIDLS-MAN-001 ユーザーマニュアル v1.0.0 &nbsp;|&nbsp; 2026-05-13 &nbsp;|&nbsp; CAPDkA 第13回 &nbsp;|&nbsp;
+  <a href="index.html" style="color:#38bdf8;">index.html</a> &nbsp;|&nbsp;
+  <a href="ドキュメント一覧.html" style="color:#38bdf8;">ドキュメント一覧</a>
+</footer>
+
+<script>
+function show(id, btn) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  if (btn) btn.classList.add('active');
+}
+</script>
+</body>
+</html>

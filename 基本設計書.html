@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CIDLS 基本設計書 CIDLS-HLD-001 v1.0.0</title>
+<style>
+:root {
+  --bg:      #1a1a2e;
+  --panel:   #16213e;
+  --accent:  #6366f1;
+  --accent2: #8b5cf6;
+  --success: #10b981;
+  --warn:    #f59e0b;
+  --danger:  #ef4444;
+  --cyan:    #06b6d4;
+  --text:    #e2e8f0;
+  --muted:   #94a3b8;
+  --border:  #334155;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+.page-header {
+  background: var(--panel); border-bottom: 3px solid var(--accent2); padding: 20px 40px;
+}
+.page-header h1 { font-size: 1.35rem; font-weight: 800; color: var(--accent2); }
+.page-header .meta { font-size: 0.78rem; color: var(--muted); margin-top: 4px; }
+
+.nav-tabs {
+  display: flex; background: var(--panel);
+  border-bottom: 1px solid var(--border); padding: 0 40px; overflow-x: auto;
+}
+.tab-btn {
+  padding: 10px 18px; font-size: 0.82rem; font-weight: 600;
+  color: var(--muted); background: transparent; border: none;
+  border-bottom: 3px solid transparent; cursor: pointer; white-space: nowrap;
+  transition: color .2s;
+}
+.tab-btn:hover { color: var(--text); }
+.tab-btn.active { color: var(--accent2); border-bottom-color: var(--accent2); }
+
+.content { max-width: 1100px; margin: 0 auto; padding: 32px 40px; }
+.section { display: none; }
+.section.active { display: block; }
+
+.card {
+  background: var(--panel); border: 1px solid var(--border);
+  border-radius: 10px; padding: 20px 24px; margin-bottom: 20px;
+}
+.card h2 { font-size: 1.1rem; color: var(--accent2); margin-bottom: 14px; border-bottom: 1px solid var(--border); padding-bottom: 8px; }
+.card h3 { font-size: 0.95rem; color: var(--accent); margin: 14px 0 8px; }
+.card h4 { font-size: 0.88rem; color: var(--text); margin: 10px 0 6px; }
+
+table { width: 100%; border-collapse: collapse; font-size: 0.82rem; margin: 10px 0; }
+th { background: rgba(139,92,246,0.15); color: var(--accent2); padding: 8px 10px; text-align: left; border: 1px solid var(--border); }
+td { padding: 7px 10px; border: 1px solid var(--border); vertical-align: top; line-height: 1.5; }
+tr:hover td { background: rgba(255,255,255,0.03); }
+
+.badge {
+  display: inline-block; padding: 2px 8px; border-radius: 10px;
+  font-size: 0.72rem; font-weight: 700;
+}
+.b-done   { background: rgba(16,185,129,0.2); color: var(--success); }
+.b-wip    { background: rgba(245,158,11,0.2); color: var(--warn); }
+.b-plan   { background: rgba(99,102,241,0.2); color: var(--accent); }
+.b-static { background: rgba(6,182,212,0.2); color: var(--cyan); }
+.b-script { background: rgba(139,92,246,0.2); color: var(--accent2); }
+
+/* Architecture diagram using CSS */
+.arch-box {
+  border: 1px solid var(--border); border-radius: 8px; padding: 14px 16px;
+  background: rgba(255,255,255,0.03); margin: 8px 0;
+}
+.arch-layer {
+  display: flex; gap: 12px; flex-wrap: wrap; align-items: stretch;
+  margin: 10px 0; padding: 10px; border: 1px dashed var(--border);
+  border-radius: 8px;
+}
+.arch-comp {
+  background: rgba(99,102,241,0.12); border: 1px solid rgba(99,102,241,0.3);
+  border-radius: 6px; padding: 8px 12px; font-size: 0.8rem; text-align: center;
+  flex: 1; min-width: 120px;
+}
+.arch-comp .comp-name { font-weight: 700; color: var(--accent); }
+.arch-comp .comp-tech { font-size: 0.72rem; color: var(--muted); margin-top: 4px; }
+.arch-label { font-size: 0.75rem; color: var(--muted); padding: 4px 8px; align-self: center; }
+
+.flow-step {
+  display: flex; align-items: flex-start; gap: 14px;
+  padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.04);
+}
+.flow-num {
+  min-width: 28px; height: 28px; border-radius: 50%; background: var(--accent);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.8rem; font-weight: 800; color: white; flex-shrink: 0;
+}
+.flow-body { flex: 1; }
+.flow-title { font-size: 0.88rem; font-weight: 700; color: var(--text); }
+.flow-desc  { font-size: 0.8rem; color: var(--muted); margin-top: 3px; line-height: 1.5; }
+
+p { line-height: 1.7; font-size: 0.87rem; color: var(--muted); margin: 6px 0; }
+ul { margin: 8px 0 8px 20px; }
+li { margin: 4px 0; font-size: 0.87rem; color: var(--muted); line-height: 1.6; }
+code { background: rgba(255,255,255,0.07); padding: 2px 6px; border-radius: 4px; font-size: 0.82rem; color: var(--cyan); }
+</style>
+<style>
+
+.diagram-section { background: var(--panel,#16213e); border: 1px solid var(--border,#334155); border-radius: 10px; padding: 24px; margin-bottom: 20px; }
+.diagram-section h2 { font-size: 1.0rem; color: var(--accent,#6366f1); margin-bottom: 16px; border-bottom: 1px solid var(--border,#334155); padding-bottom: 8px; }
+.diagram-section h3 { font-size: 0.9rem; color: var(--cyan,#06b6d4); margin: 16px 0 10px; }
+.mermaid-wrap { background: #0d1527; border-radius: 8px; padding: 20px; overflow-x: auto; margin-bottom: 16px; }
+.mermaid-wrap .mermaid { max-width: 100%; }
+
+</style>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<script>mermaid.initialize({startOnLoad:true,theme:"dark",themeVariables:{primaryColor:"#1a2040",primaryTextColor:"#e2e8f0",primaryBorderColor:"#6366f1",lineColor:"#6366f1",secondaryColor:"#16213e",tertiaryColor:"#0f1535"}});</script>
+</head>
+<body>
+
+<div class="page-header">
+  <h1>CIDLS 基本設計書</h1>
+  <div class="meta">
+    文書ID: CIDLS-HLD-001 &#124; バージョン: 1.0.0 &#124; 作成日: 2026-05-12 &#124;
+    担当: CIDLS開発チーム &#124; ステータス: <span style="color:var(--success)">承認済み</span>
+  </div>
+</div>
+
+<nav class="nav-tabs">
+  <button class="tab-btn active" onclick="showTab(this,'arch')">01 アーキテクチャ</button>
+  <button class="tab-btn" onclick="showTab(this,'pipeline')">02 パイプライン設計</button>
+  <button class="tab-btn" onclick="showTab(this,'data')">03 データ設計</button>
+  <button class="tab-btn" onclick="showTab(this,'ui')">04 UI設計方針</button>
+  <button class="tab-btn" onclick="showTab(this,'devrag')">05 devrag設計</button>
+  <button class="tab-btn" onclick="showTab(this,'automation')">06 自動化設計</button>
+    <button class="tab-btn" onclick="showTab(this,'diagram')">フロー図</button>
+</nav>
+
+<div class="content">
+
+  <!-- 01 アーキテクチャ -->
+  <div id="tab-arch" class="section active">
+    <div class="card">
+      <h2>システムアーキテクチャ概要</h2>
+      <p>
+        CIDLSは「コンセプト入力 → 生成AI補助 → 成果物生成 → 自律進化ループ」の
+        4層アーキテクチャで構成される。全コンポーネントは Windows 10/11 上のローカル環境で稼働し、
+        外部APIキー・Secretを一切配布物に含まない設計を採用する。
+      </p>
+
+      <h3>レイヤー構成</h3>
+
+      <div class="arch-box">
+        <div class="arch-label">Layer 3: 自律進化層 (kA)</div>
+        <div class="arch-layer">
+          <div class="arch-comp">
+            <div class="comp-name">日次進化ループ</div>
+            <div class="comp-tech">Task Scheduler + PowerShell</div>
+          </div>
+          <div class="arch-comp">
+            <div class="comp-name">CAPDkA サイクル</div>
+            <div class="comp-tech">AGENTS.md 準拠 自律実行</div>
+          </div>
+          <div class="arch-comp">
+            <div class="comp-name">devrag RAG</div>
+            <div class="comp-tech">multilingual-e5-small + sqlite-vec</div>
+          </div>
+        </div>
+
+        <div class="arch-label">Layer 2: 生成・処理層 (D)</div>
+        <div class="arch-layer">
+          <div class="arch-comp">
+            <div class="comp-name">generate_cidls_overview.py</div>
+            <div class="comp-tech">Python 3.11 + uv</div>
+          </div>
+          <div class="arch-comp">
+            <div class="comp-name">generate_delivery_pack.py</div>
+            <div class="comp-tech">openpyxl</div>
+          </div>
+          <div class="arch-comp">
+            <div class="comp-name">generate_mindmap.py</div>
+            <div class="comp-tech">標準ライブラリ + re</div>
+          </div>
+        </div>
+
+        <div class="arch-label">Layer 1: 表示・管理層 (C/A)</div>
+        <div class="arch-layer">
+          <div class="arch-comp">
+            <div class="comp-name">index.html</div>
+            <div class="comp-tech">SPA 5ビュー</div>
+          </div>
+          <div class="arch-comp">
+            <div class="comp-name">project_kanban.html</div>
+            <div class="comp-tech">かんばん + DA表</div>
+          </div>
+          <div class="arch-comp">
+            <div class="comp-name">graph_project_mindmap.html</div>
+            <div class="comp-tech">D3.js v7</div>
+          </div>
+          <div class="arch-comp">
+            <div class="comp-name">cidls_platform_overview.html</div>
+            <div class="comp-tech">パイプライン全体像</div>
+          </div>
+        </div>
+
+        <div class="arch-label">Layer 0: データ・設定層</div>
+        <div class="arch-layer">
+          <div class="arch-comp">
+            <div class="comp-name">AGENTS.md</div>
+            <div class="comp-tech">SoT 指示書</div>
+          </div>
+          <div class="arch-comp">
+            <div class="comp-name">documents/*.md</div>
+            <div class="comp-tech">知識ベース 12件</div>
+          </div>
+          <div class="arch-comp">
+            <div class="comp-name">.devrag/vectors.db</div>
+            <div class="comp-tech">ベクトルDB (38件)</div>
+          </div>
+          <div class="arch-comp">
+            <div class="comp-name">reports/</div>
+            <div class="comp-tech">成果物格納ディレクトリ</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>コンポーネント責務一覧</h2>
+      <table>
+        <tr><th>コンポーネント</th><th>責務</th><th>入力</th><th>出力</th><th>種別</th></tr>
+        <tr>
+          <td>index.html</td>
+          <td>ナビゲーションハブ: 全成果物へのクイックアクセス + 5ビュー SPA</td>
+          <td>ブラウザ直接アクセス</td>
+          <td>SPA ビュー表示</td>
+          <td><span class="badge b-static">静的HTML</span></td>
+        </tr>
+        <tr>
+          <td>project_kanban.html</td>
+          <td>タスク管理 (かんばん) + DA表 + 要求要件定義書 統合ハブ</td>
+          <td>開発者手動更新</td>
+          <td>HTML 表示</td>
+          <td><span class="badge b-static">静的HTML</span></td>
+        </tr>
+        <tr>
+          <td>graph_project_mindmap.html</td>
+          <td>D3.js マインドマップ + DA表 可視化。--add-entry で自動追記。</td>
+          <td>generate_mindmap.py</td>
+          <td>HTML 表示</td>
+          <td><span class="badge b-script">生成HTML</span></td>
+        </tr>
+        <tr>
+          <td>cidls_platform_overview.html</td>
+          <td>CIDLSパイプライン6ステップの全体像表示</td>
+          <td>generate_cidls_overview.py</td>
+          <td>HTML 表示</td>
+          <td><span class="badge b-script">生成HTML</span></td>
+        </tr>
+        <tr>
+          <td>devrag (.devrag/vectors.db)</td>
+          <td>AGENTS.md + 知識ベース のセマンティック検索 (RAG)</td>
+          <td>md ファイル 38件</td>
+          <td>JSON 検索結果</td>
+          <td><span class="badge b-script">ベクトルDB</span></td>
+        </tr>
+        <tr>
+          <td>generate_*.py (3本)</td>
+          <td>成果物の自動生成 (冪等・省略なし・フォールバック禁止)</td>
+          <td>既存HTML / 設定</td>
+          <td>HTML / xlsx</td>
+          <td><span class="badge b-script">Pythonスクリプト</span></td>
+        </tr>
+        <tr>
+          <td>run_daily_self_evolution.ps1</td>
+          <td>日次11:00 自律進化の実行エントリポイント</td>
+          <td>Task Scheduler トリガー</td>
+          <td>ログ + 成果物更新</td>
+          <td><span class="badge b-script">PowerShell</span></td>
+        </tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- 02 パイプライン設計 -->
+  <div id="tab-pipeline" class="section">
+    <div class="card">
+      <h2>CIDLSパイプライン設計 (6ステップ)</h2>
+      <p>
+        CIDLSパイプラインコンセプトイメージに準拠した6ステップフローを設計する。
+        各ステップで必須の入出力成果物を定義し、次ステップへの Handoff 条件を明示する。
+      </p>
+
+      <div class="flow-step">
+        <div class="flow-num">1</div>
+        <div class="flow-body">
+          <div class="flow-title">コンセプト入力</div>
+          <div class="flow-desc">
+            ユーザーが自然語・画像・コード断片でアイデアを入力する。
+            [SUPRA.2] 注文票プロトコルで7要素 (誰が/何の/何に困り/根拠/期限/理想/解) に自動変換する。<br>
+            <strong>入力:</strong> フリーライト・画像・スクリーンショット &#124;
+            <strong>出力:</strong> 注文票 [P1.2] 記入済み &#124;
+            <strong>Handoff:</strong> [P1.3] 記入チェック全通過
+          </div>
+        </div>
+      </div>
+
+      <div class="flow-step">
+        <div class="flow-num">2</div>
+        <div class="flow-body">
+          <div class="flow-title">ChatGPT/GitHub Copilot パイプラインコンセプト生成</div>
+          <div class="flow-desc">
+            注文票をもとにパイプラインコンセプトイメージ (データフロー・画面構成・処理フロー・成果物・自己進化ループ) を生成する。
+            devrag RAG で AGENTS.md ルールを参照しながら設計する。<br>
+            <strong>入力:</strong> 注文票 + devrag 検索結果 &#124;
+            <strong>出力:</strong> コンセプトスライド.html + システムDA表.xlsx &#124;
+            <strong>Handoff:</strong> CAPDkA C フェーズ完了
+          </div>
+        </div>
+      </div>
+
+      <div class="flow-step">
+        <div class="flow-num">3</div>
+        <div class="flow-body">
+          <div class="flow-title">v0/Codex でアプリ生成・ドキュメント一式生成</div>
+          <div class="flow-desc">
+            v0 相当ビルダー (GitHub Copilot Edits) を使い、アプリ + 設計書 + テスト + バージョン管理を一体で生成する。
+            [G1] 禁止事項・[SEC] セキュリティゲート・[Q1] 品質基準を自動チェックする。<br>
+            <strong>入力:</strong> コンセプトスライド + 要求仕様書 &#124;
+            <strong>出力:</strong> 実装コード + ドキュメント群 &#124;
+            <strong>Handoff:</strong> CAPDkA D フェーズ完了
+          </div>
+        </div>
+      </div>
+
+      <div class="flow-step">
+        <div class="flow-num">4</div>
+        <div class="flow-body">
+          <div class="flow-title">SaaS ホスティング or exe 出力</div>
+          <div class="flow-desc">
+            初期はローカル HTML (オフライン動作) で提供。Web SaaS 化は [DISTSEC] の全禁止条件クリア後のみ許可。
+            exe 配布の場合は Secret を含まない設計で [DISTSEC.4] に準拠する。<br>
+            <strong>入力:</strong> 実装コード &#124;
+            <strong>出力:</strong> HTML / exe / SaaS &#124;
+            <strong>Handoff:</strong> [DISTSEC.6] 品質ゲート全通過
+          </div>
+        </div>
+      </div>
+
+      <div class="flow-step">
+        <div class="flow-num">5</div>
+        <div class="flow-body">
+          <div class="flow-title">成果物 (納品ドキュメント一式)</div>
+          <div class="flow-desc">
+            [D1.1] の11点最小セットを日本語ファイル名で生成する。
+            商用請負納品文書パック.xlsx で全ドキュメントの一覧・進捗・品質を管理する。<br>
+            <strong>入力:</strong> 実装 + 設計情報 &#124;
+            <strong>出力:</strong> 要求定義書/要求仕様書/システム要件定義書/基本設計書/運用手順書 etc. &#124;
+            <strong>Handoff:</strong> MO 必須出力 4点確認
+          </div>
+        </div>
+      </div>
+
+      <div class="flow-step">
+        <div class="flow-num">6</div>
+        <div class="flow-body">
+          <div class="flow-title">自律進化保守ループ (CAPDkA 永久循環)</div>
+          <div class="flow-desc">
+            日次11:00に収集→比較→分析→実行→学習の5サイクルを自動実行する。
+            複利的に精度・速度・品質が向上し、CIDLSパイプラインコンセプトイメージへ収束する。<br>
+            <strong>入力:</strong> 全成果物 + 差分情報 &#124;
+            <strong>出力:</strong> 改善済み成果物 + ログ &#124;
+            <strong>Handoff:</strong> kA フェーズ完了 → C フェーズ即回帰
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 03 データ設計 -->
+  <div id="tab-data" class="section">
+    <div class="card">
+      <h2>データ設計</h2>
+
+      <h3>主要データストア</h3>
+      <table>
+        <tr><th>データストア</th><th>形式</th><th>格納内容</th><th>更新頻度</th></tr>
+        <tr>
+          <td><code>.devrag/vectors.db</code></td>
+          <td>SQLite (sqlite-vec)</td>
+          <td>384次元ベクトル埋め込み (38件 md ファイル)</td>
+          <td>setup_devrag.ps1 実行時・md 追加時</td>
+        </tr>
+        <tr>
+          <td><code>vectors.db</code> (ルート)</td>
+          <td>SQLite</td>
+          <td>旧 config.json 用 DB (使用非推奨)</td>
+          <td>参照しない</td>
+        </tr>
+        <tr>
+          <td><code>reports/commercial_delivery/*.xlsx</code></td>
+          <td>Excel (openpyxl)</td>
+          <td>SW開発ドキュメント一覧・進捗・品質</td>
+          <td>generate_commercial_delivery_pack.py 実行時</td>
+        </tr>
+        <tr>
+          <td><code>logs/daily_self_evolution/</code></td>
+          <td>Markdown / テキスト</td>
+          <td>日次進化サマリ・コンテキスト</td>
+          <td>日次 (11:00 実行後)</td>
+        </tr>
+      </table>
+
+      <h3>devrag インデックス対象 (38件)</h3>
+      <table>
+        <tr><th>パターン</th><th>件数</th><th>用途</th><th>備考</th></tr>
+        <tr>
+          <td><code>./documents/*.md</code></td>
+          <td>12件</td>
+          <td>AGENTS.md テーマ別分割知識</td>
+          <td>capdka-cycle / guard-rules / security-rules 等</td>
+        </tr>
+        <tr>
+          <td><code>./.github/**/*.md</code></td>
+          <td>25件</td>
+          <td>スキル・エージェント・プロンプト・指示書</td>
+          <td>*.agent.md / *.prompt.md / SKILL.md 等</td>
+        </tr>
+        <tr>
+          <td><code>./AGENTS.md</code></td>
+          <td>1件</td>
+          <td>SoT 主ルール文書</td>
+          <td>283チャンク</td>
+        </tr>
+      </table>
+
+      <h3>devrag 禁止パターン</h3>
+      <table>
+        <tr><th>禁止操作</th><th>理由</th><th>代替</th></tr>
+        <tr>
+          <td><code>devrag index-code *.py</code></td>
+          <td>tokenizer panic → ゼロベクトル混入 → ベクトル検索破壊</td>
+          <td>md ファイルのみ <code>index</code> コマンドで索引</td>
+        </tr>
+        <tr>
+          <td><code>code_patterns</code> キー (devrag-config.json)</td>
+          <td>公式スキーマ外 → 警告発生・動作不安定</td>
+          <td>削除済み</td>
+        </tr>
+        <tr>
+          <td>フラグをクエリの後ろに配置</td>
+          <td>フラグがクエリ文字列に混入する</td>
+          <td><code>search --top-k 5 --config $CFG "クエリ"</code></td>
+        </tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- 04 UI設計方針 -->
+  <div id="tab-ui" class="section">
+    <div class="card">
+      <h2>UI設計方針 (AGENTS.md [UI] 準拠)</h2>
+
+      <h3>デザイントークン ([UI.6])</h3>
+      <table>
+        <tr><th>トークン名</th><th>値</th><th>用途</th></tr>
+        <tr><td><code>--bg</code></td><td>#1a1a2e</td><td>背景色 (ニュートラル)</td></tr>
+        <tr><td><code>--panel</code></td><td>#16213e</td><td>カード・パネル背景</td></tr>
+        <tr><td><code>--accent</code></td><td>#6366f1</td><td>主アクセント</td></tr>
+        <tr><td><code>--accent2</code></td><td>#8b5cf6</td><td>副アクセント</td></tr>
+        <tr><td><code>--success</code></td><td>#10b981</td><td>成功・完了</td></tr>
+        <tr><td><code>--warn</code></td><td>#f59e0b</td><td>警告・WIP</td></tr>
+        <tr><td><code>--danger</code></td><td>#ef4444</td><td>エラー・重要</td></tr>
+        <tr><td><code>--cyan</code></td><td>#06b6d4</td><td>情報・システム要件</td></tr>
+        <tr><td><code>--text</code></td><td>#e2e8f0</td><td>本文テキスト</td></tr>
+        <tr><td><code>--muted</code></td><td>#94a3b8</td><td>補助テキスト</td></tr>
+        <tr><td><code>--border</code></td><td>#334155</td><td>ボーダー</td></tr>
+      </table>
+
+      <h3>立体構成原則 ([UI.7])</h3>
+      <table>
+        <tr><th>レイヤー</th><th>役割</th><th>実装</th></tr>
+        <tr><td>Layer 0 (一覧)</td><td>ダッシュボード・ランディング</td><td>index.html Dashboard ビュー</td></tr>
+        <tr><td>Layer 1 (詳細パネル)</td><td>カード選択 → 詳細スライドイン</td><td>translateX アニメーション</td></tr>
+        <tr><td>Layer 2 (編集モーダル)</td><td>詳細 → 編集 / 設定</td><td>backdrop-blur オーバーレイ</td></tr>
+        <tr><td>Layer 3 (確認完了)</td><td>編集 → 確認 → 完了</td><td>ステッパー UI</td></tr>
+      </table>
+
+      <h3>禁止事項</h3>
+      <ul>
+        <li><code>iframe</code> 使用禁止 (独立ウィンドウ文化を作らない)</li>
+        <li>フラットな縦スクロールのみ設計禁止 (奥行きのある立体構造を必ず持つ)</li>
+        <li>モーダル上にモーダル (3層以上のオーバーレイ) 禁止</li>
+        <li>ブレッドクラムなしの深度遷移禁止</li>
+        <li>思想・原則文字列のそのままUI表示禁止 (アイコン/グラフ/インジケータに変換)</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- 05 devrag設計 -->
+  <div id="tab-devrag" class="section">
+    <div class="card">
+      <h2>devrag RAG 詳細設計</h2>
+
+      <h3>構成</h3>
+      <table>
+        <tr><th>項目</th><th>値</th></tr>
+        <tr><td>バイナリ</td><td><code>%LOCALAPPDATA%\devrag\devrag.exe</code> (v1.4.4)</td></tr>
+        <tr><td>埋め込みモデル</td><td>multilingual-e5-small (384次元)</td></tr>
+        <tr><td>ベクトルDB</td><td>SQLite + sqlite-vec v0.1.6</td></tr>
+        <tr><td>設定ファイル</td><td><code>D:\CIDLS\devrag-config.json</code></td></tr>
+        <tr><td>DBパス</td><td><code>D:\CIDLS\.devrag\vectors.db</code></td></tr>
+        <tr><td>チャンクサイズ</td><td>500トークン</td></tr>
+        <tr><td>デフォルト top-k</td><td>5</td></tr>
+      </table>
+
+      <h3>索引コマンド (正規手順)</h3>
+      <table>
+        <tr><th>目的</th><th>コマンド</th></tr>
+        <tr>
+          <td>クリーン再構築</td>
+          <td><code>Remove-Item .devrag\vectors.db -Force</code></td>
+        </tr>
+        <tr>
+          <td>AGENTS.md 索引</td>
+          <td><code>devrag index D:\CIDLS\AGENTS.md --config devrag-config.json</code></td>
+        </tr>
+        <tr>
+          <td>documents/*.md 一括索引</td>
+          <td><code>Get-ChildItem documents -Filter "*.md" | ForEach-Object { devrag index $_.FullName --config devrag-config.json }</code></td>
+        </tr>
+        <tr>
+          <td>検索 (正しい引数順)</td>
+          <td><code>devrag search --top-k 5 --config devrag-config.json "クエリ"</code></td>
+        </tr>
+        <tr>
+          <td>一覧確認</td>
+          <td><code>devrag list --config devrag-config.json</code></td>
+        </tr>
+      </table>
+
+      <h3>検索品質基準 (実測値 2026-05-12)</h3>
+      <table>
+        <tr><th>クエリ</th><th>count</th><th>similarity (top-1)</th><th>関連文書</th></tr>
+        <tr><td>CAPDkA cycle</td><td>3</td><td>0.944</td><td>SKILL.md</td></tr>
+        <tr><td>fallback prohibition</td><td>3</td><td>0.920</td><td>AGENTS.md</td></tr>
+        <tr><td>security OWASP</td><td>3</td><td>0.940</td><td>security.instructions.md</td></tr>
+        <tr><td>horizontal sync</td><td>3</td><td>0.915</td><td>AGENTS.md</td></tr>
+        <tr><td>why5 root cause</td><td>3</td><td>0.939</td><td>root-cause.prompt.md</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- 06 自動化設計 -->
+  <div id="tab-automation" class="section">
+    <div class="card">
+      <h2>日次自律進化ループ設計</h2>
+
+      <h3>実行フロー</h3>
+      <table>
+        <tr><th>STEP</th><th>処理</th><th>スクリプト</th><th>ステータス</th></tr>
+        <tr>
+          <td>STEP-0</td>
+          <td>前提チェック (devrag / Python 環境確認)</td>
+          <td>run_daily_self_evolution.ps1 冒頭</td>
+          <td><span class="badge b-done">実装済み</span></td>
+        </tr>
+        <tr>
+          <td>STEP-1</td>
+          <td>devrag 索引状態確認 + 必要なら再索引</td>
+          <td>run_daily_self_evolution.ps1</td>
+          <td><span class="badge b-done">実装済み</span></td>
+        </tr>
+        <tr>
+          <td>STEP-2</td>
+          <td>generate_cidls_platform_overview.py 実行</td>
+          <td>run_daily_self_evolution.ps1</td>
+          <td><span class="badge b-done">実装済み</span></td>
+        </tr>
+        <tr>
+          <td>STEP-3</td>
+          <td>generate_commercial_delivery_pack.py 実行</td>
+          <td>run_daily_self_evolution.ps1</td>
+          <td><span class="badge b-done">実装済み</span></td>
+        </tr>
+        <tr>
+          <td>STEP-4</td>
+          <td>ログ出力 (daily_self_evolution_context_latest.md 更新)</td>
+          <td>run_daily_self_evolution.ps1</td>
+          <td><span class="badge b-done">実装済み</span></td>
+        </tr>
+      </table>
+
+      <h3>Task Scheduler 設定</h3>
+      <table>
+        <tr><th>項目</th><th>値</th></tr>
+        <tr><td>タスク名</td><td>CIDLS_Daily_Self_Evolution_1100</td></tr>
+        <tr><td>トリガー</td><td>毎日 11:00</td></tr>
+        <tr><td>アクション</td><td><code>D:\CIDLS\scripts\run_daily_self_evolution.cmd</code></td></tr>
+        <tr><td>登録スクリプト</td><td><code>scripts\register_daily_self_evolution_task.ps1</code></td></tr>
+      </table>
+
+      <h3>変更管理履歴</h3>
+      <table>
+        <tr><th>バージョン</th><th>日付</th><th>変更内容</th></tr>
+        <tr><td>1.0.0</td><td>2026-05-12</td><td>初版作成。第9回CAPDkA kAフェーズにて生成。</td></tr>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<script>
+function showTab(btn, id) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('tab-' + id).classList.add('active');
+}
+</script>
+</body>
+</html>

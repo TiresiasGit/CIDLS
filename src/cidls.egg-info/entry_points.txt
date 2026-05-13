@@ -1,0 +1,8 @@
+[console_scripts]
+cidls-codex-maintenance = cidls.codex_global_loop.cli:main
+cidls-commercial-delivery = cidls.commercial_delivery.cli:main
+cidls-compute-use = cidls.compute_use.cli:main
+cidls-concept-pipeline = cidls.concept_pipeline.cli:main
+cidls-ocr-pipeline = cidls.ocr_pipeline.cli:main
+cidls-ocr-web-target = cidls.ocr_pipeline.web_test_target:main
+cidls-qwen-control = cidls.agentic_control.cli:main

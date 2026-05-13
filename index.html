@@ -1,0 +1,2334 @@
+﻿<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CIDLS - CI/DL System Dashboard</title>
+
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg-dark:    #0f1535;
+    --bg-sidebar: #111a45;
+    --bg-card:    #ffffff;
+    --accent-blue:   #4361ee;
+    --accent-cyan:   #3bc9db;
+    --accent-green:  #20c997;
+    --accent-orange: #fd7e14;
+    --accent-red:    #fa5252;
+    --accent-purple: #7950f2;
+    --text-main:     #1a1d2e;
+    --text-muted:    #868e96;
+    --text-white:    #ffffff;
+    --border:        #e9ecef;
+    --shadow:        0 4px 24px rgba(0,0,0,0.10);
+  }
+
+  body {
+    font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: var(--bg-dark);
+    color: var(--text-main);
+    display: flex;
+    min-height: 100vh;
+  }
+
+  /* ===== SIDEBAR ===== */
+  .sidebar {
+    width: 72px;
+    background: var(--bg-sidebar);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px 0;
+    gap: 8px;
+    position: fixed;
+    top: 0; left: 0; bottom: 0;
+    z-index: 100;
+  }
+
+  .sidebar-logo {
+    width: 44px;
+    height: 44px;
+    background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 800;
+    font-size: 13px;
+    letter-spacing: -0.5px;
+    margin-bottom: 16px;
+  }
+
+  .sidebar-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    width: 100%;
+    padding: 0 12px;
+    flex: 1;
+  }
+
+  .nav-item {
+    width: 100%;
+    height: 44px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+    color: #6c7baa;
+    border: none;
+    background: transparent;
+    position: relative;
+  }
+
+  .nav-item:hover { background: rgba(67,97,238,0.15); color: #8ba4ff; }
+  .nav-item.active { background: var(--accent-blue); color: white; }
+
+  .nav-item svg { width: 20px; height: 20px; }
+
+  .sidebar-bottom {
+    padding: 0 12px;
+    width: 100%;
+  }
+
+  .sidebar-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent-cyan), var(--accent-green));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 700;
+    font-size: 14px;
+    margin: 0 auto;
+    cursor: pointer;
+  }
+
+  /* ===== MAIN ===== */
+  .main {
+    margin-left: 72px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+  }
+
+  /* ===== HEADER ===== */
+  .header {
+    background: var(--bg-dark);
+    padding: 16px 28px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+  }
+
+  .header-title {
+    color: var(--text-white);
+    font-size: 18px;
+    font-weight: 700;
+    flex: 1;
+  }
+
+  .header-title span {
+    color: var(--accent-cyan);
+  }
+
+  .search-bar {
+    display: flex;
+    align-items: center;
+    background: rgba(255,255,255,0.07);
+    border: 1px solid rgba(255,255,255,0.10);
+    border-radius: 10px;
+    padding: 8px 14px;
+    gap: 8px;
+    width: 240px;
+  }
+
+  .search-bar input {
+    background: transparent;
+    border: none;
+    outline: none;
+    color: var(--text-white);
+    font-size: 13px;
+    width: 100%;
+  }
+
+  .search-bar input::placeholder { color: #6c7baa; }
+
+  .header-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .icon-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    background: rgba(255,255,255,0.07);
+    border: 1px solid rgba(255,255,255,0.10);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: #8ba4ff;
+    transition: background 0.2s;
+    position: relative;
+  }
+
+  .icon-btn:hover { background: rgba(255,255,255,0.12); }
+
+  .badge {
+    position: absolute;
+    top: -4px; right: -4px;
+    width: 16px; height: 16px;
+    background: var(--accent-red);
+    border-radius: 50%;
+    font-size: 9px;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    border: 2px solid var(--bg-dark);
+  }
+
+  .header-user {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    padding: 6px 12px;
+    border-radius: 10px;
+    transition: background 0.2s;
+  }
+
+  .header-user:hover { background: rgba(255,255,255,0.07); }
+
+  .user-avatar {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 700;
+    font-size: 13px;
+  }
+
+  .user-info { display: flex; flex-direction: column; }
+  .user-name { color: var(--text-white); font-size: 13px; font-weight: 600; }
+  .user-role { color: #6c7baa; font-size: 11px; }
+
+  /* ===== CONTENT ===== */
+  .content {
+    flex: 1;
+    padding: 24px 28px;
+    background: #f4f6fb;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  /* ===== KPI CARDS ===== */
+  .kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+  }
+
+  .kpi-card {
+    background: white;
+    border-radius: 16px;
+    padding: 20px;
+    box-shadow: var(--shadow);
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .kpi-card::before {
+    content: '';
+    position: absolute;
+    top: 0; right: 0;
+    width: 80px; height: 80px;
+    border-radius: 0 16px 0 80px;
+    opacity: 0.08;
+  }
+
+  .kpi-card.blue::before   { background: var(--accent-blue); }
+  .kpi-card.green::before  { background: var(--accent-green); }
+  .kpi-card.orange::before { background: var(--accent-orange); }
+  .kpi-card.red::before    { background: var(--accent-red); }
+
+  .kpi-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .kpi-label {
+    font-size: 12px;
+    color: var(--text-muted);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .kpi-icon {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+  }
+
+  .kpi-icon.blue   { background: linear-gradient(135deg, #4361ee, #3a56d4); }
+  .kpi-icon.green  { background: linear-gradient(135deg, #20c997, #12b886); }
+  .kpi-icon.orange { background: linear-gradient(135deg, #fd7e14, #e8680a); }
+  .kpi-icon.red    { background: linear-gradient(135deg, #fa5252, #e03131); }
+
+  .kpi-value {
+    font-size: 28px;
+    font-weight: 800;
+    color: var(--text-main);
+    line-height: 1;
+  }
+
+  .kpi-change {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+
+  .kpi-change.up   { color: var(--accent-green); }
+  .kpi-change.down { color: var(--accent-red); }
+  .kpi-change.neutral { color: var(--accent-blue); }
+
+  .kpi-change span { color: var(--text-muted); font-weight: 400; }
+
+  /* ===== GRID LAYOUT ===== */
+  .grid-2col {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 16px;
+  }
+
+  .grid-3col {
+    display: grid;
+    grid-template-columns: 1.5fr 1fr 1fr;
+    gap: 16px;
+  }
+
+  /* ===== CHART CARD ===== */
+  .chart-card {
+    background: white;
+    border-radius: 16px;
+    padding: 20px;
+    box-shadow: var(--shadow);
+  }
+
+  .card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+  }
+
+  .card-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text-main);
+  }
+
+  .card-subtitle {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: 2px;
+  }
+
+  .card-actions {
+    display: flex;
+    gap: 6px;
+  }
+
+  .tab-btn {
+    padding: 5px 12px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: transparent;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .tab-btn.active {
+    background: var(--accent-blue);
+    border-color: var(--accent-blue);
+    color: white;
+  }
+
+  .tab-btn:hover:not(.active) {
+    background: #f8f9fa;
+    color: var(--text-main);
+  }
+
+  .chart-container {
+    position: relative;
+  }
+
+  .chart-container canvas {
+    max-height: 220px;
+  }
+
+  /* ===== LEGEND ===== */
+  .legend {
+    display: flex;
+    gap: 16px;
+    margin-top: 12px;
+  }
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+
+  .legend-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+  }
+
+  /* ===== PROGRESS BARS ===== */
+  .progress-list {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .progress-item {}
+
+  .progress-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 6px;
+    font-size: 12px;
+  }
+
+  .progress-name { color: var(--text-main); font-weight: 600; }
+  .progress-val  { color: var(--text-muted); }
+
+  .progress-bar-bg {
+    height: 6px;
+    background: #f1f3f5;
+    border-radius: 99px;
+    overflow: hidden;
+  }
+
+  .progress-bar-fill {
+    height: 100%;
+    border-radius: 99px;
+    transition: width 1s ease;
+  }
+
+  /* ===== TABLE ===== */
+  .table-card {
+    background: white;
+    border-radius: 16px;
+    box-shadow: var(--shadow);
+    overflow: hidden;
+  }
+
+  .table-header {
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--border);
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  th {
+    padding: 10px 20px;
+    text-align: left;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    background: #f8f9fa;
+    border-bottom: 1px solid var(--border);
+  }
+
+  td {
+    padding: 12px 20px;
+    font-size: 13px;
+    color: var(--text-main);
+    border-bottom: 1px solid #f1f3f5;
+  }
+
+  tr:last-child td { border-bottom: none; }
+
+  tr:hover td { background: #f8f9fe; }
+
+  .status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 10px;
+    border-radius: 99px;
+    font-size: 11px;
+    font-weight: 600;
+  }
+
+  .status-badge.success { background: #d3f9d8; color: #2f9e44; }
+  .status-badge.warning { background: #fff3bf; color: #e67700; }
+  .status-badge.error   { background: #ffe3e3; color: #c92a2a; }
+  .status-badge.info    { background: #dbe4ff; color: #3b5bdb; }
+
+  .status-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: currentColor;
+  }
+
+  /* ===== ACTIVITY ===== */
+  .activity-list {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    margin-top: 4px;
+  }
+
+  .activity-item {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+  }
+
+  .activity-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-size: 13px;
+  }
+
+  .activity-content { flex: 1; }
+
+  .activity-title {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-main);
+    margin-bottom: 2px;
+  }
+
+  .activity-time {
+    font-size: 11px;
+    color: var(--text-muted);
+  }
+
+  /* ===== DONUT ===== */
+  .donut-container {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-top: 8px;
+  }
+
+  .donut-canvas-wrap {
+    position: relative;
+    width: 120px;
+    height: 120px;
+    flex-shrink: 0;
+  }
+
+  .donut-center {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+  }
+
+  .donut-center-val {
+    font-size: 18px;
+    font-weight: 800;
+    color: var(--text-main);
+    line-height: 1;
+  }
+
+  .donut-center-label {
+    font-size: 10px;
+    color: var(--text-muted);
+    margin-top: 2px;
+  }
+
+  .donut-legend {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    flex: 1;
+  }
+
+  .donut-legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+  }
+
+  .donut-legend-color {
+    width: 10px;
+    height: 10px;
+    border-radius: 3px;
+    flex-shrink: 0;
+  }
+
+  .donut-legend-name { color: var(--text-muted); flex: 1; }
+  .donut-legend-val  { color: var(--text-main); font-weight: 700; }
+
+  /* ===== SCROLLBAR ===== */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: #ced4da; border-radius: 99px; }
+
+  /* ===== VIEW PANELS ===== */
+  .view-panel { display: none; }
+  .view-panel.active { display: block; }
+
+  .summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 12px;
+  }
+
+  .summary-card {
+    background: white;
+    border-radius: 14px;
+    padding: 18px;
+    box-shadow: var(--shadow);
+    border-top: 3px solid var(--accent-blue);
+  }
+
+  .summary-card-label {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+  }
+
+  .summary-card-value {
+    font-size: 26px;
+    font-weight: 800;
+    color: var(--text-main);
+    margin-top: 8px;
+  }
+
+  .summary-card-note {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: 6px;
+    line-height: 1.5;
+  }
+
+  .dashboard-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .dashboard-item {
+    width: 100%;
+    text-align: left;
+    border: 1px solid #e9eefc;
+    background: #f8faff;
+    border-left: 4px solid var(--item-accent, var(--accent-blue));
+    border-radius: 10px;
+    padding: 12px 14px;
+    cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.2s, border-color 0.2s;
+  }
+
+  .dashboard-item:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 10px 24px rgba(67,97,238,0.12);
+    border-color: #dbe4ff;
+  }
+
+  .dashboard-item-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text-main);
+    line-height: 1.45;
+  }
+
+  .dashboard-item-meta {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-top: 6px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .empty-state {
+    border: 1px dashed #cbd5e1;
+    border-radius: 12px;
+    padding: 20px 16px;
+    text-align: center;
+    color: var(--text-muted);
+    background: #f8fafc;
+    font-size: 12px;
+    line-height: 1.6;
+  }
+
+  .search-panel {
+    background: white;
+    border-radius: 16px;
+    padding: 18px 20px;
+    box-shadow: var(--shadow);
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .search-input-row {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  .search-input-row input {
+    flex: 1;
+    min-width: 220px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 11px 14px;
+    font-size: 13px;
+    outline: none;
+  }
+
+  .search-input-row input:focus {
+    border-color: var(--accent-blue);
+    box-shadow: 0 0 0 3px rgba(67,97,238,0.12);
+  }
+
+  .helper-text {
+    font-size: 12px;
+    color: var(--text-muted);
+    line-height: 1.5;
+  }
+
+  .action-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .ghost-btn,
+  .danger-btn {
+    padding: 10px 16px;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    border: 1px solid var(--border);
+    transition: all 0.2s;
+    background: white;
+  }
+
+  .ghost-btn {
+    color: var(--accent-blue);
+  }
+
+  .ghost-btn:hover {
+    background: #eef3ff;
+    border-color: #c7d2fe;
+  }
+
+  .danger-btn {
+    color: #c92a2a;
+    border-color: #ffc9c9;
+    background: #fff5f5;
+  }
+
+  .danger-btn:hover {
+    background: #ffe3e3;
+  }
+
+  .hidden-input { display: none; }
+
+  .panel-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  @media (max-width: 900px) {
+    .kpi-grid,
+    .grid-2col,
+    .grid-3col {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  /* ===== ISSUES / KANBAN ===== */
+  .issues-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .issues-header-left { display: flex; align-items: center; gap: 12px; }
+  .issues-title { font-size: 20px; font-weight: 800; color: #ffffff; }
+  .issues-count {
+    background: rgba(67,97,238,0.25);
+    color: #8ba4ff;
+    padding: 2px 10px;
+    border-radius: 99px;
+    font-size: 12px;
+    font-weight: 700;
+  }
+  .btn-add-issue {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    background: var(--accent-blue);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  .btn-add-issue:hover { background: #3a56d4; }
+
+  .kanban-board {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 14px;
+    align-items: start;
+    overflow-x: auto;
+    padding-bottom: 8px;
+  }
+  @media (max-width: 1200px) { .kanban-board { grid-template-columns: repeat(3, 1fr); } }
+  @media (max-width: 800px)  { .kanban-board { grid-template-columns: 1fr 1fr; } }
+
+  .kanban-col {
+    background: rgba(255,255,255,0.04);
+    border-radius: 14px;
+    padding: 14px;
+    min-width: 0;
+  }
+  .kanban-col-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+  }
+  .kanban-col-title {
+    font-size: 12px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: #8895b3;
+  }
+  .kanban-col-badge {
+    font-size: 11px;
+    font-weight: 700;
+    background: rgba(255,255,255,0.08);
+    color: #adb5bd;
+    padding: 1px 8px;
+    border-radius: 99px;
+  }
+  .kanban-col.col-backlog  .kanban-col-title { color: #868e96; }
+  .kanban-col.col-todo     .kanban-col-title { color: #74c0fc; }
+  .kanban-col.col-inprog   .kanban-col-title { color: #ffd43b; }
+  .kanban-col.col-review   .kanban-col-title { color: #da77f2; }
+  .kanban-col.col-done     .kanban-col-title { color: #69db7c; }
+
+  .kanban-cards { display: flex; flex-direction: column; gap: 10px; min-height: 48px; }
+
+  /* ===== ISSUE CARD ===== */
+  .issue-card {
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 14px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.12);
+    cursor: pointer;
+    transition: box-shadow 0.2s, transform 0.15s;
+    position: relative;
+  }
+  .issue-card:hover { box-shadow: 0 6px 24px rgba(67,97,238,0.20); transform: translateY(-2px); }
+
+  .issue-card-id {
+    font-size: 10px;
+    font-weight: 700;
+    color: #6c7baa;
+    margin-bottom: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .issue-card-purpose {
+    font-size: 13px;
+    font-weight: 700;
+    color: #1a1d2e;
+    margin-bottom: 10px;
+    line-height: 1.4;
+  }
+
+  .issue-fields { display: flex; flex-direction: column; gap: 6px; }
+  .issue-field {
+    display: flex;
+    gap: 6px;
+    font-size: 11px;
+    line-height: 1.5;
+  }
+  .issue-field-label {
+    font-weight: 800;
+    color: #4361ee;
+    white-space: nowrap;
+    min-width: 70px;
+  }
+  .issue-field-value { color: #495057; flex: 1; word-break: break-all; }
+
+  .issue-card-solution {
+    margin-top: 10px;
+    padding: 8px 10px;
+    background: #f0f4ff;
+    border-left: 3px solid #4361ee;
+    border-radius: 0 6px 6px 0;
+  }
+  .issue-card-solution .issue-field-label { color: #3b5bdb; }
+  .issue-card-solution .issue-field-value {
+    color: #1a1d2e;
+    font-weight: 600;
+    font-size: 12px;
+  }
+
+  .issue-card-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 10px;
+    padding-top: 8px;
+    border-top: 1px solid #f1f3f5;
+  }
+  .issue-priority {
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 99px;
+  }
+  .issue-priority.p1 { background: #ffe3e3; color: #c92a2a; }
+  .issue-priority.p2 { background: #fff3bf; color: #e67700; }
+  .issue-priority.p3 { background: #d3f9d8; color: #2f9e44; }
+  .issue-assignee {
+    font-size: 11px;
+    color: #868e96;
+    font-weight: 600;
+  }
+  .issue-card-actions {
+    display: flex;
+    gap: 4px;
+    margin-top: 4px;
+  }
+  .btn-card-action {
+    flex: 1;
+    padding: 4px 0;
+    border: 1px solid #dee2e6;
+    background: transparent;
+    border-radius: 6px;
+    font-size: 10px;
+    font-weight: 700;
+    color: #868e96;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .btn-card-action:hover { background: #f8f9fa; color: #4361ee; border-color: #4361ee; }
+
+  /* ===== MODAL ===== */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(15,21,53,0.80);
+    backdrop-filter: blur(4px);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: #1c2554;
+    border-radius: 18px;
+    padding: 28px;
+    width: 640px;
+    max-width: 95vw;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 24px 80px rgba(0,0,0,0.5);
+  }
+  .modal-title {
+    font-size: 17px;
+    font-weight: 800;
+    color: #ffffff;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .modal-close {
+    margin-left: auto;
+    background: transparent;
+    border: none;
+    color: #8895b3;
+    cursor: pointer;
+    font-size: 20px;
+    line-height: 1;
+  }
+  .form-row { margin-bottom: 16px; }
+  .form-label {
+    display: block;
+    font-size: 12px;
+    font-weight: 800;
+    color: #8ba4ff;
+    margin-bottom: 6px;
+    letter-spacing: 0.3px;
+  }
+  .form-label span { color: #fa5252; margin-left: 2px; }
+  .form-input, .form-select, .form-textarea {
+    width: 100%;
+    background: rgba(255,255,255,0.07);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 8px;
+    padding: 9px 12px;
+    font-size: 13px;
+    color: #ffffff;
+    outline: none;
+    transition: border 0.2s;
+    font-family: inherit;
+  }
+  .form-input:focus, .form-select:focus, .form-textarea:focus {
+    border-color: #4361ee;
+    background: rgba(67,97,238,0.10);
+  }
+  .form-textarea { resize: vertical; min-height: 72px; }
+  .form-select option { background: #1c2554; color: #ffffff; }
+  .form-hint {
+    font-size: 10px;
+    color: #6c7baa;
+    margin-top: 3px;
+  }
+  .modal-footer {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+    margin-top: 24px;
+    padding-top: 16px;
+    border-top: 1px solid rgba(255,255,255,0.10);
+  }
+  .btn-primary {
+    padding: 9px 20px;
+    background: var(--accent-blue);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  .btn-primary:hover { background: #3a56d4; }
+  .btn-secondary {
+    padding: 9px 20px;
+    background: transparent;
+    color: #8895b3;
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .btn-secondary:hover { background: rgba(255,255,255,0.05); color: #fff; }
+  .detail-field {
+    margin-bottom: 12px;
+    background: rgba(255,255,255,0.04);
+    border-radius: 8px;
+    padding: 10px 14px;
+  }
+  .detail-field-label {
+    font-size: 11px;
+    font-weight: 800;
+    color: #8ba4ff;
+    margin-bottom: 4px;
+  }
+  .detail-field-value { font-size: 13px; color: #e9ecef; line-height: 1.5; }
+  .detail-solution {
+    background: rgba(67,97,238,0.12);
+    border-left: 3px solid #4361ee;
+    border-radius: 0 8px 8px 0;
+    padding: 12px 14px;
+    margin-bottom: 12px;
+  }
+  .detail-solution .detail-field-label { color: #74c0fc; }
+  .detail-solution .detail-field-value { color: #ffffff; font-weight: 600; font-size: 14px; }
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sidebar-logo">CI<br>DLS</div>
+  <nav class="sidebar-nav">
+    <!-- Dashboard -->
+    <button class="nav-item active" data-view="dashboard" title="ダッシュボード" onclick="showView('dashboard',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+        <rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/>
+      </svg>
+    </button>
+    <!-- Analytics -->
+    <button class="nav-item" data-view="analytics" title="分析" onclick="showView('analytics',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+      </svg>
+    </button>
+    <!-- Timeline -->
+    <button class="nav-item" data-view="timeline" title="期限管理" onclick="showView('timeline',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+      </svg>
+    </button>
+    <!-- Search -->
+    <button class="nav-item" data-view="search" title="検索" onclick="showView('search',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+    </button>
+    <!-- Export -->
+    <button class="nav-item" data-view="export" title="データ管理" onclick="showView('export',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+      </svg>
+    </button>
+    <!-- ISSUES / Kanban -->
+    <button class="nav-item" data-view="issues" title="ISSUES / Kanban" onclick="showView('issues',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+      </svg>
+    </button>
+  </nav>
+  <div class="sidebar-bottom">
+    <!-- Settings -->
+    <button class="nav-item" title="設定" style="margin-bottom:8px;">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+      </svg>
+    </button>
+    <div class="sidebar-avatar">TA</div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<main class="main">
+
+  <!-- HEADER -->
+  <header class="header">
+    <div class="header-title">
+      <div id="header-title-main">CIDLS <span>Dashboard</span></div>
+      <div id="header-subtitle" style="font-size:12px;color:#6c7baa;font-weight:400;margin-top:2px;">CI/DL System Overview &mdash; 2026年5月13日</div>
+    </div>
+    <div class="search-bar">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6c7baa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+      <input id="global-search-input" type="text" placeholder="ISSUE を検索...">
+    </div>
+    <div class="header-actions">
+      <button class="icon-btn">
+        <span class="badge">3</span>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 0 1-3.46 0"/>
+        </svg>
+      </button>
+      <button class="icon-btn">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+        </svg>
+      </button>
+      <div class="header-user">
+        <div class="user-avatar">TA</div>
+        <div class="user-info">
+          <div class="user-name">Tanaka Akira</div>
+          <div class="user-role">MLエンジニア</div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- CONTENT -->
+  <div class="content">
+    <!-- ==================== DASHBOARD VIEW ==================== -->
+    <div id="view-dashboard" class="view-panel active">
+      <div id="db-kpi-grid" class="kpi-grid"></div>
+      <div class="grid-2col" style="margin-top:16px;">
+        <div class="chart-card">
+          <div class="card-header"><div><div class="card-title">ステータス別件数</div><div class="card-subtitle">全ISSUESの進行状況</div></div></div>
+          <div id="db-status-bars" class="progress-list" style="margin-top:4px;"></div>
+        </div>
+        <div class="chart-card">
+          <div class="card-header">
+            <div><div class="card-title">P1 緊急 ISSUES</div><div class="card-subtitle">即対応が必要なISSUES</div></div>
+            <button class="btn-add-issue" style="font-size:11px;padding:5px 10px;" onclick="showView('issues',document.querySelector('[data-view=issues]'))">Kanbanへ</button>
+          </div>
+          <div id="db-p1-list" style="margin-top:4px;max-height:220px;overflow-y:auto;display:flex;flex-direction:column;gap:6px;"></div>
+        </div>
+      </div>
+      <div class="grid-2col" style="margin-top:16px;">
+        <div class="chart-card">
+          <div class="card-header"><div><div class="card-title">期限超過 / 今週期限</div><div class="card-subtitle">要対応ISSUES</div></div></div>
+          <div id="db-deadline-list" style="margin-top:4px;max-height:220px;overflow-y:auto;display:flex;flex-direction:column;gap:6px;"></div>
+        </div>
+        <div class="chart-card">
+          <div class="card-header"><div><div class="card-title">最近更新された ISSUES</div><div class="card-subtitle">直近5件の更新</div></div></div>
+          <div id="db-recent-list" style="margin-top:4px;display:flex;flex-direction:column;gap:6px;"></div>
+        </div>
+      </div>
+
+      <!-- クイックアクセス -->
+      <div style="margin-top:20px;">
+        <div style="font-size:0.78rem;font-weight:600;color:#94a3b8;margin-bottom:10px;letter-spacing:.05em;text-transform:uppercase;">Quick Access — CIDLS 成果物</div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:12px;">
+          <a href="cidls_platform_overview.html" target="_blank" style="text-decoration:none;">
+            <div style="background:#16213e;border:1px solid #334155;border-radius:10px;padding:14px 16px;transition:border-color .2s,transform .2s;cursor:pointer;" onmouseover="this.style.borderColor='#6366f1';this.style.transform='scale(1.02)'" onmouseout="this.style.borderColor='#334155';this.style.transform='scale(1)'">
+              <div style="font-size:0.75rem;font-weight:700;color:#6366f1;margin-bottom:4px;">[PLATFORM]</div>
+              <div style="font-size:0.85rem;font-weight:600;color:#e2e8f0;">プラットフォーム全体像</div>
+              <div style="font-size:0.72rem;color:#94a3b8;margin-top:4px;">cidls_platform_overview.html</div>
+            </div>
+          </a>
+          <a href="project_kanban.html" target="_blank" style="text-decoration:none;">
+            <div style="background:#16213e;border:1px solid #334155;border-radius:10px;padding:14px 16px;transition:border-color .2s,transform .2s;cursor:pointer;" onmouseover="this.style.borderColor='#8b5cf6';this.style.transform='scale(1.02)'" onmouseout="this.style.borderColor='#334155';this.style.transform='scale(1)'">
+              <div style="font-size:0.75rem;font-weight:700;color:#8b5cf6;margin-bottom:4px;">[KANBAN]</div>
+              <div style="font-size:0.85rem;font-weight:600;color:#e2e8f0;">カンバンボード</div>
+              <div style="font-size:0.72rem;color:#94a3b8;margin-top:4px;">project_kanban.html</div>
+            </div>
+          </a>
+          <a href="CIDLS%E3%83%91%E3%82%A4%E3%83%97%E3%83%A9%E3%82%A4%E3%83%B3%E3%83%9E%E3%82%A4%E3%83%B3%E3%83%89%E3%83%9E%E3%83%83%E3%83%97.html" target="_blank" style="text-decoration:none;">
+            <div style="background:#16213e;border:2px solid #6366f1;border-radius:10px;padding:14px 16px;transition:border-color .2s,transform .2s;cursor:pointer;" onmouseover="this.style.borderColor='#a5b4fc';this.style.transform='scale(1.02)'" onmouseout="this.style.borderColor='#6366f1';this.style.transform='scale(1)'">
+              <div style="font-size:0.75rem;font-weight:700;color:#6366f1;margin-bottom:4px;">[PIPELINE-MAP] &#x6B63;</div>
+              <div style="font-size:0.85rem;font-weight:600;color:#e2e8f0;">パイプラインマインドマップ</div>
+              <div style="font-size:0.72rem;color:#94a3b8;margin-top:4px;">CIDLSパイプラインマインドマップ.html · 47ノード · 63エッジ</div>
+            </div>
+          </a>
+          <a href="graph_project_mindmap.html" target="_blank" style="text-decoration:none;">
+            <div style="background:#16213e;border:1px solid #334155;border-radius:10px;padding:14px 16px;transition:border-color .2s,transform .2s;cursor:pointer;" onmouseover="this.style.borderColor='#06b6d4';this.style.transform='scale(1.02)'" onmouseout="this.style.borderColor='#334155';this.style.transform='scale(1)'">
+              <div style="font-size:0.75rem;font-weight:700;color:#06b6d4;margin-bottom:4px;">[DA-MAP]</div>
+              <div style="font-size:0.85rem;font-weight:600;color:#e2e8f0;">DA表マインドマップ</div>
+              <div style="font-size:0.72rem;color:#94a3b8;margin-top:4px;">graph_project_mindmap.html · DA表 21件</div>
+            </div>
+          </a>
+          <a href="STORY.html" target="_blank" style="text-decoration:none;">
+            <div style="background:#16213e;border:1px solid #334155;border-radius:10px;padding:14px 16px;transition:border-color .2s,transform .2s;cursor:pointer;" onmouseover="this.style.borderColor='#10b981';this.style.transform='scale(1.02)'" onmouseout="this.style.borderColor='#334155';this.style.transform='scale(1)'">
+              <div style="font-size:0.75rem;font-weight:700;color:#10b981;margin-bottom:4px;">[STORY]</div>
+              <div style="font-size:0.85rem;font-weight:600;color:#e2e8f0;">業務ストーリー</div>
+              <div style="font-size:0.72rem;color:#94a3b8;margin-top:4px;">STORY.html v2.3.0</div>
+            </div>
+          </a>
+          <a href="LP.html" target="_blank" style="text-decoration:none;">
+            <div style="background:#16213e;border:2px solid #f43f5e;border-radius:10px;padding:14px 16px;transition:border-color .2s,transform .2s;cursor:pointer;" onmouseover="this.style.borderColor='#fb7185';this.style.transform='scale(1.02)'" onmouseout="this.style.borderColor='#f43f5e';this.style.transform='scale(1)'">
+              <div style="font-size:0.75rem;font-weight:700;color:#f43f5e;margin-bottom:4px;">[LP] New</div>
+              <div style="font-size:0.85rem;font-weight:600;color:#e2e8f0;">販売LP (商用化)</div>
+              <div style="font-size:0.72rem;color:#94a3b8;margin-top:4px;">LP.html v1.0 &middot; DISTSEC.3 方法1/2</div>
+            </div>
+          </a>
+          <a href="%E8%A6%81%E6%B1%82%E5%AE%9A%E7%BE%A9%E6%9B%B8.html" target="_blank" style="text-decoration:none;">
+            <div style="background:#16213e;border:1px solid #334155;border-radius:10px;padding:14px 16px;transition:border-color .2s,transform .2s;cursor:pointer;" onmouseover="this.style.borderColor='#f59e0b';this.style.transform='scale(1.02)'" onmouseout="this.style.borderColor='#334155';this.style.transform='scale(1)'">
+              <div style="font-size:0.75rem;font-weight:700;color:#f59e0b;margin-bottom:4px;">[REQ]</div>
+              <div style="font-size:0.85rem;font-weight:600;color:#e2e8f0;">要求定義書</div>
+              <div style="font-size:0.72rem;color:#94a3b8;margin-top:4px;">CIDLS-REQ-001 v1.0.0</div>
+            </div>
+          </a>
+          <a href="%E8%A6%81%E6%B1%82%E4%BB%95%E6%A7%98%E6%9B%B8.html" target="_blank" style="text-decoration:none;">
+            <div style="background:#16213e;border:1px solid #334155;border-radius:10px;padding:14px 16px;transition:border-color .2s,transform .2s;cursor:pointer;" onmouseover="this.style.borderColor='#f59e0b';this.style.transform='scale(1.02)'" onmouseout="this.style.borderColor='#334155';this.style.transform='scale(1)'">
+              <div style="font-size:0.75rem;font-weight:700;color:#f59e0b;margin-bottom:4px;">[SPEC]</div>
+              <div style="font-size:0.85rem;font-weight:600;color:#e2e8f0;">要求仕様書</div>
+              <div style="font-size:0.72rem;color:#94a3b8;margin-top:4px;">CIDLS-SPEC-001 v1.0.0</div>
+            </div>
+          </a>
+          <a href="%E3%82%B3%E3%83%B3%E3%82%BB%E3%83%97%E3%83%88%E3%82%B9%E3%83%A9%E3%82%A4%E3%83%89.html" target="_blank" style="text-decoration:none;">
+            <div style="background:#16213e;border:1px solid #334155;border-radius:10px;padding:14px 16px;transition:border-color .2s,transform .2s;cursor:pointer;" onmouseover="this.style.borderColor='#8b5cf6';this.style.transform='scale(1.02)'" onmouseout="this.style.borderColor='#334155';this.style.transform='scale(1)'">
+              <div style="font-size:0.75rem;font-weight:700;color:#8b5cf6;margin-bottom:4px;">[SLIDE]</div>
+              <div style="font-size:0.85rem;font-weight:600;color:#e2e8f0;">コンセプトスライド</div>
+              <div style="font-size:0.72rem;color:#94a3b8;margin-top:4px;">コンセプトスライド.html</div>
+            </div>
+          </a>
+          <a href="%E8%A6%81%E6%B1%82%E8%A6%81%E4%BB%B6%E5%AE%9A%E7%BE%A9%E6%9B%B8.html" target="_blank" style="text-decoration:none;">
+            <div style="background:#16213e;border:1px solid #334155;border-radius:10px;padding:14px 16px;transition:border-color .2s,transform .2s;cursor:pointer;" onmouseover="this.style.borderColor='#6366f1';this.style.transform='scale(1.02)'" onmouseout="this.style.borderColor='#334155';this.style.transform='scale(1)'">
+              <div style="font-size:0.75rem;font-weight:700;color:#6366f1;margin-bottom:4px;">[REQ-002]</div>
+              <div style="font-size:0.85rem;font-weight:600;color:#e2e8f0;">要求要件定義書</div>
+              <div style="font-size:0.72rem;color:#94a3b8;margin-top:4px;">CIDLS-REQ-002 v1.0.0 &middot; 10タブ</div>
+            </div>
+          </a>
+          <a href="%E6%A7%8B%E6%88%90%E5%AE%9A%E7%BE%A9%E6%9B%B8%20%E5%85%BC%20%E9%81%8B%E7%94%A8%E4%BF%9D%E5%AE%88%E6%89%8B%E9%A0%86%E6%9B%B8.html" target="_blank" style="text-decoration:none;">
+            <div style="background:#16213e;border:1px solid #334155;border-radius:10px;padding:14px 16px;transition:border-color .2s,transform .2s;cursor:pointer;" onmouseover="this.style.borderColor='#10b981';this.style.transform='scale(1.02)'" onmouseout="this.style.borderColor='#334155';this.style.transform='scale(1)'">
+              <div style="font-size:0.75rem;font-weight:700;color:#10b981;margin-bottom:4px;">[OPS-002]</div>
+              <div style="font-size:0.85rem;font-weight:600;color:#e2e8f0;">構成定義書 兼 運用保守手順書</div>
+              <div style="font-size:0.72rem;color:#94a3b8;margin-top:4px;">CIDLS-OPS-002 v1.0.0 &middot; 10タブ</div>
+            </div>
+          </a>
+          <a href="%E3%83%86%E3%82%B9%E3%83%88%E3%82%B7%E3%83%8A%E3%83%AA%E3%82%AA%E5%85%BC%E7%B5%90%E6%9E%9C%E3%83%81%E3%82%A7%E3%83%83%E3%82%AF%E3%83%AA%E3%82%B9%E3%83%88.html" target="_blank" style="text-decoration:none;">
+            <div style="background:#16213e;border:1px solid #334155;border-radius:10px;padding:14px 16px;transition:border-color .2s,transform .2s;cursor:pointer;" onmouseover="this.style.borderColor='#f59e0b';this.style.transform='scale(1.02)'" onmouseout="this.style.borderColor='#334155';this.style.transform='scale(1)'">
+              <div style="font-size:0.75rem;font-weight:700;color:#f59e0b;margin-bottom:4px;">[TEST-001]</div>
+              <div style="font-size:0.85rem;font-weight:600;color:#e2e8f0;">テストシナリオ兼結果チェックリスト</div>
+              <div style="font-size:0.72rem;color:#94a3b8;margin-top:4px;">CIDLS-TEST-001 v1.0.0 &middot; 10タブ</div>
+            </div>
+          </a>
+          <a href="%E3%83%A6%E3%83%BC%E3%82%B6%E3%83%BC%E3%83%9E%E3%83%8B%E3%83%A5%E3%82%A2%E3%83%AB.html" target="_blank" style="text-decoration:none;">
+            <div style="background:#16213e;border:1px solid #334155;border-radius:10px;padding:14px 16px;transition:border-color .2s,transform .2s;cursor:pointer;" onmouseover="this.style.borderColor='#38bdf8';this.style.transform='scale(1.02)'" onmouseout="this.style.borderColor='#334155';this.style.transform='scale(1)'">
+              <div style="font-size:0.75rem;font-weight:700;color:#38bdf8;margin-bottom:4px;">[MAN-001]</div>
+              <div style="font-size:0.85rem;font-weight:600;color:#e2e8f0;">ユーザーマニュアル</div>
+              <div style="font-size:0.72rem;color:#94a3b8;margin-top:4px;">CIDLS-MAN-001 v1.0.0 &middot; 10タブ</div>
+            </div>
+          </a>
+          <a href="%E3%83%89%E3%82%AD%E3%83%A5%E3%83%A1%E3%83%B3%E3%83%88%E4%B8%80%E8%A6%A7.html" target="_blank" style="text-decoration:none;">
+            <div style="background:#16213e;border:1px solid #334155;border-radius:10px;padding:14px 16px;transition:border-color .2s,transform .2s;cursor:pointer;" onmouseover="this.style.borderColor='#8b5cf6';this.style.transform='scale(1.02)'" onmouseout="this.style.borderColor='#334155';this.style.transform='scale(1)'">
+              <div style="font-size:0.75rem;font-weight:700;color:#8b5cf6;margin-bottom:4px;">[IDX-001]</div>
+              <div style="font-size:0.85rem;font-weight:600;color:#e2e8f0;">ドキュメント一覧</div>
+              <div style="font-size:0.72rem;color:#94a3b8;margin-top:4px;">CIDLS-IDX-001 v1.0.0 &middot; 全索引</div>
+            </div>
+          </a>
+        </div>
+      </div><!-- /quick-access -->
+    </div><!-- /view-dashboard -->
+
+    <!-- ==================== ANALYTICS VIEW ==================== -->
+    <div id="view-analytics" class="view-panel panel-stack">
+      <div id="analytics-summary-grid" class="summary-grid"></div>
+      <div class="grid-2col">
+        <div class="chart-card">
+          <div class="card-header"><div><div class="card-title">優先度分布</div><div class="card-subtitle">P1/P2/P3 の件数比率</div></div></div>
+          <div id="analytics-priority-list" class="progress-list"></div>
+        </div>
+        <div class="chart-card">
+          <div class="card-header"><div><div class="card-title">ステータス分布</div><div class="card-subtitle">完了までの流れを可視化</div></div></div>
+          <div id="analytics-status-list" class="progress-list"></div>
+        </div>
+      </div>
+      <div class="chart-card">
+        <div class="card-header"><div><div class="card-title">担当者別アサイン</div><div class="card-subtitle">割当の偏りを確認</div></div></div>
+        <div id="analytics-assignee-list" class="dashboard-list"></div>
+      </div>
+    </div><!-- /view-analytics -->
+
+    <!-- ==================== TIMELINE VIEW ==================== -->
+    <div id="view-timeline" class="view-panel panel-stack">
+      <div class="grid-2col">
+        <div class="chart-card">
+          <div class="card-header"><div><div class="card-title">期限超過</div><div class="card-subtitle">すぐに是正が必要なISSUE</div></div></div>
+          <div id="timeline-overdue-list" class="dashboard-list"></div>
+        </div>
+        <div class="chart-card">
+          <div class="card-header"><div><div class="card-title">今週期限</div><div class="card-subtitle">直近7日以内に締切が来るISSUE</div></div></div>
+          <div id="timeline-week-list" class="dashboard-list"></div>
+        </div>
+      </div>
+      <div class="chart-card">
+        <div class="card-header"><div><div class="card-title">最近更新</div><div class="card-subtitle">更新順に最新8件</div></div></div>
+        <div id="timeline-recent-list" class="dashboard-list"></div>
+      </div>
+    </div><!-- /view-timeline -->
+
+    <!-- ==================== SEARCH VIEW ==================== -->
+    <div id="view-search" class="view-panel panel-stack">
+      <div class="search-panel">
+        <div class="search-input-row">
+          <input id="search-view-input" type="text" placeholder="目的・担当者・証拠・解などからISSUEを検索">
+          <button class="btn-add-issue" type="button" onclick="showView('issues',document.querySelector('[data-view=issues]'))">Kanbanを開く</button>
+        </div>
+        <div class="helper-text">id / 目的 / 誰が / 何に困り / 根拠 / 理想 / 解 を横断検索します。</div>
+        <div id="search-result-meta" class="helper-text"></div>
+      </div>
+      <div class="chart-card">
+        <div class="card-header"><div><div class="card-title">検索結果</div><div class="card-subtitle">一致したISSUEを表示</div></div></div>
+        <div id="search-results-list" class="dashboard-list"></div>
+      </div>
+    </div><!-- /view-search -->
+
+    <!-- ==================== EXPORT VIEW ==================== -->
+    <div id="view-export" class="view-panel panel-stack">
+      <div id="export-summary-grid" class="summary-grid"></div>
+      <div class="search-panel">
+        <div class="card-header" style="margin-bottom:0;">
+          <div>
+            <div class="card-title">ローカルデータ管理</div>
+            <div class="card-subtitle">ISSUEのバックアップ、復元、初期化を行います</div>
+          </div>
+        </div>
+        <div class="action-row">
+          <button class="ghost-btn" type="button" onclick="downloadIssues()">JSON をエクスポート</button>
+          <button class="ghost-btn" type="button" onclick="document.getElementById('issues-import-input').click()">JSON をインポート</button>
+          <button class="danger-btn" type="button" onclick="resetIssues()">全ISSUEを削除</button>
+        </div>
+        <input id="issues-import-input" class="hidden-input" type="file" accept="application/json">
+        <div id="export-last-action" class="helper-text">まだ操作は実行されていません。</div>
+      </div>
+      <div class="chart-card">
+        <div class="card-header"><div><div class="card-title">保存プレビュー</div><div class="card-subtitle">直近保存されているISSUEの一部</div></div></div>
+        <div id="export-preview-list" class="dashboard-list"></div>
+      </div>
+    </div><!-- /view-export -->
+
+    <!-- ==================== ISSUES / KANBAN VIEW ==================== -->
+    <div id="view-issues" class="view-panel">
+      <div class="issues-header">
+        <div class="issues-header-left">
+          <span class="issues-title">ISSUES / Kanban</span>
+          <span class="issues-count" id="issues-total-count">0</span>
+        </div>
+        <button class="btn-add-issue" onclick="openIssueModal()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          ISSUE を追加
+        </button>
+      </div>
+
+      <div class="kanban-board">
+        <div class="kanban-col col-backlog">
+          <div class="kanban-col-header">
+            <span class="kanban-col-title">Backlog</span>
+            <span class="kanban-col-badge" id="cnt-backlog">0</span>
+          </div>
+          <div class="kanban-cards" id="col-backlog"></div>
+        </div>
+        <div class="kanban-col col-todo">
+          <div class="kanban-col-header">
+            <span class="kanban-col-title">Todo</span>
+            <span class="kanban-col-badge" id="cnt-todo">0</span>
+          </div>
+          <div class="kanban-cards" id="col-todo"></div>
+        </div>
+        <div class="kanban-col col-inprog">
+          <div class="kanban-col-header">
+            <span class="kanban-col-title">In Progress</span>
+            <span class="kanban-col-badge" id="cnt-inprogress">0</span>
+          </div>
+          <div class="kanban-cards" id="col-inprogress"></div>
+        </div>
+        <div class="kanban-col col-review">
+          <div class="kanban-col-header">
+            <span class="kanban-col-title">Review</span>
+            <span class="kanban-col-badge" id="cnt-review">0</span>
+          </div>
+          <div class="kanban-cards" id="col-review"></div>
+        </div>
+        <div class="kanban-col col-done">
+          <div class="kanban-col-header">
+            <span class="kanban-col-title">Done</span>
+            <span class="kanban-col-badge" id="cnt-done">0</span>
+          </div>
+          <div class="kanban-cards" id="col-done"></div>
+        </div>
+      </div>
+    </div><!-- /view-issues -->
+
+  </div><!-- /content -->
+</main>
+
+<!-- ==================== ISSUE ADD/EDIT MODAL ==================== -->
+<div class="modal-overlay" id="issue-modal-overlay">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title-text">
+    <div class="modal-title">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#4361ee" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      <span id="modal-title-text">ISSUE を追加</span>
+      <button class="modal-close" onclick="closeIssueModal()" aria-label="閉じる">&#x2715;</button>
+    </div>
+
+    <!-- 注文票 7要素フォーム -->
+    <div class="form-row">
+      <label class="form-label" for="f-purpose">目的は<span>*</span><br><small style="font-weight:400;color:#6c7baa;">このISSUEが解決するゴールを1文で</small></label>
+      <input class="form-input" id="f-purpose" type="text" placeholder="例: 本番パイプラインの学習精度低下を根本解決する">
+    </div>
+    <div class="form-row">
+      <label class="form-label" for="f-who">誰が<span>*</span><br><small style="font-weight:400;color:#6c7baa;">役職・担当・業務名・頻度</small></label>
+      <input class="form-input" id="f-who" type="text" placeholder="例: MLエンジニア(田中) / 日次バッチ処理で毎朝8時に発生">
+    </div>
+    <div class="form-row">
+      <label class="form-label" for="f-pain">何に困り<span>*</span><br><small style="font-weight:400;color:#6c7baa;">数値・頻度・影響範囲で具体的に</small></label>
+      <textarea class="form-textarea" id="f-pain" placeholder="例: GPU Node-3 の使用率が85%を超え、学習ジョブが週3回タイムアウトし精度が2.1%低下している"></textarea>
+    </div>
+    <div class="form-row">
+      <label class="form-label" for="f-evidence">根拠はこれで<span>*</span><br><small style="font-weight:400;color:#6c7baa;">ログ・数値・エラーコード・計測値など証拠</small></label>
+      <textarea class="form-textarea" id="f-evidence" placeholder="例: monitoring.log 2026-05-06 08:12 GPU:87% / 過去30日で13回タイムアウト確認"></textarea>
+    </div>
+    <div class="form-row">
+      <label class="form-label" for="f-deadline">いつまでで<span>*</span><br><small style="font-weight:400;color:#6c7baa;">YYYY-MM-DD 形式 または「X日以内」</small></label>
+      <input class="form-input" id="f-deadline" type="text" placeholder="例: 2026-05-31">
+    </div>
+    <div class="form-row">
+      <label class="form-label" for="f-ideal">理想はこうだから<span>*</span><br><small style="font-weight:400;color:#6c7baa;">To-Be状態を数値目標付きで</small></label>
+      <textarea class="form-textarea" id="f-ideal" placeholder="例: GPU使用率を70%以下に抑え、タイムアウト0件・精度98%以上を維持する"></textarea>
+    </div>
+    <div class="form-row">
+      <label class="form-label" for="f-solution">
+        解（根源的で、具体的&and;明確&and;要素的）<span>*</span>
+        <br><small style="font-weight:400;color:#6c7baa;">根本原因を除去する最小介入点＋具体的実装要素</small>
+      </label>
+      <textarea class="form-textarea" id="f-solution" style="min-height:90px;" placeholder="例: [1]Node-3 GPUメモリ割当を16GB→24GBに変更 [2]バッチサイズをdynamic_batchに変更 [3]監視アラート閾値を75%に引き下げ"></textarea>
+    </div>
+
+    <div style="display:flex;gap:12px;">
+      <div class="form-row" style="flex:1;margin-bottom:0;">
+        <label class="form-label" for="f-status">ステータス</label>
+        <select class="form-select" id="f-status">
+          <option value="backlog">Backlog</option>
+          <option value="todo">Todo</option>
+          <option value="inprogress">In Progress</option>
+          <option value="review">Review</option>
+          <option value="done">Done</option>
+        </select>
+      </div>
+      <div class="form-row" style="flex:1;margin-bottom:0;">
+        <label class="form-label" for="f-priority">優先度</label>
+        <select class="form-select" id="f-priority">
+          <option value="p1">P1 - 緊急</option>
+          <option value="p2">P2 - 高</option>
+          <option value="p3">P3 - 通常</option>
+        </select>
+      </div>
+      <div class="form-row" style="flex:1;margin-bottom:0;">
+        <label class="form-label" for="f-assignee">担当者</label>
+        <input class="form-input" id="f-assignee" type="text" placeholder="氏名">
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="closeIssueModal()">キャンセル</button>
+      <button class="btn-primary" onclick="saveIssue()">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== ISSUE DETAIL MODAL ==================== -->
+<div class="modal-overlay" id="issue-detail-overlay">
+  <div class="modal" role="dialog" aria-modal="true">
+    <div class="modal-title">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#74c0fc" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      <span id="detail-issue-id">ISSUE-001</span>
+      <button class="modal-close" onclick="closeDetailModal()" aria-label="閉じる">&#x2715;</button>
+    </div>
+    <div id="detail-body"></div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="closeDetailModal()">閉じる</button>
+      <button class="btn-primary" onclick="editFromDetail()">編集</button>
+    </div>
+  </div>
+</div>
+
+<script>
+var HEADER_TITLES = {
+  dashboard: 'Dashboard',
+  analytics: 'Analytics',
+  timeline: 'Timeline',
+  search: 'Search',
+  export: 'Data Management',
+  issues: 'ISSUES / Kanban'
+};
+
+var STATUS_COLS = ['backlog', 'todo', 'inprogress', 'review', 'done'];
+var STATUS_META = {
+  backlog: { label: 'Backlog', color: '#868e96' },
+  todo: { label: 'Todo', color: '#74c0fc' },
+  inprogress: { label: 'In Progress', color: '#ffd43b' },
+  review: { label: 'Review', color: '#da77f2' },
+  done: { label: 'Done', color: '#69db7c' }
+};
+var PRIORITY_META = {
+  p1: { label: 'P1 緊急', color: '#fa5252' },
+  p2: { label: 'P2 高', color: '#fd7e14' },
+  p3: { label: 'P3 通常', color: '#20c997' }
+};
+var ISSUES_KEY = 'cidls_issues';
+var editingId = null;
+
+function formatJapaneseDate(date) {
+  return date.getFullYear() + '年' + (date.getMonth() + 1) + '月' + date.getDate() + '日';
+}
+
+function setHeaderTitle(name) {
+  var titleMain = document.getElementById('header-title-main');
+  var subtitle = document.getElementById('header-subtitle');
+  if (titleMain) titleMain.innerHTML = 'CIDLS <span>' + (HEADER_TITLES[name] || name) + '</span>';
+  if (subtitle) subtitle.textContent = 'CI/DL System Overview - ' + formatJapaneseDate(new Date());
+}
+
+function showView(name, btn) {
+  document.querySelectorAll('.view-panel').forEach(function(panel) { panel.classList.remove('active'); });
+  var panel = document.getElementById('view-' + name);
+  if (panel) panel.classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(function(item) { item.classList.remove('active'); });
+  if (btn) btn.classList.add('active');
+  setHeaderTitle(name);
+}
+
+function loadIssues() {
+  try {
+    var raw = localStorage.getItem(ISSUES_KEY);
+    if (!raw) return [];
+    var data = JSON.parse(raw);
+    return Array.isArray(data) ? data : [];
+  } catch (error) {
+    return [];
+  }
+}
+
+function saveIssues(issues) {
+  try {
+    localStorage.setItem(ISSUES_KEY, JSON.stringify(issues));
+  } catch (error) {
+    alert('[ERROR] LocalStorage への保存に失敗しました: ' + error.message);
+  }
+}
+
+function genId(issues) {
+  var max = 0;
+  issues.forEach(function(issue) {
+    var number = parseInt((issue.id || '').replace(/[^0-9]/g, ''), 10);
+    if (!isNaN(number) && number > max) max = number;
+  });
+  return 'ISSUE-' + String(max + 1).padStart('3', '0');
+}
+
+String.prototype.padStart = String.prototype.padStart || function(len, fill) {
+  var value = String(this);
+  var pad = fill || ' ';
+  while (value.length < len) value = pad + value;
+  return value;
+};
+
+function escHtml(str) {
+  if (!str) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function startOfDay(date) {
+  return new Date(date.getFullYear(), date.getMonth(), date.getDate());
+}
+
+function parseDeadlineValue(value) {
+  if (!value) return null;
+  var match = String(value).trim().match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (!match) return null;
+  var parsed = new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]));
+  return isNaN(parsed.getTime()) ? null : startOfDay(parsed);
+}
+
+function getStatusCounts(issues) {
+  var counts = { backlog: 0, todo: 0, inprogress: 0, review: 0, done: 0 };
+  issues.forEach(function(issue) {
+    if (counts.hasOwnProperty(issue.status)) counts[issue.status] += 1;
+  });
+  return counts;
+}
+
+function getPriorityCounts(issues) {
+  var counts = { p1: 0, p2: 0, p3: 0 };
+  issues.forEach(function(issue) {
+    var key = issue.priority || 'p3';
+    if (counts.hasOwnProperty(key)) counts[key] += 1;
+  });
+  return counts;
+}
+
+function getOpenIssues(issues) {
+  return issues.filter(function(issue) { return issue.status !== 'done'; });
+}
+
+function sortByUpdatedDesc(issues) {
+  return issues.slice().sort(function(a, b) {
+    var aVal = String(a.updatedAt || a.createdAt || '');
+    var bVal = String(b.updatedAt || b.createdAt || '');
+    return bVal.localeCompare(aVal);
+  });
+}
+
+function sortByDeadlineAsc(issues) {
+  return issues.slice().sort(function(a, b) {
+    var aDate = parseDeadlineValue(a.deadline);
+    var bDate = parseDeadlineValue(b.deadline);
+    if (!aDate && !bDate) return 0;
+    if (!aDate) return 1;
+    if (!bDate) return -1;
+    return aDate - bDate;
+  });
+}
+
+function getOverdueIssues(issues) {
+  var today = startOfDay(new Date());
+  return sortByDeadlineAsc(getOpenIssues(issues).filter(function(issue) {
+    var deadline = parseDeadlineValue(issue.deadline);
+    return deadline && deadline < today;
+  }));
+}
+
+function getDueThisWeekIssues(issues) {
+  var today = startOfDay(new Date());
+  var nextWeek = new Date(today.getTime());
+  nextWeek.setDate(today.getDate() + 7);
+  return sortByDeadlineAsc(getOpenIssues(issues).filter(function(issue) {
+    var deadline = parseDeadlineValue(issue.deadline);
+    return deadline && deadline >= today && deadline <= nextWeek;
+  }));
+}
+
+function getAssigneeSummary(issues) {
+  var counts = {};
+  issues.forEach(function(issue) {
+    var assignee = (issue.assignee || '').trim();
+    if (!assignee) return;
+    counts[assignee] = (counts[assignee] || 0) + 1;
+  });
+  return Object.keys(counts).map(function(name) {
+    return { name: name, count: counts[name] };
+  }).sort(function(a, b) {
+    return b.count - a.count || a.name.localeCompare(b.name);
+  });
+}
+
+function createEmptyState(message) {
+  var node = document.createElement('div');
+  node.className = 'empty-state';
+  node.textContent = message;
+  return node;
+}
+
+function createDashboardItem(issue, accent, metaParts) {
+  var button = document.createElement('button');
+  button.type = 'button';
+  button.className = 'dashboard-item';
+  button.style.setProperty('--item-accent', accent || '#4361ee');
+  button.onclick = function() { openDetailModal(issue.id); };
+
+  var title = document.createElement('div');
+  title.className = 'dashboard-item-title';
+  title.textContent = issue.id + ' - ' + issue.purpose;
+  button.appendChild(title);
+
+  var meta = document.createElement('div');
+  meta.className = 'dashboard-item-meta';
+  metaParts.forEach(function(part) {
+    var span = document.createElement('span');
+    span.textContent = part;
+    meta.appendChild(span);
+  });
+  button.appendChild(meta);
+  return button;
+}
+
+function renderCollection(containerId, issues, emptyMessage, accentResolver, metaResolver, limit) {
+  var container = document.getElementById(containerId);
+  if (!container) return;
+  container.innerHTML = '';
+
+  var items = issues.slice(0, limit || issues.length);
+  if (!items.length) {
+    container.appendChild(createEmptyState(emptyMessage));
+    return;
+  }
+
+  items.forEach(function(issue) {
+    container.appendChild(createDashboardItem(issue, accentResolver(issue), metaResolver(issue)));
+  });
+}
+
+function buildKpiCard(config) {
+  return [
+    '<div class="kpi-card ' + config.tone + '">',
+      '<div class="kpi-header">',
+        '<div class="kpi-label">' + escHtml(config.label) + '</div>',
+        '<div class="kpi-icon ' + config.tone + '">' + escHtml(config.icon) + '</div>',
+      '</div>',
+      '<div class="kpi-value">' + escHtml(String(config.value)) + '</div>',
+      '<div class="kpi-change ' + (config.changeClass || 'neutral') + '">' + escHtml(config.note) + '</div>',
+    '</div>'
+  ].join('');
+}
+
+function renderProgressList(containerId, items) {
+  var container = document.getElementById(containerId);
+  if (!container) return;
+  container.innerHTML = '';
+  if (!items.length) {
+    container.appendChild(createEmptyState('表示できるデータがありません。'));
+    return;
+  }
+
+  items.forEach(function(item) {
+    var wrapper = document.createElement('div');
+    wrapper.className = 'progress-item';
+
+    var header = document.createElement('div');
+    header.className = 'progress-header';
+    header.innerHTML = '<span class="progress-name">' + escHtml(item.label) + '</span><span class="progress-val">' + escHtml(item.count + ' 件 / ' + item.percent + '%') + '</span>';
+
+    var barBg = document.createElement('div');
+    barBg.className = 'progress-bar-bg';
+    var barFill = document.createElement('div');
+    barFill.className = 'progress-bar-fill';
+    barFill.style.width = item.percent + '%';
+    barFill.style.background = item.color;
+    barBg.appendChild(barFill);
+
+    wrapper.appendChild(header);
+    wrapper.appendChild(barBg);
+    container.appendChild(wrapper);
+  });
+}
+
+function renderSummaryGrid(containerId, cards) {
+  var container = document.getElementById(containerId);
+  if (!container) return;
+  container.innerHTML = '';
+  cards.forEach(function(card) {
+    var node = document.createElement('div');
+    node.className = 'summary-card';
+    node.style.borderTopColor = card.color;
+    node.innerHTML = '<div class="summary-card-label">' + escHtml(card.label) + '</div><div class="summary-card-value">' + escHtml(String(card.value)) + '</div><div class="summary-card-note">' + escHtml(card.note) + '</div>';
+    container.appendChild(node);
+  });
+}
+
+function renderDashboard(issues) {
+  var counts = getStatusCounts(issues);
+  var overdue = getOverdueIssues(issues);
+  var dueThisWeek = getDueThisWeekIssues(issues);
+  var openCount = issues.length - counts.done;
+  var doneRate = issues.length ? Math.round((counts.done / issues.length) * 100) : 0;
+  var kpiGrid = document.getElementById('db-kpi-grid');
+
+  if (kpiGrid) {
+    kpiGrid.innerHTML = [
+      buildKpiCard({ label: '総ISSUES', value: issues.length, note: '現在保存されている課題数', tone: 'blue', icon: 'ID' }),
+      buildKpiCard({ label: '進行中', value: openCount, note: '未完了のISSUE', tone: 'orange', icon: 'RUN' }),
+      buildKpiCard({ label: '期限超過', value: overdue.length, note: '優先的に是正が必要', tone: 'red', icon: '!' }),
+      buildKpiCard({ label: '完了率', value: doneRate + '%', note: counts.done + ' 件がDone', tone: 'green', icon: '%' })
+    ].join('');
+  }
+
+  renderProgressList('db-status-bars', STATUS_COLS.map(function(status) {
+    return {
+      label: STATUS_META[status].label,
+      count: counts[status],
+      percent: issues.length ? Math.round((counts[status] / issues.length) * 100) : 0,
+      color: STATUS_META[status].color
+    };
+  }));
+
+  renderCollection('db-p1-list', sortByUpdatedDesc(issues.filter(function(issue) { return issue.priority === 'p1'; })), 'P1 緊急 ISSUE はまだ登録されていません。', function() { return PRIORITY_META.p1.color; }, function(issue) { return [STATUS_META[issue.status || 'backlog'].label, issue.deadline || '期限未設定']; }, 5);
+  renderCollection('db-deadline-list', overdue.concat(dueThisWeek.filter(function(issue) { return !overdue.some(function(row) { return row.id === issue.id; }); })), '期限超過、または今週期限のISSUEはありません。', function(issue) { return parseDeadlineValue(issue.deadline) && parseDeadlineValue(issue.deadline) < startOfDay(new Date()) ? PRIORITY_META.p1.color : PRIORITY_META.p2.color; }, function(issue) { return [issue.deadline || '期限未設定', STATUS_META[issue.status || 'backlog'].label]; }, 6);
+  renderCollection('db-recent-list', sortByUpdatedDesc(issues), '最近更新されたISSUEはありません。', function(issue) { return STATUS_META[issue.status || 'backlog'].color; }, function(issue) { return [issue.updatedAt ? issue.updatedAt.substring(0, 10) : '更新日未設定', PRIORITY_META[issue.priority || 'p3'].label]; }, 5);
+}
+
+function renderAnalytics(issues) {
+  var counts = getStatusCounts(issues);
+  var priorities = getPriorityCounts(issues);
+  var overdue = getOverdueIssues(issues);
+  var dueThisWeek = getDueThisWeekIssues(issues);
+  var assignees = getAssigneeSummary(issues);
+  var doneRate = issues.length ? Math.round((counts.done / issues.length) * 100) : 0;
+
+  renderSummaryGrid('analytics-summary-grid', [
+    { label: '完了率', value: doneRate + '%', note: counts.done + ' / ' + issues.length + ' 件が完了', color: '#20c997' },
+    { label: 'P1 緊急', value: priorities.p1, note: '即時対応が必要なISSUE数', color: '#fa5252' },
+    { label: '期限超過', value: overdue.length, note: '未完了の期限超過ISSUE', color: '#fd7e14' },
+    { label: '今週期限', value: dueThisWeek.length, note: '7日以内に締切到来', color: '#4361ee' }
+  ]);
+
+  renderProgressList('analytics-priority-list', ['p1', 'p2', 'p3'].map(function(priority) {
+    return { label: PRIORITY_META[priority].label, count: priorities[priority], percent: issues.length ? Math.round((priorities[priority] / issues.length) * 100) : 0, color: PRIORITY_META[priority].color };
+  }));
+  renderProgressList('analytics-status-list', STATUS_COLS.map(function(status) {
+    return { label: STATUS_META[status].label, count: counts[status], percent: issues.length ? Math.round((counts[status] / issues.length) * 100) : 0, color: STATUS_META[status].color };
+  }));
+
+  var assigneeContainer = document.getElementById('analytics-assignee-list');
+  if (!assigneeContainer) return;
+  assigneeContainer.innerHTML = '';
+  if (!assignees.length) {
+    assigneeContainer.appendChild(createEmptyState('担当者が設定されたISSUEはまだありません。'));
+    return;
+  }
+
+  assignees.slice(0, 8).forEach(function(entry) {
+    var node = document.createElement('div');
+    node.className = 'dashboard-item';
+    node.style.setProperty('--item-accent', '#4361ee');
+    node.innerHTML = '<div class="dashboard-item-title">' + escHtml(entry.name) + '</div><div class="dashboard-item-meta"><span>' + escHtml(entry.count + ' 件担当') + '</span></div>';
+    assigneeContainer.appendChild(node);
+  });
+}
+
+function renderTimeline(issues) {
+  renderCollection('timeline-overdue-list', getOverdueIssues(issues), '期限超過のISSUEはありません。', function() { return PRIORITY_META.p1.color; }, function(issue) { return [issue.deadline || '期限未設定', PRIORITY_META[issue.priority || 'p3'].label]; }, 8);
+  renderCollection('timeline-week-list', getDueThisWeekIssues(issues), '今週期限のISSUEはありません。', function() { return PRIORITY_META.p2.color; }, function(issue) { return [issue.deadline || '期限未設定', STATUS_META[issue.status || 'backlog'].label]; }, 8);
+  renderCollection('timeline-recent-list', sortByUpdatedDesc(issues), '最近更新されたISSUEはありません。', function(issue) { return STATUS_META[issue.status || 'backlog'].color; }, function(issue) { return [issue.updatedAt ? issue.updatedAt.substring(0, 10) : '更新日未設定', issue.assignee || '担当未設定']; }, 8);
+}
+
+function getSearchQuery() {
+  var input = document.getElementById('search-view-input');
+  return input ? input.value.trim().toLowerCase() : '';
+}
+
+function issueMatchesQuery(issue, query) {
+  if (!query) return true;
+  return [issue.id, issue.purpose, issue.who, issue.pain, issue.evidence, issue.deadline, issue.ideal, issue.solution, issue.assignee].join(' ').toLowerCase().indexOf(query) !== -1;
+}
+
+function renderSearchResults(issues) {
+  var query = getSearchQuery();
+  var results = sortByUpdatedDesc(issues.filter(function(issue) { return issueMatchesQuery(issue, query); }));
+  var meta = document.getElementById('search-result-meta');
+  if (meta) meta.textContent = query ? ('"' + query + '" に一致した ' + results.length + ' 件を表示中') : ('検索語未入力のため最新 ' + Math.min(results.length, 10) + ' 件を表示中');
+  renderCollection('search-results-list', query ? results : results.slice(0, 10), '検索条件に一致するISSUEはありません。', function(issue) { return STATUS_META[issue.status || 'backlog'].color; }, function(issue) { return [PRIORITY_META[issue.priority || 'p3'].label, issue.assignee || '担当未設定', issue.deadline || '期限未設定']; }, query ? results.length : 10);
+}
+
+function renderExportView(issues) {
+  var latest = sortByUpdatedDesc(issues)[0];
+  renderSummaryGrid('export-summary-grid', [
+    { label: '保存件数', value: issues.length, note: 'localStorage に保持中', color: '#4361ee' },
+    { label: '最終更新', value: latest ? latest.id : '-', note: latest && latest.updatedAt ? latest.updatedAt.substring(0, 10) : '更新履歴なし', color: '#7950f2' },
+    { label: '完了済み', value: getStatusCounts(issues).done, note: 'Done カラムに存在する件数', color: '#20c997' }
+  ]);
+  renderCollection('export-preview-list', sortByUpdatedDesc(issues), '保存済みISSUEはありません。', function(issue) { return STATUS_META[issue.status || 'backlog'].color; }, function(issue) { return [issue.updatedAt ? issue.updatedAt.substring(0, 10) : '更新日未設定', PRIORITY_META[issue.priority || 'p3'].label]; }, 5);
+}
+
+function renderKanban() {
+  var issues = loadIssues();
+  var counts = getStatusCounts(issues);
+
+  STATUS_COLS.forEach(function(status) {
+    var col = document.getElementById('col-' + status);
+    if (!col) return;
+    col.innerHTML = '';
+    issues.filter(function(issue) { return issue.status === status; }).forEach(function(issue) {
+      col.appendChild(buildCard(issue));
+    });
+  });
+
+  STATUS_COLS.forEach(function(status) {
+    var badge = document.getElementById('cnt-' + status);
+    if (badge) badge.textContent = counts[status];
+  });
+
+  var total = document.getElementById('issues-total-count');
+  if (total) total.textContent = issues.length;
+
+  renderDashboard(issues);
+  renderAnalytics(issues);
+  renderTimeline(issues);
+  renderSearchResults(issues);
+  renderExportView(issues);
+}
+
+function buildCard(issue) {
+  var card = document.createElement('div');
+  card.className = 'issue-card';
+  card.setAttribute('data-id', issue.id);
+
+  var idEl = document.createElement('div');
+  idEl.className = 'issue-card-id';
+  idEl.textContent = issue.id;
+  card.appendChild(idEl);
+
+  var purposeEl = document.createElement('div');
+  purposeEl.className = 'issue-card-purpose';
+  purposeEl.textContent = issue.purpose;
+  card.appendChild(purposeEl);
+
+  var fields = document.createElement('div');
+  fields.className = 'issue-fields';
+  [['誰が', issue.who], ['何に困り', issue.pain], ['根拠はこれで', issue.evidence], ['いつまでで', issue.deadline]].forEach(function(pair) {
+    if (!pair[1]) return;
+    var row = document.createElement('div');
+    row.className = 'issue-field';
+    var label = document.createElement('span');
+    label.className = 'issue-field-label';
+    label.textContent = pair[0] + ':';
+    var value = document.createElement('span');
+    value.className = 'issue-field-value';
+    value.textContent = pair[1].length > 60 ? pair[1].substring(0, 60) + '...' : pair[1];
+    row.appendChild(label);
+    row.appendChild(value);
+    fields.appendChild(row);
+  });
+  card.appendChild(fields);
+
+  if (issue.ideal) {
+    var idealRow = document.createElement('div');
+    idealRow.className = 'issue-field';
+    var idealLabel = document.createElement('span');
+    idealLabel.className = 'issue-field-label';
+    idealLabel.textContent = '理想はこうだから:';
+    var idealValue = document.createElement('span');
+    idealValue.className = 'issue-field-value';
+    idealValue.textContent = issue.ideal.length > 60 ? issue.ideal.substring(0, 60) + '...' : issue.ideal;
+    idealRow.appendChild(idealLabel);
+    idealRow.appendChild(idealValue);
+    fields.appendChild(idealRow);
+  }
+
+  if (issue.solution) {
+    var solutionBox = document.createElement('div');
+    solutionBox.className = 'issue-card-solution';
+    var solutionLabel = document.createElement('span');
+    solutionLabel.className = 'issue-field-label';
+    solutionLabel.style.display = 'block';
+    solutionLabel.textContent = '解:';
+    var solutionValue = document.createElement('span');
+    solutionValue.className = 'issue-field-value';
+    solutionValue.textContent = issue.solution.length > 80 ? issue.solution.substring(0, 80) + '...' : issue.solution;
+    solutionBox.appendChild(solutionLabel);
+    solutionBox.appendChild(solutionValue);
+    card.appendChild(solutionBox);
+  }
+
+  var footer = document.createElement('div');
+  footer.className = 'issue-card-footer';
+  var priority = document.createElement('span');
+  priority.className = 'issue-priority ' + (issue.priority || 'p3');
+  priority.textContent = PRIORITY_META[issue.priority || 'p3'].label;
+  footer.appendChild(priority);
+  if (issue.assignee) {
+    var assignee = document.createElement('span');
+    assignee.className = 'issue-assignee';
+    assignee.textContent = issue.assignee;
+    footer.appendChild(assignee);
+  }
+  card.appendChild(footer);
+
+  var actions = document.createElement('div');
+  actions.className = 'issue-card-actions';
+
+  var btnDetail = document.createElement('button');
+  btnDetail.className = 'btn-card-action';
+  btnDetail.textContent = '詳細';
+  btnDetail.onclick = function(event) { event.stopPropagation(); openDetailModal(issue.id); };
+
+  var btnEdit = document.createElement('button');
+  btnEdit.className = 'btn-card-action';
+  btnEdit.textContent = '編集';
+  btnEdit.onclick = function(event) { event.stopPropagation(); openIssueModal(issue.id); };
+
+  var btnDelete = document.createElement('button');
+  btnDelete.className = 'btn-card-action';
+  btnDelete.textContent = '削除';
+  btnDelete.style.color = '#fa5252';
+  btnDelete.onclick = function(event) {
+    event.stopPropagation();
+    if (!confirm('ISSUE "' + issue.id + '" を削除しますか？')) return;
+    saveIssues(loadIssues().filter(function(row) { return row.id !== issue.id; }));
+    renderKanban();
+  };
+
+  actions.appendChild(btnDetail);
+  actions.appendChild(btnEdit);
+  actions.appendChild(btnDelete);
+  card.appendChild(actions);
+  return card;
+}
+
+function openIssueModal(id) {
+  editingId = id || null;
+  var overlay = document.getElementById('issue-modal-overlay');
+  var title = document.getElementById('modal-title-text');
+
+  if (editingId) {
+    title.textContent = 'ISSUE を編集';
+    var issue = loadIssues().find(function(row) { return row.id === editingId; });
+    if (issue) {
+      document.getElementById('f-purpose').value = issue.purpose || '';
+      document.getElementById('f-who').value = issue.who || '';
+      document.getElementById('f-pain').value = issue.pain || '';
+      document.getElementById('f-evidence').value = issue.evidence || '';
+      document.getElementById('f-deadline').value = issue.deadline || '';
+      document.getElementById('f-ideal').value = issue.ideal || '';
+      document.getElementById('f-solution').value = issue.solution || '';
+      document.getElementById('f-status').value = issue.status || 'backlog';
+      document.getElementById('f-priority').value = issue.priority || 'p3';
+      document.getElementById('f-assignee').value = issue.assignee || '';
+    }
+  } else {
+    title.textContent = 'ISSUE を追加';
+    ['f-purpose', 'f-who', 'f-pain', 'f-evidence', 'f-deadline', 'f-ideal', 'f-solution', 'f-assignee'].forEach(function(idName) {
+      document.getElementById(idName).value = '';
+    });
+    document.getElementById('f-status').value = 'backlog';
+    document.getElementById('f-priority').value = 'p3';
+  }
+
+  overlay.classList.add('open');
+}
+
+function closeIssueModal() {
+  document.getElementById('issue-modal-overlay').classList.remove('open');
+  editingId = null;
+}
+
+function saveIssue() {
+  var required = [
+    { id: 'f-purpose', label: '目的は' },
+    { id: 'f-who', label: '誰が' },
+    { id: 'f-pain', label: '何に困り' },
+    { id: 'f-evidence', label: '根拠はこれで' },
+    { id: 'f-deadline', label: 'いつまでで' },
+    { id: 'f-ideal', label: '理想はこうだから' },
+    { id: 'f-solution', label: '解' }
+  ];
+  var missing = [];
+  required.forEach(function(row) {
+    if (!document.getElementById(row.id).value.trim()) missing.push(row.label);
+  });
+  if (missing.length > 0) {
+    alert('[入力エラー] 以下の必須項目を入力してください:\n' + missing.join(' / '));
+    return;
+  }
+
+  var issues = loadIssues();
+  var now = new Date().toISOString();
+  if (editingId) {
+    issues = issues.map(function(issue) {
+      if (issue.id !== editingId) return issue;
+      return {
+        id: issue.id,
+        purpose: document.getElementById('f-purpose').value.trim(),
+        who: document.getElementById('f-who').value.trim(),
+        pain: document.getElementById('f-pain').value.trim(),
+        evidence: document.getElementById('f-evidence').value.trim(),
+        deadline: document.getElementById('f-deadline').value.trim(),
+        ideal: document.getElementById('f-ideal').value.trim(),
+        solution: document.getElementById('f-solution').value.trim(),
+        status: document.getElementById('f-status').value,
+        priority: document.getElementById('f-priority').value,
+        assignee: document.getElementById('f-assignee').value.trim(),
+        createdAt: issue.createdAt,
+        updatedAt: now
+      };
+    });
+  } else {
+    issues.push({
+      id: genId(issues),
+      purpose: document.getElementById('f-purpose').value.trim(),
+      who: document.getElementById('f-who').value.trim(),
+      pain: document.getElementById('f-pain').value.trim(),
+      evidence: document.getElementById('f-evidence').value.trim(),
+      deadline: document.getElementById('f-deadline').value.trim(),
+      ideal: document.getElementById('f-ideal').value.trim(),
+      solution: document.getElementById('f-solution').value.trim(),
+      status: document.getElementById('f-status').value,
+      priority: document.getElementById('f-priority').value,
+      assignee: document.getElementById('f-assignee').value.trim(),
+      createdAt: now,
+      updatedAt: now
+    });
+  }
+
+  saveIssues(issues);
+  closeIssueModal();
+  renderKanban();
+}
+
+function openDetailModal(id) {
+  var issue = loadIssues().find(function(row) { return row.id === id; });
+  if (!issue) return;
+
+  document.getElementById('detail-issue-id').textContent = issue.id;
+  var body = document.getElementById('detail-body');
+  body.innerHTML = '';
+
+  [['目的は', issue.purpose], ['誰が', issue.who], ['何に困り', issue.pain], ['根拠はこれで', issue.evidence], ['いつまでで', issue.deadline], ['理想はこうだから', issue.ideal]].forEach(function(pair) {
+    var box = document.createElement('div');
+    box.className = 'detail-field';
+    box.innerHTML = '<div class="detail-field-label">' + escHtml(pair[0]) + '</div><div class="detail-field-value">' + escHtml(pair[1] || '-') + '</div>';
+    body.appendChild(box);
+  });
+
+  var solutionBox = document.createElement('div');
+  solutionBox.className = 'detail-solution';
+  solutionBox.innerHTML = '<div class="detail-field-label">解（根源的・具体的・明確・要素的）</div><div class="detail-field-value">' + escHtml(issue.solution || '-') + '</div>';
+  body.appendChild(solutionBox);
+
+  var metaBox = document.createElement('div');
+  metaBox.className = 'detail-field';
+  metaBox.style.display = 'flex';
+  metaBox.style.gap = '20px';
+  metaBox.style.flexWrap = 'wrap';
+  [['ステータス', issue.status], ['優先度', issue.priority], ['担当者', issue.assignee || '-'], ['作成日', (issue.createdAt || '').substring(0, 10)], ['更新日', (issue.updatedAt || '').substring(0, 10)]].forEach(function(pair) {
+    var item = document.createElement('div');
+    item.innerHTML = '<div class="detail-field-label">' + escHtml(pair[0]) + '</div><div class="detail-field-value" style="font-size:12px;">' + escHtml(pair[1] || '-') + '</div>';
+    metaBox.appendChild(item);
+  });
+  body.appendChild(metaBox);
+
+  body.setAttribute('data-issue-id', id);
+  document.getElementById('issue-detail-overlay').classList.add('open');
+}
+
+function closeDetailModal() {
+  document.getElementById('issue-detail-overlay').classList.remove('open');
+}
+
+function editFromDetail() {
+  var id = document.getElementById('detail-body').getAttribute('data-issue-id');
+  closeDetailModal();
+  if (id) openIssueModal(id);
+}
+
+function syncSearchInputs(sourceId, targetId) {
+  var source = document.getElementById(sourceId);
+  var target = document.getElementById(targetId);
+  if (source && target && target.value !== source.value) target.value = source.value;
+}
+
+function downloadIssues() {
+  var issues = loadIssues();
+  var payload = { exportedAt: new Date().toISOString(), recordCount: issues.length, issues: issues };
+  var blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json;charset=utf-8' });
+  var url = URL.createObjectURL(blob);
+  var link = document.createElement('a');
+  link.href = url;
+  link.download = 'cidls_issues_' + new Date().toISOString().substring(0, 10) + '.json';
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+  var lastAction = document.getElementById('export-last-action');
+  if (lastAction) lastAction.textContent = 'JSON エクスポートを実行しました。件数: ' + issues.length;
+}
+
+function normalizeImportedIssue(item, index) {
+  return {
+    id: item.id || ('ISSUE-' + String(index + 1).padStart('3', '0')),
+    purpose: String(item.purpose || '').trim(),
+    who: String(item.who || '').trim(),
+    pain: String(item.pain || '').trim(),
+    evidence: String(item.evidence || '').trim(),
+    deadline: String(item.deadline || '').trim(),
+    ideal: String(item.ideal || '').trim(),
+    solution: String(item.solution || '').trim(),
+    status: STATUS_META[item.status] ? item.status : 'backlog',
+    priority: PRIORITY_META[item.priority] ? item.priority : 'p3',
+    assignee: String(item.assignee || '').trim(),
+    createdAt: item.createdAt || new Date().toISOString(),
+    updatedAt: item.updatedAt || new Date().toISOString()
+  };
+}
+
+function handleImportIssues(event) {
+  var file = event.target.files && event.target.files[0];
+  if (!file) return;
+  var reader = new FileReader();
+  reader.onload = function(loadEvent) {
+    try {
+      var parsed = JSON.parse(loadEvent.target.result);
+      var records = Array.isArray(parsed) ? parsed : parsed.issues;
+      if (!Array.isArray(records)) throw new Error('issues 配列が見つかりません');
+      var normalized = records.map(normalizeImportedIssue).filter(function(issue) {
+        return issue.purpose || issue.who || issue.solution;
+      });
+      saveIssues(normalized);
+      renderKanban();
+      var lastAction = document.getElementById('export-last-action');
+      if (lastAction) lastAction.textContent = 'JSON インポートを完了しました。件数: ' + normalized.length;
+    } catch (error) {
+      alert('[ERROR] JSON インポートに失敗しました: ' + error.message);
+    }
+    event.target.value = '';
+  };
+  reader.readAsText(file, 'utf-8');
+}
+
+function resetIssues() {
+  if (!confirm('localStorage に保存された全ISSUEを削除しますか？')) return;
+  localStorage.removeItem(ISSUES_KEY);
+  renderKanban();
+  var lastAction = document.getElementById('export-last-action');
+  if (lastAction) lastAction.textContent = '全ISSUEを削除しました。';
+}
+
+document.addEventListener('keydown', function(event) {
+  if (event.key === 'Escape') {
+    closeIssueModal();
+    closeDetailModal();
+  }
+});
+
+setHeaderTitle('dashboard');
+renderKanban();
+
+var globalSearchInput = document.getElementById('global-search-input');
+var searchViewInput = document.getElementById('search-view-input');
+if (globalSearchInput) {
+  globalSearchInput.addEventListener('input', function() {
+    syncSearchInputs('global-search-input', 'search-view-input');
+    renderSearchResults(loadIssues());
+  });
+  globalSearchInput.addEventListener('keydown', function(event) {
+    if (event.key === 'Enter') {
+      syncSearchInputs('global-search-input', 'search-view-input');
+      showView('search', document.querySelector('[data-view=search]'));
+      renderSearchResults(loadIssues());
+    }
+  });
+}
+
+if (searchViewInput) {
+  searchViewInput.addEventListener('input', function() {
+    syncSearchInputs('search-view-input', 'global-search-input');
+    renderSearchResults(loadIssues());
+  });
+}
+
+var importInput = document.getElementById('issues-import-input');
+if (importInput) importInput.addEventListener('change', handleImportIssues);
+</script>
+</body>
+</html>

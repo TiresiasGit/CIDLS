@@ -1,0 +1,942 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CIDLS - AI開発品質を10倍に高めるパイプライン | プロンプトキット / ToB導入支援</title>
+<meta name="description" content="CIDLS: CAPDkAサイクル + AGENTS.md + devrag RAGで工数87%削減。AI開発の品質劣化ゼロ + 商用品質成果物を自律生成。プロンプトキット販売 / ToB導入支援。">
+<style>
+  :root {
+    --bg:       #070b14;
+    --surface:  #0d1420;
+    --card:     #111827;
+    --border:   #1e293b;
+    --indigo:   #6366f1;
+    --violet:   #8b5cf6;
+    --emerald:  #10b981;
+    --amber:    #f59e0b;
+    --rose:     #f43f5e;
+    --sky:      #38bdf8;
+    --ink:      #f1f5f9;
+    --muted:    #94a3b8;
+    --faint:    #1e2d40;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: "Segoe UI", "Noto Sans JP", sans-serif;
+    font-size: 16px;
+    line-height: 1.7;
+  }
+  /* ========= NAV ========= */
+  nav {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(7,11,20,.92);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--border);
+    padding: 0 5%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 56px;
+  }
+  .nav-logo {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--indigo);
+    letter-spacing: .05em;
+  }
+  .nav-links { display: flex; gap: 24px; list-style: none; }
+  .nav-links a {
+    color: var(--muted);
+    text-decoration: none;
+    font-size: .9rem;
+    transition: color .2s;
+  }
+  .nav-links a:hover { color: var(--ink); }
+  .nav-cta {
+    background: var(--indigo);
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    padding: 8px 20px;
+    font-size: .9rem;
+    cursor: pointer;
+    text-decoration: none;
+    transition: background .2s, transform .1s;
+  }
+  .nav-cta:hover { background: var(--violet); transform: translateY(-1px); }
+
+  /* ========= HERO ========= */
+  .hero {
+    padding: 100px 5% 80px;
+    text-align: center;
+    background:
+      radial-gradient(ellipse 80% 60% at 50% 0%, rgba(99,102,241,.15) 0%, transparent 70%);
+  }
+  .hero-badge {
+    display: inline-block;
+    background: rgba(99,102,241,.15);
+    border: 1px solid rgba(99,102,241,.4);
+    color: var(--indigo);
+    border-radius: 20px;
+    padding: 4px 16px;
+    font-size: .8rem;
+    letter-spacing: .1em;
+    margin-bottom: 24px;
+  }
+  .hero h1 {
+    font-size: clamp(2rem, 5vw, 3.4rem);
+    font-weight: 800;
+    line-height: 1.2;
+    max-width: 800px;
+    margin: 0 auto 20px;
+  }
+  .hero h1 span { color: var(--indigo); }
+  .hero-sub {
+    font-size: 1.15rem;
+    color: var(--muted);
+    max-width: 640px;
+    margin: 0 auto 40px;
+  }
+  .hero-cta-wrap { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; }
+  .btn-primary {
+    background: var(--indigo);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 14px 32px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: none;
+    transition: background .2s, transform .1s, box-shadow .2s;
+    box-shadow: 0 4px 20px rgba(99,102,241,.3);
+  }
+  .btn-primary:hover {
+    background: var(--violet);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 28px rgba(139,92,246,.35);
+  }
+  .btn-outline {
+    background: transparent;
+    color: var(--ink);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px 32px;
+    font-size: 1rem;
+    cursor: pointer;
+    text-decoration: none;
+    transition: border-color .2s, transform .1s;
+  }
+  .btn-outline:hover { border-color: var(--indigo); transform: translateY(-2px); }
+
+  /* ========= KPI STRIP ========= */
+  .kpi-strip {
+    display: flex;
+    justify-content: center;
+    gap: 0;
+    flex-wrap: wrap;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    padding: 32px 5%;
+    background: var(--surface);
+  }
+  .kpi-item {
+    flex: 1;
+    min-width: 160px;
+    text-align: center;
+    padding: 16px 24px;
+    border-right: 1px solid var(--border);
+  }
+  .kpi-item:last-child { border-right: none; }
+  .kpi-num {
+    font-size: 2.6rem;
+    font-weight: 800;
+    color: var(--indigo);
+    line-height: 1;
+  }
+  .kpi-num.em { color: var(--emerald); }
+  .kpi-num.am { color: var(--amber); }
+  .kpi-num.vi { color: var(--violet); }
+  .kpi-lbl { font-size: .8rem; color: var(--muted); margin-top: 6px; }
+
+  /* ========= SECTION COMMON ========= */
+  section { padding: 80px 5%; }
+  .sec-inner { max-width: 1100px; margin: 0 auto; }
+  .sec-label {
+    font-size: .75rem;
+    font-weight: 700;
+    letter-spacing: .15em;
+    color: var(--indigo);
+    text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+  .sec-title {
+    font-size: clamp(1.6rem, 3.5vw, 2.2rem);
+    font-weight: 800;
+    margin-bottom: 16px;
+  }
+  .sec-body { color: var(--muted); font-size: 1.05rem; max-width: 720px; }
+
+  /* ========= PROBLEM ========= */
+  .problem { background: var(--surface); }
+  .prob-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 20px;
+    margin-top: 48px;
+  }
+  .prob-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+  }
+  .prob-tag {
+    display: inline-block;
+    background: rgba(244,63,94,.15);
+    border: 1px solid rgba(244,63,94,.3);
+    color: var(--rose);
+    font-size: .75rem;
+    border-radius: 4px;
+    padding: 2px 10px;
+    margin-bottom: 12px;
+  }
+  .prob-card h3 { font-size: 1rem; margin-bottom: 8px; }
+  .prob-card p { color: var(--muted); font-size: .9rem; }
+
+  /* ========= SOLUTION / PIPELINE ========= */
+  .pipeline-wrap { margin-top: 56px; }
+  .pipeline-step {
+    display: flex;
+    gap: 24px;
+    align-items: flex-start;
+    margin-bottom: 32px;
+    padding: 24px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    transition: border-color .2s;
+  }
+  .pipeline-step:hover { border-color: var(--indigo); }
+  .step-num {
+    flex-shrink: 0;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: rgba(99,102,241,.15);
+    border: 2px solid var(--indigo);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: var(--indigo);
+  }
+  .step-body h3 { font-size: 1.05rem; margin-bottom: 6px; }
+  .step-body p { color: var(--muted); font-size: .9rem; }
+  .step-body .step-tag {
+    display: inline-block;
+    background: rgba(99,102,241,.1);
+    color: var(--sky);
+    font-size: .75rem;
+    border-radius: 4px;
+    padding: 2px 8px;
+    margin-top: 8px;
+    border: 1px solid rgba(56,189,248,.2);
+  }
+
+  /* ========= DELIVERABLES ========= */
+  .del-section { background: var(--surface); }
+  .del-wrap {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 28px;
+    margin-top: 48px;
+  }
+  .del-group {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+  }
+  .del-group h3 {
+    font-size: 1rem;
+    margin-bottom: 14px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border);
+    color: var(--emerald);
+  }
+  .del-list { list-style: none; }
+  .del-list li {
+    font-size: .88rem;
+    color: var(--muted);
+    padding: 5px 0;
+    border-bottom: 1px solid rgba(255,255,255,.04);
+  }
+  .del-list li::before {
+    content: "> ";
+    color: var(--indigo);
+  }
+
+  /* ========= PRICING ========= */
+  .pricing-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 24px;
+    margin-top: 48px;
+  }
+  .price-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 32px;
+    position: relative;
+    transition: border-color .2s, transform .2s;
+  }
+  .price-card:hover { border-color: var(--indigo); transform: translateY(-4px); }
+  .price-card.featured {
+    border-color: var(--indigo);
+    box-shadow: 0 0 0 1px var(--indigo), 0 8px 40px rgba(99,102,241,.18);
+  }
+  .feat-tag {
+    position: absolute;
+    top: -12px;
+    left: 24px;
+    background: var(--indigo);
+    color: #fff;
+    font-size: .75rem;
+    font-weight: 700;
+    border-radius: 4px;
+    padding: 2px 10px;
+    letter-spacing: .08em;
+  }
+  .price-icon {
+    font-size: 1.8rem;
+    margin-bottom: 16px;
+    color: var(--indigo);
+    font-weight: 800;
+  }
+  .price-card h3 { font-size: 1.2rem; font-weight: 700; margin-bottom: 8px; }
+  .price-card .price-body { color: var(--muted); font-size: .9rem; margin-bottom: 20px; line-height: 1.6; }
+  .price-feats { list-style: none; margin-bottom: 28px; }
+  .price-feats li {
+    font-size: .88rem;
+    padding: 6px 0;
+    border-bottom: 1px solid rgba(255,255,255,.05);
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  .price-feats li::before { content: "[OK]"; color: var(--emerald); font-size: .75rem; flex-shrink: 0; }
+
+  /* ========= TRUST / FACTS ========= */
+  .facts { background: var(--surface); }
+  .facts-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 20px;
+    margin-top: 48px;
+  }
+  .fact-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px;
+    text-align: center;
+  }
+  .fact-num {
+    font-size: 2rem;
+    font-weight: 800;
+    color: var(--emerald);
+  }
+  .fact-lbl { font-size: .8rem; color: var(--muted); margin-top: 4px; }
+
+  /* ========= FAQ ========= */
+  .faq-list { margin-top: 48px; max-width: 800px; }
+  details {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    margin-bottom: 12px;
+    background: var(--card);
+    overflow: hidden;
+  }
+  summary {
+    padding: 18px 24px;
+    font-weight: 600;
+    cursor: pointer;
+    list-style: none;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  summary::-webkit-details-marker { display: none; }
+  summary::after {
+    content: "+";
+    color: var(--indigo);
+    font-size: 1.2rem;
+    flex-shrink: 0;
+  }
+  details[open] summary::after { content: "-"; }
+  .faq-body { padding: 0 24px 18px; color: var(--muted); font-size: .93rem; line-height: 1.7; }
+
+  /* ========= CONTACT / CTA ========= */
+  .contact-section {
+    background:
+      radial-gradient(ellipse 60% 80% at 50% 50%, rgba(99,102,241,.12) 0%, transparent 70%),
+      var(--surface);
+    text-align: center;
+    padding: 100px 5%;
+  }
+  .contact-section .sec-title { margin: 0 auto 16px; max-width: 700px; }
+  .contact-section .sec-body { margin: 0 auto 40px; max-width: 560px; }
+  .contact-form {
+    max-width: 520px;
+    margin: 0 auto;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 32px;
+    text-align: left;
+  }
+  .form-group { margin-bottom: 18px; }
+  .form-group label {
+    display: block;
+    font-size: .85rem;
+    color: var(--muted);
+    margin-bottom: 6px;
+  }
+  .form-group input,
+  .form-group select,
+  .form-group textarea {
+    width: 100%;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--ink);
+    padding: 10px 14px;
+    font-size: .95rem;
+    outline: none;
+    transition: border-color .2s;
+    font-family: inherit;
+  }
+  .form-group input:focus,
+  .form-group select:focus,
+  .form-group textarea:focus { border-color: var(--indigo); }
+  .form-group textarea { resize: vertical; min-height: 100px; }
+  .form-notice {
+    font-size: .78rem;
+    color: var(--muted);
+    margin-top: 16px;
+    line-height: 1.6;
+  }
+
+  /* ========= FOOTER ========= */
+  footer {
+    background: var(--bg);
+    border-top: 1px solid var(--border);
+    padding: 40px 5%;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 24px;
+  }
+  .footer-left { max-width: 360px; }
+  .footer-logo { font-size: 1rem; font-weight: 700; color: var(--indigo); margin-bottom: 10px; }
+  .footer-copy { font-size: .8rem; color: var(--muted); line-height: 1.6; }
+  .footer-links { list-style: none; }
+  .footer-links a { color: var(--muted); text-decoration: none; font-size: .85rem; }
+  .footer-links a:hover { color: var(--ink); }
+  .footer-distsec {
+    max-width: 380px;
+    background: rgba(16,185,129,.06);
+    border: 1px solid rgba(16,185,129,.2);
+    border-radius: 8px;
+    padding: 12px 16px;
+    font-size: .78rem;
+    color: var(--muted);
+    line-height: 1.6;
+  }
+  .footer-distsec strong { color: var(--emerald); }
+
+  /* ========= RESPONSIVE ========= */
+  @media (max-width: 720px) {
+    .nav-links { display: none; }
+    .kpi-item { min-width: 50%; border-right: none; border-bottom: 1px solid var(--border); }
+    .kpi-item:last-child { border-bottom: none; }
+    .pipeline-step { flex-direction: column; }
+  }
+
+  /* ========= WCAG FOCUS ========= */
+  a:focus-visible, button:focus-visible {
+    outline: 2px solid var(--indigo);
+    outline-offset: 2px;
+  }
+</style>
+</head>
+<body>
+
+<!-- === NAV === -->
+<nav aria-label="メインナビゲーション">
+  <span class="nav-logo">CIDLS</span>
+  <ul class="nav-links">
+    <li><a href="#problem">課題</a></li>
+    <li><a href="#solution">ソリューション</a></li>
+    <li><a href="#deliverables">成果物</a></li>
+    <li><a href="#pricing">提供方式</a></li>
+    <li><a href="#faq">FAQ</a></li>
+  </ul>
+  <a href="#contact" class="nav-cta">お問い合わせ</a>
+</nav>
+
+<!-- === HERO === -->
+<header class="hero" id="top">
+  <div class="hero-badge">DISTSEC.3 方法1/2 準拠 -- Secret完全非公開</div>
+  <h1>
+    言葉で祈るだけで<br>
+    <span>商用品質成果物</span>を生成する<br>
+    AI開発パイプライン
+  </h1>
+  <p class="hero-sub">
+    CIDLS -- CAPDkAサイクル + AGENTS.md + devrag RAG を束ねた
+    開発ワークフロー体系。AI生成コードの品質劣化をゼロ化し、
+    工数87%削減と高品質を同時に実現します。
+  </p>
+  <div class="hero-cta-wrap">
+    <a href="#contact" class="btn-primary">プロンプトキットを入手する</a>
+    <a href="#solution" class="btn-outline">パイプラインを見る</a>
+  </div>
+</header>
+
+<!-- === KPI STRIP === -->
+<div class="kpi-strip" aria-label="実績KPI">
+  <div class="kpi-item">
+    <div class="kpi-num">87<small style="font-size:1.2rem;">%</small></div>
+    <div class="kpi-lbl">工数削減 (AV.1 定量根拠)</div>
+  </div>
+  <div class="kpi-item">
+    <div class="kpi-num em">16</div>
+    <div class="kpi-lbl">SW納品 xlsx 自動生成</div>
+  </div>
+  <div class="kpi-item">
+    <div class="kpi-num am">38</div>
+    <div class="kpi-lbl">devrag インデックス文書数</div>
+  </div>
+  <div class="kpi-item">
+    <div class="kpi-num vi">11</div>
+    <div class="kpi-lbl">CAPDkA サイクル完了回</div>
+  </div>
+  <div class="kpi-item">
+    <div class="kpi-num" style="color:var(--sky)">0</div>
+    <div class="kpi-lbl">フォールバック処理 (G1準拠)</div>
+  </div>
+</div>
+
+<!-- === PROBLEM === -->
+<section id="problem" class="problem" aria-labelledby="prob-title">
+  <div class="sec-inner">
+    <div class="sec-label">課題</div>
+    <h2 class="sec-title" id="prob-title">バイブコーディングの罠 -- AI時代の3大負債</h2>
+    <p class="sec-body">
+      AIがコードを書ける時代、「雰囲気で生成させる」だけでは
+      前例なき規模の技術的負債が蓄積します (AV.0)。
+    </p>
+    <div class="prob-grid">
+      <div class="prob-card">
+        <span class="prob-tag">AV.8 技術負債</span>
+        <h3>設計妥協によるコスト増大</h3>
+        <p>AIコードのバグ密度は人間の1.7倍、セキュリティ脆弱性は2.74倍
+           (CodeRabbit/Veracode 2024調査)。ノーチェックコミットで本番障害が発生します。</p>
+      </div>
+      <div class="prob-card">
+        <span class="prob-tag">AV.8 理解負債</span>
+        <h3>誰も理解できないブラックボックス化</h3>
+        <p>AI生成コードを丸ごとコミットし続けると、修正時に誰も
+           コードを理解できない「ポチョムキン状態」(AV.7) に陥ります。</p>
+      </div>
+      <div class="prob-card">
+        <span class="prob-tag">AV.8 認知負債</span>
+        <h3>AI全依存による開発力の空洞化</h3>
+        <p>設計・判断・レビューをAIに委ねすぎると、担当者退職時に
+           システム全体がブラックボックス化します (DS.3 組織知断絶)。</p>
+      </div>
+      <div class="prob-card">
+        <span class="prob-tag">AV.9 4大罠</span>
+        <h3>ノーチェックコミット / プロンプト依存症</h3>
+        <p>レビューなしコミット、ブラックボックス建築、プロンプト依存、
+           セキュリティ無関心 -- これらが同時に進行し、チームを崩壊させます。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- === SOLUTION === -->
+<section id="solution" aria-labelledby="sol-title">
+  <div class="sec-inner">
+    <div class="sec-label">ソリューション</div>
+    <h2 class="sec-title" id="sol-title">CIDLSパイプライン -- 6ステップで商用品質へ</h2>
+    <p class="sec-body">
+      コンセプト入力から成果物一式・自律進化保守まで、
+      AGENTS.md + CAPDkAサイクルが品質を構造的に保証します。
+    </p>
+    <div class="pipeline-wrap" role="list" aria-label="パイプライン6ステップ">
+      <div class="pipeline-step" role="listitem">
+        <div class="step-num">1</div>
+        <div class="step-body">
+          <h3>コンセプト入力</h3>
+          <p>話し言葉 / 画像 / 注文票フォーマット -- どんな形式でも受け付けます。
+             AGENTS.md [SUPRA.2] が自動的に7要素 (誰が/何に困り/根拠/理想/解) へ変換します。</p>
+          <span class="step-tag">SUPRA.2 注文票プロトコル</span>
+        </div>
+      </div>
+      <div class="pipeline-step" role="listitem">
+        <div class="step-num">2</div>
+        <div class="step-body">
+          <h3>ChatGPT / Copilot でパイプラインコンセプト生成</h3>
+          <p>入力をもとにデータフロー・画面・成果物・自己進化ループを含む
+             パイプラインコンセプトイメージを自動生成。[PH]4x6課題階層に自動マッピングします。</p>
+          <span class="step-tag">CAPDkA C(Check) / A(ActionPlan) フェーズ</span>
+        </div>
+      </div>
+      <div class="pipeline-step" role="listitem">
+        <div class="step-num">3</div>
+        <div class="step-body">
+          <h3>v0 / Copilot でアプリ + ドキュメント一式生成</h3>
+          <p>TDD (Red-Green-Refactor) で実装。grep水平展開同期で7箇所完全同期。
+             devrag RAGが40倍少ないトークンでAGENTS.mdルールを参照し品質を自動保証します。</p>
+          <span class="step-tag">CAPDkA D(Do) フェーズ -- TDD / [DIFF] 差分管理</span>
+        </div>
+      </div>
+      <div class="pipeline-step" role="listitem">
+        <div class="step-num">4</div>
+        <div class="step-body">
+          <h3>SaaS ホスティング または exe 出力</h3>
+          <p>Secret完全非公開のローカルexe (DISTSEC.3 方法3) から、
+             認証・課金・監査ログ完備のWeb SaaS (方法5) まで段階的に対応します。
+             初期販売は方法1/2 (プロンプトキット / ToB導入支援) を優先します。</p>
+          <span class="step-tag">DISTSEC.3 安全順序 -- 初期は方法1/2推奨</span>
+        </div>
+      </div>
+      <div class="pipeline-step" role="listitem">
+        <div class="step-num">5</div>
+        <div class="step-body">
+          <h3>成果物 -- 納品ドキュメント一式</h3>
+          <p>SW納品xlsx 13種 + 成果物HTML 12種 + devrag知識ベースを自動生成。
+             [D1.3] 日本語命名規約 / JIS X 25010品質特性準拠。</p>
+          <span class="step-tag">[CIDLS.2] Step5 成果物フェーズ</span>
+        </div>
+      </div>
+      <div class="pipeline-step" role="listitem">
+        <div class="step-num">6</div>
+        <div class="step-body">
+          <h3>自律進化保守ループ (日次 11:00 自動実行)</h3>
+          <p>日次11:00にTask SchedulerがCopilotへ包括的アセスメントプロンプトを投入。
+             解析→比較→改善→実行→学習を自動循環させ、複利的に品質と知識を蓄積します。</p>
+          <span class="step-tag">CAPDkA kA(Knowledge) -- 永久循環 / [EVOLVE] 反証複利</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- === DELIVERABLES === -->
+<section id="deliverables" class="del-section" aria-labelledby="del-title">
+  <div class="sec-inner">
+    <div class="sec-label">成果物</div>
+    <h2 class="sec-title" id="del-title">自動生成される成果物一覧</h2>
+    <p class="sec-body">
+      AGENTS.md [D1.1] 11点最小セットを自動生成。
+      SW開発の標準プロセス (共通フレーム2007 / JIS X 0160) に準拠します。
+    </p>
+    <div class="del-wrap">
+      <div class="del-group">
+        <h3>SW納品ドキュメント (.xlsx) 13種</h3>
+        <ul class="del-list">
+          <li>要求定義書</li>
+          <li>要求仕様書</li>
+          <li>システム要件定義書</li>
+          <li>基本設計書</li>
+          <li>詳細設計書</li>
+          <li>DB設計書</li>
+          <li>外部設計書 (IF設計書)</li>
+          <li>結合テスト仕様書</li>
+          <li>運用設計書</li>
+          <li>運用手順書</li>
+          <li>移行計画書</li>
+          <li>保守運用計画書</li>
+          <li>リリースノート</li>
+        </ul>
+      </div>
+      <div class="del-group">
+        <h3>可視化 / 管理ドキュメント (HTML) 12種</h3>
+        <ul class="del-list">
+          <li>project_kanban.html (統合ハブ)</li>
+          <li>graph_project_mindmap.html</li>
+          <li>CIDLSパイプラインマインドマップ.html</li>
+          <li>cidls_platform_overview.html</li>
+          <li>コンセプトスライド.html</li>
+          <li>STORY.html (ステークホルダーストーリー)</li>
+          <li>システム要件定義書.html</li>
+          <li>要求仕様書.html</li>
+          <li>要求定義書.html</li>
+          <li>基本設計書.html</li>
+          <li>運用手順書.html</li>
+          <li>index.html (クイックアクセス)</li>
+        </ul>
+      </div>
+      <div class="del-group">
+        <h3>自律化インフラ</h3>
+        <ul class="del-list">
+          <li>AGENTS.md (SoT -- 全ルール定義)</li>
+          <li>devrag 知識ベース (38文書インデックス)</li>
+          <li>.github/copilot-instructions.md</li>
+          <li>.github/agents/*.agent.md (4エージェント)</li>
+          <li>.github/prompts/*.prompt.md (8コマンド)</li>
+          <li>.github/skills/*.md (6スキル)</li>
+          <li>scripts/*.py (6生成スクリプト)</li>
+          <li>Task Scheduler 日次11:00 自動実行</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- === PRICING === -->
+<section id="pricing" aria-labelledby="price-title">
+  <div class="sec-inner">
+    <div class="sec-label">提供方式</div>
+    <h2 class="sec-title" id="price-title">
+      DISTSEC.3 方法1 / 方法2 を優先提供
+    </h2>
+    <p class="sec-body">
+      初期販売はSecretリスクが最低の方式から開始します。
+      Secret完全非公開 / ユーザー自身のLLM環境を使用。
+    </p>
+    <div class="pricing-grid">
+      <div class="price-card featured" aria-label="推奨: プロンプトキット">
+        <span class="feat-tag">推奨 -- 最速</span>
+        <div class="price-icon">[ P ]</div>
+        <h3>方法1: プロンプトキット</h3>
+        <p class="price-body">
+          AGENTS.md + devrag設定 + .github/カスタマイズ + テンプレート一式をパッケージ化。
+          ユーザー自身のCopilot / ChatGPT / Claude環境に投入するだけで
+          CIDLSパイプラインが即稼働します。Secret完全非公開。
+        </p>
+        <ul class="price-feats">
+          <li>AGENTS.md 完全版 (CAPDkA / MO必須出力 / 多人格会議)</li>
+          <li>devrag バイナリ + インデックス設定 (setup_devrag.ps1)</li>
+          <li>.github/copilot-instructions.md + agents + prompts + skills</li>
+          <li>generate_*.py 生成スクリプト 6本</li>
+          <li>SW納品ドキュメント xlsx テンプレート 13種</li>
+          <li>Task Scheduler 日次自動実行設定</li>
+          <li>LLM API Key は購入者自身のアカウントを使用</li>
+        </ul>
+        <a href="#contact" class="btn-primary" style="display:block;text-align:center;">
+          プロンプトキットを入手する
+        </a>
+      </div>
+      <div class="price-card" aria-label="ToB導入支援">
+        <div class="price-icon">[ B ]</div>
+        <h3>方法2: ToB導入支援</h3>
+        <p class="price-body">
+          貴社の開発チームへCIDLSパイプラインを導入支援します。
+          AGENTS.md社内標準化 / 個別テンプレート調整 / 導入研修を提供。
+          既存ツール(Jira / Confluence / Azure DevOps)との連携も対応します。
+        </p>
+        <ul class="price-feats">
+          <li>AGENTS.md 社内標準化ドキュメント作成</li>
+          <li>チーム向けCAPDkAサイクル導入研修 (3〜5時間)</li>
+          <li>個別業務ドメインへのテンプレート調整</li>
+          <li>devrag + .github カスタマイズ適用支援</li>
+          <li>導入後3ヶ月フォローアップ (月1回)</li>
+          <li>社内ナレッジベース (kanban_project.html) 初期構築</li>
+        </ul>
+        <a href="#contact" class="btn-outline" style="display:block;text-align:center;">
+          導入支援を相談する
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- === TRUST / FACTS === -->
+<section id="facts" class="facts" aria-labelledby="facts-title">
+  <div class="sec-inner">
+    <div class="sec-label">実績数値</div>
+    <h2 class="sec-title" id="facts-title">事実ベースで裏付けられた実績</h2>
+    <p class="sec-body">
+      [VF.1] 証拠優先因果検証 -- 数値根拠のない主張は禁止です (COMM.4)。
+    </p>
+    <div class="facts-grid">
+      <div class="fact-card">
+        <div class="fact-num">87%</div>
+        <div class="fact-lbl">工数削減 (AV.1 トランスコスモス<br>VibeOpsメソッド 15.5人日 -> 1.5人日)</div>
+      </div>
+      <div class="fact-card">
+        <div class="fact-num">0.91+</div>
+        <div class="fact-lbl">devrag セマンティック検索<br>similarity スコア (安定稼働)</div>
+      </div>
+      <div class="fact-card">
+        <div class="fact-num">16種</div>
+        <div class="fact-lbl">SW納品xlsx自動生成<br>成功:16 / 失敗:0 (ExitCode=0)</div>
+      </div>
+      <div class="fact-card">
+        <div class="fact-num">11回</div>
+        <div class="fact-lbl">CAPDkAサイクル完了回数<br>(2026-05-13現在)</div>
+      </div>
+      <div class="fact-card">
+        <div class="fact-num">40x</div>
+        <div class="fact-lbl">devrag RAGによるトークン削減<br>ファイル全読み込み比</div>
+      </div>
+      <div class="fact-card">
+        <div class="fact-num">0件</div>
+        <div class="fact-lbl">フォールバック処理 / ダミーデータ<br>G1禁止事項遵守</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- === FAQ === -->
+<section id="faq" aria-labelledby="faq-title">
+  <div class="sec-inner">
+    <div class="sec-label">よくある質問</div>
+    <h2 class="sec-title" id="faq-title">FAQ</h2>
+    <div class="faq-list">
+      <details>
+        <summary>どのAIサービスに対応していますか?</summary>
+        <div class="faq-body">
+          GitHub Copilot (Visual Studio Code) を主要ターゲットとして設計しています。
+          AGENTS.md / .github/copilot-instructions.md は Copilot に自動読み込みされます。
+          ChatGPT / Claude / Gemini CLI にも対応しています。
+          LLM API Key はお客様自身のアカウントをご利用いただきます
+          (DISTSEC.5: 運営者 API Key を配布物に含めません)。
+        </div>
+      </details>
+      <details>
+        <summary>Windows以外のOSでも動作しますか?</summary>
+        <div class="faq-body">
+          現在のプロンプトキットはWindows 10/11向けに最適化されています (T1.1)。
+          WSL禁止 / PowerShell推奨の設計です。
+          macOS / Linux への対応は方法2 ToB導入支援の個別調整で対応可能です。
+        </div>
+      </details>
+      <details>
+        <summary>Secret やAPIキーは配布物に含まれますか?</summary>
+        <div class="faq-body">
+          含まれません。DISTSEC.2 絶対禁止事項に従い、
+          配布ZIPに.env / 秘密鍵 / API Key / Webhook Secret は一切含まれません。
+          LLM API KeyはSECRET品質ゲート (DISTSEC.6) で自動検査済みです。
+        </div>
+      </details>
+      <details>
+        <summary>CAPDkAサイクルとは何ですか?</summary>
+        <div class="faq-body">
+          PDCAではなくC(Check現状把握) -> A(ActionPlan計画) -> P(Plan) -> D(Do実装) ->
+          kA(Knowledge蓄積) の順で実行する永久循環型開発サイクルです (P2.1)。
+          kA完了後は即座にCへ回帰し、品質・知識・精度が螺旋的に向上します。
+          日次11:00の自動実行がこのサイクルを自律的に駆動します。
+        </div>
+      </details>
+      <details>
+        <summary>テストカバレッジの目標はありますか?</summary>
+        <div class="faq-body">
+          ユニットテストカバレッジ >= 90% が目標です (Q1.2)。
+          現在のCIDLS自体はテストカバレッジ 0% が残課題 (F16) として管理されており、
+          pytest導入を次サイクルの即時アクションとして計画中です (DA-021)。
+          「完璧な状態でないものを完璧と主張しない」AGENTS.md Q1.3 に従い正直に開示しています。
+        </div>
+      </details>
+      <details>
+        <summary>SaaS化や共有リンク機能は提供されますか?</summary>
+        <div class="faq-body">
+          現在の提供方式は DISTSEC.3 方法1 (プロンプトキット) および
+          方法2 (ToB導入支援) です。Web公開SaaS (方法5) は
+          DISTSEC.3 Web SaaS禁止条件 (認証/課金/監査ログ/OWASP等) を
+          全件クリアするまで提供しません。これはセキュリティ上の判断です。
+        </div>
+      </details>
+    </div>
+  </div>
+</section>
+
+<!-- === CONTACT === -->
+<section id="contact" class="contact-section" aria-labelledby="contact-title">
+  <div class="sec-inner">
+    <div class="sec-label">お問い合わせ</div>
+    <h2 class="sec-title" id="contact-title">
+      CIDLSパイプラインの導入を検討する
+    </h2>
+    <p class="sec-body">
+      プロンプトキット購入 / ToB導入支援のご相談をお待ちしています。
+      送信内容は開発者のみが確認します。Secret / API Key の送付は不要です。
+    </p>
+    <div class="contact-form" role="form" aria-label="お問い合わせフォーム">
+      <p style="color:var(--amber);font-size:.85rem;margin-bottom:20px;padding:10px;background:rgba(245,158,11,.08);border-radius:6px;border:1px solid rgba(245,158,11,.2);">
+        [NOTICE] 現在このフォームはデモ表示です。実際のお問い合わせは
+        project_kanban.html のサポート窓口リンクをご利用ください。
+      </p>
+      <div class="form-group">
+        <label for="contact-name">お名前 *</label>
+        <input type="text" id="contact-name" name="name" placeholder="山田 太郎" required autocomplete="name">
+      </div>
+      <div class="form-group">
+        <label for="contact-email">メールアドレス *</label>
+        <input type="email" id="contact-email" name="email" placeholder="taro@example.com" required autocomplete="email">
+      </div>
+      <div class="form-group">
+        <label for="contact-type">お問い合わせ種別 *</label>
+        <select id="contact-type" name="type" required>
+          <option value="" disabled selected>選択してください</option>
+          <option value="kit">方法1: プロンプトキット購入</option>
+          <option value="tob">方法2: ToB導入支援の相談</option>
+          <option value="other">その他のお問い合わせ</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="contact-body">内容</label>
+        <textarea id="contact-body" name="body" placeholder="現在の開発体制や課題、導入したい理由などをご記入ください。"></textarea>
+      </div>
+      <button type="button" class="btn-primary" style="width:100%;" onclick="alert('現在このフォームはデモ表示です。project_kanban.html のサポート窓口よりご連絡ください。')">
+        送信する (デモ)
+      </button>
+      <p class="form-notice">
+        [DISTSEC.5 準拠] Secret / API Key / 個人情報は当フォームに入力しないでください。
+        送信内容は開発者のみが確認します。第三者への開示は行いません。
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- === FOOTER === -->
+<footer>
+  <div class="footer-left">
+    <div class="footer-logo">CIDLS -- Compound Interest Development &amp; Learning System</div>
+    <p class="footer-copy">
+      CIDLS は複利的自律進化システムです。CAPDkAサイクルが永久循環し、
+      使うほど品質と知識が複利的に向上します。<br>
+      AGENTS.md / devrag / kanban_project.html は MIT準拠で管理しています。
+    </p>
+  </div>
+  <ul class="footer-links">
+    <li><a href="index.html">ドキュメントトップ</a></li>
+    <li><a href="project_kanban.html">kanban / 統合ハブ</a></li>
+    <li><a href="cidls_platform_overview.html">パイプライン全体像</a></li>
+    <li><a href="STORY.html">ステークホルダーストーリー</a></li>
+    <li><a href="#top">ページトップへ</a></li>
+  </ul>
+  <div class="footer-distsec">
+    <strong>[DISTSEC.3 方法1/2 優先宣言]</strong><br>
+    このサイトはSecret非公開 / ユーザー自身のLLM環境使用を前提とした
+    プロンプトキット販売 (方法1) および ToB導入支援 (方法2) の情報提供サイトです。
+    Web公開 SaaS (方法5) は DISTSEC.3 禁止条件クリア後に検討します。
+  </div>
+</footer>
+
+</body>
+</html>

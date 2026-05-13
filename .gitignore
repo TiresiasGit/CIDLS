@@ -1,0 +1,43 @@
+# devrag ベクトルDB (自動生成・コミット不要)
+.devrag/
+
+# Python 仮想環境
+.venv/
+
+# キャッシュ・ログ
+__pycache__/
+*.pyc
+*.pyo
+logs/
+*.log
+
+# 秘密情報 (絶対コミット禁止)
+.env
+*.key
+*.pem
+*.p12
+config/secrets.*
+credentials.*
+
+# devrag バイナリ (各自ダウンロード)
+devrag.exe
+devrag
+
+# 出力データ (コミット不要)
+*.parquet
+vectors.db
+
+# バイナリ・外部プロジェクト (コミット不要)
+*.pdf
+*.zip
+*.onnx
+*.duckdb
+cerememory-main/
+36_1_1/
+.pytest_tmp/
+add_diagrams.py
+devrag-main.zip
+models/
+data/
+state/
+desktop.ini

@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CIDLS商用請負納品パッケージ アプリ本体設計</title>
+<style>
+:root {
+  --ink: #172326;
+  --muted: #586669;
+  --line: rgba(23, 35, 38, 0.14);
+  --paper: rgba(255, 251, 245, 0.92);
+  --accent: #c45c2d;
+  --deep: #173f4a;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  color: var(--ink);
+  font-family: "BIZ UDPGothic", "Yu Gothic UI", "Meiryo", sans-serif;
+  background:
+    radial-gradient(circle at top left, rgba(196, 92, 45, 0.16), transparent 24%),
+    linear-gradient(180deg, #f7f1e6 0%, #efe4d1 100%);
+}
+main { width: min(1180px, calc(100% - 32px)); margin: 0 auto; padding: 32px 0; }
+.hero, .card, .screen { background: var(--paper); border: 1px solid var(--line); border-radius: 24px; box-shadow: 0 18px 42px rgba(68,48,25,0.12); }
+.hero { padding: 28px; margin-bottom: 18px; }
+.tag { display: inline-block; padding: 8px 12px; border-radius: 999px; background: rgba(196,92,45,0.14); color: var(--accent); font-weight: 700; }
+.grid { display: grid; gap: 16px; }
+.grid.two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.grid.three { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.card, .screen { padding: 18px; }
+table { width: 100%; border-collapse: collapse; }
+th, td { border-bottom: 1px solid var(--line); padding: 10px; text-align: left; line-height: 1.6; }
+th { color: var(--deep); background: rgba(23,63,74,0.08); }
+.node { display: inline-block; margin: 4px; padding: 10px 12px; border-radius: 14px; background: rgba(196,92,45,0.14); }
+@media (max-width: 900px) { .grid.two, .grid.three { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body><main>
+<section class="hero">
+  <span class="tag">Codexローカル生成</span>
+  <h1>CIDLS商用請負納品パッケージ アプリ本体設計</h1>
+  <p>人のアイデアを起点に、概念画像、AGENTS標準成果物、Codexローカル実装、商用請負納品文書へ順番に変換する一気通貫フロー。</p>
+</section>
+<section class="grid three">
+  <article class="screen"><h2>ダッシュボード</h2><p>案件、タスク、レポート、品質ゲートを1画面に集約する。</p></article>
+  <article class="screen"><h2>カンバン</h2><p>Backlog / Todo / InProgress / Review / Done を追跡する。</p></article>
+  <article class="screen"><h2>成果物</h2><p>設計表、マインドマップ、画面設計、スライド、納品文書を束ねる。</p></article>
+</section>
+<section class="grid two" style="margin-top:16px"><article class="card"><span class="tag">アプリケーション本体設計</span><p>実装対象の画面、データ、処理、品質ゲートを1画面で確認する。</p></article>
+<article class="card"><span class="tag">システムDA表</span><p>データ名、説明、主要項目、関連テーブルを整理する設計表。</p></article>
+<article class="card"><span class="tag">PJグラフマインドマップ</span><p>注文票、カンバン、レポート、設計成果物の因果関係を可視化する。</p></article>
+<article class="card"><span class="tag">全画面設計図</span><p>主要画面の一覧と画面間のまとまりを静的図として残す。</p></article>
+<article class="card"><span class="tag">画面状態遷移図および画面設計書</span><p>状態遷移、画面責務、入力、出力、検証観点を対応づける。</p></article>
+<article class="card"><span class="tag">コンセプトスライド</span><p>業務価値、画面像、カンバン、レポートを説明可能なスライドにする。</p></article>
+<article class="card"><span class="tag">STORY.html</span><p>Stripe subscriptionの契約、決済、Webhook、キャンセル、入金、検収を1画面で追う業務ストーリー。</p></article>
+<article class="card"><span class="tag">商用請負納品ドキュメント一式</span><p>要求、基本設計、詳細設計、テスト、運用、受入確認を文書化する。</p></article></section>
+</main></body>
+</html>
