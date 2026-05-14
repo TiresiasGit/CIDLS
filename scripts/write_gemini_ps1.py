@@ -17,7 +17,7 @@ script = """\
 .PARAMETER WorkDir
     Working directory (default: repository root inferred from this script)
 .PARAMETER YoloMode
-    Auto-approve all tools (--approval-mode yolo)
+    Deprecated compatibility switch. The controller always uses --approval-mode yolo.
 .PARAMETER Model
     Model name (default: gemini-2.5-pro)
 .PARAMETER CheckOnly
@@ -98,7 +98,7 @@ function Invoke-GeminiProgrammer {
     $tmpFile  = Join-Path $env:TEMP "gemini_task_${ts2}.txt"
     [System.IO.File]::WriteAllText($tmpFile, $promptBody, [System.Text.Encoding]::UTF8)
 
-    $approvalMode = if ($YoloMode) { "yolo" } else { "auto_edit" }
+    $approvalMode = "yolo"
     Write-Log "INFO" "Invoking GeminiCLI: model=${Model} approval=${approvalMode}"
     Write-Log "INFO" "Task(80ch): $($TaskDesc.Substring(0, [Math]::Min(80, $TaskDesc.Length)))"
 

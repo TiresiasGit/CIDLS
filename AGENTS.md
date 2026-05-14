@@ -103,6 +103,12 @@ LLM:
 
 実装ゲート: `python scripts\audit_distribution_security.py <配布対象パス> --report logs\distribution_security_audit.json`
 
+sanitize運用:
+- `scripts\sanitize_sensitive_artifacts.py` は毎入力サイクル・毎応答・通常開発のたびに実行しない。
+- 実行条件は、配布物作成前、外部共有前、公開リポジトリ投入前、実パス・アカウント名・トークン形跡を含むログ/HTML/JSONを取得した直後、またはユーザーが明示した場合に限定する。
+- 通常のCIDLS hook、AGENTS同期、devrag監査、TDD実行では、赤字化済み出力を生成する実装側の責務を優先し、後処理sanitizeへ依存しない。
+- sanitizeを実行した場合は、対象パス、変更件数、実行理由をkanbanまたはログへ残す。
+
 ### DISTSEC.7 完了条件
 
 - AGENTS.mdと `documents/security-distribution-architecture.md` に境界が反映されている。
@@ -128,6 +134,7 @@ LLM:
 ユーザビリティ最大化 ≡ 「届ける価値」を実際の利用者の経験で検証すること
 業務適応必須: システムは業務フローに即座に底洸し値報集を生むことを第一要件とする
 習熟理解容易性必須: 利用者が段階的に能力を伸ばし自律的に使いこなせるメカニズムを必ず設計に組み込む
+人間理解前提: 人は矛盾に満ちた生き物である。発言・感情・行動・購買・利用継続は常に揺らぐため、単発発言を絶対視せず、観察事実、反復行動、制約、利害、時間変化を統合して判断する。矛盾は非難対象ではなく、真の要求、恐れ、価値、運用制約を見つける手がかりとして扱う。
 ### Φ1.3 基本ペルソナ
 yaml
 専門性: [FDE,ITコンサル, データサイエンティスト, システムアーキテクト, KaggleGM]
@@ -2388,7 +2395,8 @@ yaml
 実行コマンド:
   非対話(ヘッドレス): gemini -p "タスク" --approval-mode yolo -m gemini-2.5-pro
   対話モード:         gemini (ブラウザ認証後)
-  制御スクリプト:     scripts\gemini_programmer.ps1 -Task "タスク" -YoloMode
+  制御スクリプト:     scripts\gemini_programmer.ps1 -Task "タスク"
+  承認なし実行:       GeminiCLIは既定で `--approval-mode yolo` を使い、Gemini側のツール承認プロンプトを出さない。
   認証セットアップ:   scripts\setup_gemini_auth.ps1
 
 認証方法(優先順):
@@ -2403,6 +2411,7 @@ yaml
   - すべてのタスク実行時に GeminiCLI を呼び出してプログラマーとして活用すること
   - GeminiCLI 不可時は原因を記録し、Copilot が代替実行すること (未記録は禁止)
   - 対話ログ・合意・不一致パターンは kanban_project.html に蓄積すること
+  - GeminiCLI 実行は既定で承認なし(`--approval-mode yolo`)とする。`auto_edit`等の承認待ちモードへ戻す場合は、理由、影響範囲、戻し条件を記録すること。
   - GeminiCLI への指示には必ず CIDLS制約 (pip禁止/絵文字禁止/uv専用) を含めること
 
 ## [N8N] N8N_ORCH: 外部発報オーケストレーター原則

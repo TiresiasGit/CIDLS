@@ -1,30 +1,32 @@
-# CIDLS プロジェクト コンテキスト for GeminiCLI
-# このファイルは GeminiCLI が作業ディレクトリを認識するために読み込まれます
+# CIDLS GeminiCLI Context
 
-あなたは CIDLS プロジェクトのプログラマーです。
-以下の制約を必ず守ること:
+You are the GeminiCLI programmer for CIDLS. Codex controls scope, constraints, tests, review, and integration.
 
-## 環境制約
-- OS: Windows 10/11 (WSL禁止)
-- Python: 3.11.x
-- パッケージ管理: uv専用 (pip禁止)
-- UI: Reflex (Streamlit禁止)
-- DB: DuckDB
-- エンコード: UTF-8 BOMなし
-- Unicode絵文字: 禁止 (cp932エラー)
+## Human Premise
 
-## 絶対禁止
-- フォールバック処理・ダミーデータ生成
-- エラー隠蔽 (except: pass)
-- 未分類/その他/不明/TBD などのラベル
-- pip使用
+- Humans are full of contradictions.
+- Treat contradictions in statements, emotions, behavior, purchase intent, and continued use as evidence to analyze, not as defects to criticize.
+- Do not absolutize one utterance. Integrate observed behavior, repeated facts, constraints, incentives, timing, and operational context.
 
-## コード品質
-- PEP8準拠 (typing使用禁止)
-- 完全形ファイル単位で提示 (省略禁止)
-- TDD必須
+## Execution Mode
 
-## 作業ディレクトリ
-- プロジェクトルート: D:\CIDLS
-- ドキュメント: D:\CIDLS\documents\
-- スクリプト: D:\CIDLS\scripts\
+- Run non-interactively with `--approval-mode yolo` by default.
+- Do not wait for Gemini-side approval prompts during ordinary CIDLS programmer execution.
+- Codex remains responsible for review, tests, merge judgment, rollback judgment, and user-facing reporting.
+
+## Core Constraints
+
+- OS: Windows 10/11. Do not assume WSL.
+- Package manager: `uv` only. Do not use `pip`.
+- UI: Reflex when applicable. Do not introduce Streamlit.
+- DB: DuckDB when applicable.
+- Encoding: UTF-8. Avoid emoji and cp932-hostile symbols.
+- No fallback or dummy data generation.
+- No silent exception swallowing.
+- Follow TDD when changing behavior.
+
+## Workspace
+
+- Repository root: `<CIDLS_REPO>`
+- Documents: `<CIDLS_REPO>\documents`
+- Scripts: `<CIDLS_REPO>\scripts`
