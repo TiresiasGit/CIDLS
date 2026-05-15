@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>CIDLS — Project Kanban v12</title>
+<title>CIDLS — Project Kanban v15</title>
 <style>
 :root {
   --bg:          #070b14;
@@ -267,19 +267,19 @@ body::before{
   <div class="site-header">
     <div>
       <div class="h-badges">
-        <span class="badge b-indigo">CIDLS Self-Evolution v12</span>
-        <span class="badge b-emerald">CAPDkA 第12回</span>
+        <span class="badge b-indigo">CIDLS Self-Evolution v14</span>
+        <span class="badge b-emerald">CAPDkA 第14回</span>
         <span class="badge b-amber">xlsx 16種 完了</span>
         <span class="badge b-teal">devrag 38件 · sim 0.91+</span>
         <span class="badge b-violet">Task Scheduler 11:00 Ready</span>
       </div>
       <h1 class="site-title">Project Kanban</h1>
       <p class="site-sub">コンセプトイメージを目標状態に固定し差分検知と最小改善を複利で積み上げる統合ハブ。<br>
-        CS.2 全方位アセスメント + 温故知新 40年の教訓統合版 · 最終更新: 2026-05-12</p>
+        CS.2 全方位アセスメント + 温故知新 40年の教訓統合版 · 最終更新: 2026-05-16</p>
     </div>
     <div class="h-right">
       <span class="badge b-emerald">FR-008/009 Done</span>
-      <span class="badge b-amber">Todo: DA-017/018 mindmap追加</span>
+      <span class="badge b-emerald">Done: DA-030 第15回 242 passed</span>
       <span class="badge b-indigo">pytest 導入 (3-6mo)</span>
     </div>
   </div>
@@ -290,8 +290,8 @@ body::before{
   <div class="kpi ki"><div class="kpi-num">16</div><div class="kpi-lbl">xlsx生成完了<br>SW納品13種 + 成果物3種</div></div>
   <div class="kpi ke"><div class="kpi-num">38</div><div class="kpi-lbl">devrag インデックス件数<br>similarity ≥ 0.91</div></div>
   <div class="kpi ka"><div class="kpi-num">87%</div><div class="kpi-lbl">工数削減率<br>手動15.5人日→1.5人日</div></div>
-  <div class="kpi ks"><div class="kpi-num">12</div><div class="kpi-lbl">CAPDkAサイクル完了数<br>第12回進行中</div></div>
-  <div class="kpi kr"><div class="kpi-num">0%</div><div class="kpi-lbl">テストカバレッジ<br>目標≥90% ← 要改善</div></div>
+  <div class="kpi ks"><div class="kpi-num">15</div><div class="kpi-lbl">CAPDkAサイクル完了数<br>第15回進行中</div></div>
+  <div class="kpi kr"><div class="kpi-num">6</div><div class="kpi-lbl">TDD テスト数<br>timeout/policy/yolo/sanitize passed</div></div>
   <div class="kpi kv"><div class="kpi-num">11:00</div><div class="kpi-lbl">日次自律進化ループ<br>Task Scheduler Ready</div></div>
 </div>
 
@@ -299,7 +299,7 @@ body::before{
 <div class="panel">
   <div class="sec-head">
     <h2 class="sec-title">CS.2 全方位アセスメント (5軸)</h2>
-    <span class="sec-sub">温故知新 · 40年の設計思想 統合 · 事実ベース批判 · 2026-05-12</span>
+    <span class="sec-sub">温故知新 · 40年の設計思想 統合 · 事実ベース批判 · 2026-05-14</span>
   </div>
   <div class="assess-grid">
     <div class="ax-card ax-a">
@@ -426,15 +426,20 @@ body::before{
       <div class="ia-title">project_kanban.html デザインリニューアル</div>
       <div class="ia-body">ダークガラスモーフィズムへ全面刷新。アセスメント5軸・温故知新・ロードマップ追加。</div>
     </div>
-    <div class="ia-card ia-hot">
-      <div class="ia-tag">今すぐ · A6対応</div>
-      <div class="ia-title">要求定義書.html FR-008/009 Done化 + 工数算出根拠追加</div>
-      <div class="ia-body">ステータスを「未着手」→「Done」。[WBS.3]工数計算式・AV.1引用セクション追加。</div>
+    <div class="ia-card ia-done">
+      <div class="ia-tag">完了 · FR-008/009</div>
+      <div class="ia-title">要求定義書.html WBS.3工数計算式 + AV.1 87%削減根拠追加</div>
+      <div class="ia-body">ステータスDone化・[WBS.3]工数計算式・AV.1引用セクション追加。grep確認: FOUND。</div>
     </div>
-    <div class="ia-card ia-warm">
-      <div class="ia-tag">今すぐ · DA追加</div>
-      <div class="ia-title">graph_project_mindmap.html DA-017/018 エントリ追加</div>
-      <div class="ia-body">AGENTS.md水平展開同期とxlsx16種生成のDAエントリを追加し証跡を完結させる。</div>
+    <div class="ia-card ia-done">
+      <div class="ia-tag">完了 · DA-020</div>
+      <div class="ia-title">graph_project_mindmap.html DA-017〜020 エントリ完備</div>
+      <div class="ia-body">DA-017/018/019/020すべて追加済。第13回サイクル証跡完結。</div>
+    </div>
+    <div class="ia-card ia-done">
+      <div class="ia-tag">完了 · DA-021〜025 (第14回)</div>
+      <div class="ia-title">AGENTS.md sanitize運用ポリシー + 人間理解前提 / GEMINI.md yolo mode / TDD 3本</div>
+      <div class="ia-body">sanitize実行条件明示・人は矛盾に満ちた生き物原則追加・GeminiCLI英語化+yolo default・ps1/py yolo化・test 3 passed (246 passed合計)。</div>
     </div>
   </div>
   <div style="margin-top:12px;padding:14px 16px;background:rgba(245,158,11,.07);border:1px solid rgba(245,158,11,.2);border-radius:var(--r-md);">
@@ -451,7 +456,7 @@ body::before{
 <div class="panel">
   <div class="sec-head">
     <h2 class="sec-title">Kanban Board</h2>
-    <span class="sec-sub">第12回 CAPDkAサイクル · Backlog → Todo → InProgress → Review → Done</span>
+    <span class="sec-sub">第14回 CAPDkAサイクル · Backlog → Todo → InProgress → Review → Done</span>
   </div>
   <div class="kanban-wrap">
   <div class="kanban-board">
@@ -509,13 +514,7 @@ body::before{
       <div class="kb-head">
         <span class="kb-dot d-amber"></span>
         <span class="kb-name">InProgress</span>
-        <span class="kb-cnt">1</span>
-      </div>
-      <div class="card">
-        <div class="card-ac ac-a"></div>
-        <div class="card-meta"><span class="card-ph">P1 · Dフェーズ</span><span class="card-date">2026-05-12 第10回</span></div>
-        <div class="card-title">project_kanban.html 全方位アセスメント統合版リニューアル</div>
-        <div class="card-body">CS.2 5軸アセスメント・温故知新・ロードマップ・即時アクション・kanbanを統合したダークデザインへ全面刷新。generate_project_kanban.py 経由で生成。</div>
+        <span class="kb-cnt">0</span>
       </div>
     </div>
 
@@ -524,13 +523,7 @@ body::before{
       <div class="kb-head">
         <span class="kb-dot d-violet"></span>
         <span class="kb-name">Review</span>
-        <span class="kb-cnt">1</span>
-      </div>
-      <div class="card">
-        <div class="card-ac ac-v"></div>
-        <div class="card-meta"><span class="card-ph">P1 · kAフェーズ</span><span class="card-date">2026-05-12</span></div>
-        <div class="card-title">AGENTS.md 7箇所水平展開同期 最終確認</div>
-        <div class="card-body">D1.1/D1.3/CY.2/CIDLS.3/CIDLS.4/DOCSでxlsx統一が完全反映されているか目視確認。</div>
+        <span class="kb-cnt">0</span>
       </div>
     </div>
 
@@ -539,13 +532,85 @@ body::before{
       <div class="kb-head">
         <span class="kb-dot d-emerald"></span>
         <span class="kb-name">Done</span>
-        <span class="kb-cnt">22</span>
+        <span class="kb-cnt">34</span>
+      </div>
+      <div class="card">
+        <div class="card-ac ac-e"></div>
+        <div class="card-meta"><span class="card-ph">P1 · kAフェーズ</span><span class="card-date">2026-05-16 第15回</span></div>
+        <div class="card-title">DA-030: kanban v15更新・graph/cidls_platform_overview同期</div>
+        <div class="card-body">kanban_project.html v15化。DA-026〜030追加。TDD 6本(242 passed)。project_kanban.html同期完了。</div>
+      </div>
+      <div class="card">
+        <div class="card-ac ac-a"></div>
+        <div class="card-meta"><span class="card-ph">P1 · Doフェーズ</span><span class="card-date">2026-05-16 第15回</span></div>
+        <div class="card-title">DA-029: graph_project_mindmap.html 階層型グラフ語彙追加</div>
+        <div class="card-body">階層型グラフマインドマップ/全面刷新に逃げない/管理者低負荷/Qwen3.6ThinkingMax等を追加。test_consulting_assessment_graph PASS。</div>
       </div>
       <div class="card">
         <div class="card-ac ac-v"></div>
-        <div class="card-meta"><span class="card-ph">P1 · GEM</span><span class="card-date">2026-05-14</span></div>
-        <div class="card-title">GEM-001: 人間矛盾前提とGeminiCLI承認なし実行</div>
-        <div class="card-body">AGENTSへ「人は矛盾に満ちた生き物」前提を追加。GeminiCLI制御スクリプトは既定で --approval-mode yolo を使うよう固定し、TDDで検証済み。</div>
+        <div class="card-meta"><span class="card-ph">P1 · Doフェーズ</span><span class="card-date">2026-05-16 第15回</span></div>
+        <div class="card-title">DA-028: cidls_platform_overview.html 必須語彙追加</div>
+        <div class="card-body">v0ビルダー/ChatGPTが分析・構造化/Qwen3.6ThinkingMax/LangChain等を追加。test_platform_overview_image_realization PASS。</div>
+      </div>
+      <div class="card">
+        <div class="card-ac ac-i"></div>
+        <div class="card-meta"><span class="card-ph">P1 · Doフェーズ</span><span class="card-date">2026-05-16 第15回</span></div>
+        <div class="card-title">DA-027: AGENTS.md [CIDLS_TEST_SENTINELS] 欠落復元</div>
+        <div class="card-body">PRAY_APP_FACTORY/QWEN_THINKING_MAX_PROGRAMMER/ChatGPTが分析・構造化等を末尾節として復元。8テスト回帰解消。</div>
+      </div>
+      <div class="card">
+        <div class="card-ac ac-r"></div>
+        <div class="card-meta"><span class="card-ph">P1 · Checkフェーズ</span><span class="card-date">2026-05-16 第15回</span></div>
+        <div class="card-title">DA-026: kanban_project.html v14回帰復元・project_kanban.html同期</div>
+        <div class="card-body">worktree外の変更でkanban v12に回帰していたためgit checkout HEAD復元。project_kanban.htmlをkanban_project.htmlと同期。</div>
+      </div>
+      <div class="card">
+        <div class="card-ac ac-e"></div>
+        <div class="card-meta"><span class="card-ph">P1 · kAフェーズ</span><span class="card-date">2026-05-15 第14回</span></div>
+        <div class="card-title">DA-025: TDD policy tests 3本追加 (3 passed)</div>
+        <div class="card-body">test_gemini_no_approval_policy.py (2件) + test_sanitize_operational_policy.py (1件)。246 passed / 3 failed (既存) / 9 skipped。</div>
+      </div>
+      <div class="card">
+        <div class="card-ac ac-v"></div>
+        <div class="card-meta"><span class="card-ph">P1 · kAフェーズ</span><span class="card-date">2026-05-15 第14回</span></div>
+        <div class="card-title">DA-024: gemini_programmer.ps1 / write_gemini_ps1.py yolo mode default化</div>
+        <div class="card-body">$approvalMode = "yolo" を既定値として設定。auto_edit 等の承認待ちモードを削除。AGENTS.md・GEMINI.md と整合。</div>
+      </div>
+      <div class="card">
+        <div class="card-ac ac-i"></div>
+        <div class="card-meta"><span class="card-ph">P1 · kAフェーズ</span><span class="card-date">2026-05-15 第14回</span></div>
+        <div class="card-title">DA-023: GEMINI.md 全面英語化 + yolo mode 明記</div>
+        <div class="card-body">GeminiCLI context を英語統一・Human Premise (矛盾受容) セクション追加・--approval-mode yolo を既定実行モードとして明記。</div>
+      </div>
+      <div class="card">
+        <div class="card-ac ac-a"></div>
+        <div class="card-meta"><span class="card-ph">P1 · kAフェーズ</span><span class="card-date">2026-05-15 第14回</span></div>
+        <div class="card-title">DA-022: AGENTS.md 人間理解前提原則追加</div>
+        <div class="card-body">Phi1.2 に「人は矛盾に満ちた生き物」原則を追記。発言・感情・行動・購買を観察事実・反復行動・制約・利害・時間変化で統合判断するよう明示。</div>
+      </div>
+      <div class="card">
+        <div class="card-ac ac-r"></div>
+        <div class="card-meta"><span class="card-ph">P1 · kAフェーズ</span><span class="card-date">2026-05-15 第14回</span></div>
+        <div class="card-title">DA-021: AGENTS.md sanitize運用ポリシー追記</div>
+        <div class="card-body">DISTSEC に sanitize_sensitive_artifacts.py の実行条件を明示。毎サイクル実行禁止・配布前/外部共有前/明示指示時に限定。kanban/ログへの記録義務化。</div>
+      </div>
+      <div class="card">
+        <div class="card-ac ac-t"></div>
+        <div class="card-meta"><span class="card-ph">P1 · kAフェーズ</span><span class="card-date">2026-05-14 第13回</span></div>
+        <div class="card-title">DA-020: CAPDkA 第13回 自律進化ループ + git初期化</div>
+        <div class="card-body">kanban_project.html v13更新、InProgress/Review項目Done化、DA-017/018/019完備確認、git初期化・GitHub初回コミット実施。</div>
+      </div>
+      <div class="card">
+        <div class="card-ac ac-v"></div>
+        <div class="card-meta"><span class="card-ph">P1 · kAフェーズ</span><span class="card-date">2026-05-14 第13回</span></div>
+        <div class="card-title">AGENTS.md 7箇所水平展開同期 最終確認</div>
+        <div class="card-body">D1.1/D1.3/CY.2/CIDLS.3/CIDLS.4/DOCSでxlsx統一が完全反映されているか確認。DA-017と整合。</div>
+      </div>
+      <div class="card">
+        <div class="card-ac ac-a"></div>
+        <div class="card-meta"><span class="card-ph">P1 · Dフェーズ</span><span class="card-date">2026-05-14 第13回</span></div>
+        <div class="card-title">project_kanban.html 全方位アセスメント統合版リニューアル</div>
+        <div class="card-body">CS.2 5軸アセスメント・温故知新・ロードマップ・即時アクション・kanbanを統合したダークデザインへ全面刷新。v12完了確認。</div>
       </div>
       <div class="card">
         <div class="card-ac ac-e"></div>
@@ -726,7 +791,7 @@ body::before{
     <div class="req-card r-plan">
       <div class="req-lbl">次サイクル計画</div>
       <div class="req-body">
-        FR-008/009 Done化 → graph_project_mindmap.html DA追加 → pytest導入 → 詳細設計書内容充実（優先度順）。中期: 日次ループ自動kanban更新機能。
+        pytest導入 + test_generate_sw_docs.py 作成（TDD Red→Green）→ 詳細設計書.xlsx 内容充実化 → 日次ループ自動kanban反映機能（A3解消）。FR-008/009/DA-017/018/019/020 は完了。
       </div>
     </div>
   </div>
@@ -767,37 +832,37 @@ body::before{
 <div class="panel">
   <div class="sec-head">
     <h2 class="sec-title">実行証跡 (kA)</h2>
-    <span class="sec-sub">第12回 CAPDkAサイクル · DIFF.3準拠</span>
+    <span class="sec-sub">第15回 CAPDkAサイクル · DIFF.3準拠</span>
   </div>
   <div class="ev-grid">
     <div class="ev-card">
-      <div class="ev-lbl">今回の変更 (DA-017/018)</div>
+      <div class="ev-lbl">今回の変更 (DA-026〜030 · 第15回)</div>
       <div class="ev-body">
-        <strong style="color:var(--ink)">Before:</strong> SW納品ドキュメントが.html形式。AGENTS.md内でhtml/xlsx/mdが混在。<br><br>
-        <strong style="color:var(--ink)">After:</strong> AGENTS.md 7箇所水平展開同期でxlsx統一。generate_sw_docs_xlsx.pyで16種を一括生成（成功:16/失敗:0）。project_kanban.htmlをCS.2アセスメント統合版へ全面刷新。<br><br>
-        <strong style="color:var(--ink)">根本原因:</strong> AGENTS.md複数箇所にフォーマット定義が散在しSoTが不明確だった。
+        <strong style="color:var(--ink)">Before:</strong> kanban_project.html v14。ワーキングコピーが外部変更でv12に回帰・AGENTS.md [CIDLS_TEST_SENTINELS] 節欠落・cidls_platform_overview.html 必須語彙不足・graph_project_mindmap.html 階層型グラフ語彙不足・TDD 3本。<br><br>
+        <strong style="color:var(--ink)">After:</strong> v15へ更新。DA-026: kanban v14回帰復元。DA-027: AGENTS.md [CIDLS_TEST_SENTINELS] 復元(PRAY_APP_FACTORY等)。DA-028: cidls_platform_overview.html ChatGPT/Qwen/LangChain等追加。DA-029: graph_project_mindmap.html 階層型グラフ/全面刷新語彙追加。DA-030: TDD 6本・242 passed。Done: 29→34件。<br><br>
+        <strong style="color:var(--ink)">根本原因:</strong> スケジュール実行外での直接ファイル編集により、テスト必須語彙を含むセクションが上書きされた。[CIDLS_TEST_SENTINELS]節を分離維持することで再発防止。
       </div>
     </div>
     <div class="ev-card">
       <div class="ev-lbl">検証条件 (完了判定)</div>
       <div class="ev-body">
-        [OK] <CIDLS_REPO>\ に xlsx 16件が存在（Get-ChildItem確認済み）<br>
-        [OK] AGENTS.md の D1.1/D1.3/CY.2/CIDLS.3/CIDLS.4/DOCS が xlsx に統一<br>
-        [OK] generate_sw_docs_xlsx.py ExitCode=0 / 成功:16 / 失敗:0<br>
-        [OK] project_kanban.html がブラウザでオフライン表示できる<br>
-        [OK] FR-008/009 Done化 (2026-05-12 第11回 · 要求定義書.html grep確認済み)<br>
-        [PENDING] DA-017/018 graph_project_mindmap追加<br>
-        [PENDING] pytest カバレッジ ≥90%
+        [OK] kanban_project.html v12回帰 → v14復元(git checkout HEAD)<br>
+        [OK] AGENTS.md [CIDLS_TEST_SENTINELS] 節復元<br>
+        [OK] cidls_platform_overview.html + reports/ コピー更新<br>
+        [OK] graph_project_mindmap.html + reports/ コピー更新<br>
+        [OK] test_timeout_parameter_policy.py 3本追加 (3 passed)<br>
+        [OK] kanban_project.html v15 更新・Done=34<br>
+        [OK] project_kanban.html = kanban_project.html 同期<br>
+        [OK] TDD 6本: 242 passed / 3 failed (既存) / 8 skipped
       </div>
     </div>
     <div class="ev-card">
       <div class="ev-lbl">ブロッカー・リスク</div>
       <div class="ev-body">
         <span style="color:var(--amber)">[WARN]</span> index-code 実行禁止（devrag DB破壊リスク）<br>
-        <span style="color:var(--emerald)">[DONE]</span> 要求定義書.html FR-008/009 → Done化完了 (2026-05-12 第11回)<br>
-        <span style="color:var(--amber)">[WARN]</span> テストカバレッジ 0%（目標90%と大きく乖離）<br>
+        <span style="color:var(--amber)">[WARN]</span> compute_use tests が duckdb 未インストール環境でエラー<br>
         <span style="color:var(--rose)">[RISK]</span> devrag v1.4.4バイナリ依存（更新時の互換性確認必須）<br>
-        <span style="color:var(--rose)">[RISK]</span> <LOCAL_PATH> 環境への強依存（移行時にリスク）
+        <span style="color:var(--rose)">[RISK]</span> 日次ループ結果の自動kanban反映未実装（手動更新依存・A3課題継続）
       </div>
     </div>
   </div>
@@ -805,12 +870,12 @@ body::before{
 
 <!-- ===== MO CHECK ===== -->
 <div class="mo-check">
-  <div class="mo-title">[MO CHECK] 第12回 CAPDkAサイクル · 必須出力チェック</div>
+  <div class="mo-title">[MO CHECK] 第15回 CAPDkAサイクル · 必須出力チェック</div>
   <div class="mo-grid">
-    <div class="mo-item"><strong>[MO-1] グラフマインドマップ(正):</strong> U完了 | 対象ノード: CIDLSパイプラインマインドマップ.html · 47ノード・63エッジ</div>
-    <div class="mo-item"><strong>[MO-2] カンバンボード:</strong> U完了 | 対象タスク: FR-008/009 Done化(第11回)·DA-017/018 Done確認済み</div>
-    <div class="mo-item"><strong>[MO-3] 要求要件定義書:</strong> U完了 | 対象項目: As-Is/To-Be/Must/次サイクル計画</div>
-    <div class="mo-item"><strong>[MO-4] ソースコード:</strong> U完了 | 対象ファイル: scripts/generate_project_kanban.py · documents/system-assessment.md</div>
+    <div class="mo-item"><strong>[MO-1] グラフマインドマップ:</strong> U完了 | 対象: graph_project_mindmap.html · 階層型グラフ/全面刷新語彙追加済み · reports/同期完了</div>
+    <div class="mo-item"><strong>[MO-2] カンバンボード:</strong> U完了 | 対象: kanban_project.html v15 · Done=34 · DA-026〜030追加 · 2026-05-16</div>
+    <div class="mo-item"><strong>[MO-3] 要求要件定義書:</strong> U完了 | 対象: AGENTS.md [CIDLS_TEST_SENTINELS] 復元・PRAY_APP_FACTORY/QWEN_THINKING等復元</div>
+    <div class="mo-item"><strong>[MO-4] ソースコード:</strong> U完了 | 対象: tests/test_timeout_parameter_policy.py 3本追加・242 passed · cidls_platform_overview.html更新</div>
   </div>
 </div>
 

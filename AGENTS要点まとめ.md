@@ -26,6 +26,7 @@ VSCI:VSCode基盤∋AGENTS.md=inst自動読込|/compact汚染防止|Checkpoint=R
 
 T:技術環境∋Win10/11⊥WSL|Py3.11|uv⊥pip|DuckDB|Parquet|UTF8(batch:S-JIS)|⊥絵文字
 T2:並列/型∋型整合src→変換→use|⊥到達不能|I/O→Thread/CPU→Process≤32|DB=flock+port
+TIMEOUT:事前設計∋発生可能処理=LLM/API/HTTP/E2E/GUI/IO/DB/並列/長時間batch|timeout/retry/backoff/concurrency/batch/chunk/progress/heartbeat/cancel=調整可能|⊥無期限待機/握りつぶし/任意定数
 CODE:実装規約∋PEP8⊥typing|完全形⊥省略|READ→DEL→CREATE→READ→UPD|unit≥90%
 HS:水平展開∋1変更→grep→7同期:定義/辞書/設定/分岐/import/doc/test|旧名残=∅
 MG:完全移植∋移植10要素100%:値/列名/型/計算/関数/クラス/ロジック/コメント/依存/エッジ

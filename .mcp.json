@@ -1,8 +1,20 @@
-{
-  "mcpServers": {
-    "devrag": {
-      "type": "stdio",
-      "command": "%CODEX_HOME%\\mcp\\cidls_global\\launch-devrag.cmd"
-    }
-  }
+﻿{
+    "mcpServers":  {
+                       "devrag-cidls":  {
+                                            "type":  "stdio",
+                                            "command":  "${env:LOCALAPPDATA}\\devrag\\devrag.exe",
+                                            "args":  [
+                                                         "--config",
+                                                         "D:\\CIDLS\\devrag-config.json"
+                                                     ]
+                                        },
+                       "devrag-local":  {
+                                            "type":  "stdio",
+                                            "command":  "${env:LOCALAPPDATA}\\devrag\\devrag.exe",
+                                            "args":  [
+                                                         "--config",
+                                                         "D:\\CIDLS\\devrag-config.json"
+                                                     ]
+                                        }
+                   }
 }

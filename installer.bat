@@ -1,32 +1,56 @@
+:: CIDLS_HOOK_MANAGED
 @echo off
 setlocal
+chcp 65001 > nul
+set "ROOT=%~dp0"
+pushd "%ROOT%"
 
-set "CIDLS_ROOT=%~dp0"
-if "%CIDLS_ROOT:~-1%"=="\" set "CIDLS_ROOT=%CIDLS_ROOT:~0,-1%"
-set "CIDLS_SCRIPT=%CIDLS_ROOT%\scripts\sync_agents_cidls_policy.py"
-set "WORKSPACE_DIR=%CD%"
-
-if not exist "%CIDLS_SCRIPT%" (
-  echo [ERROR] CIDLS sync script not found: %CIDLS_SCRIPT%
-  exit /b 2
+where uv > nul 2>&1
+if errorlevel 1 (
+  echo [ERROR] uv was not found in PATH.
+  popd
+  exit /b 1
 )
 
-if not exist "%WORKSPACE_DIR%\logs" mkdir "%WORKSPACE_DIR%\logs"
+if not exist ".venv\Scripts\python.exe" (
+  echo [INFO] Creating virtual environment...
+  uv venv .venv
+  if errorlevel 1 (
+    echo [ERROR] Failed to create .venv.
+    popd
+    exit /b 1
+  )
+)
 
-set "PYTHON_EXE=%WORKSPACE_DIR%\.venv\Scripts\python.exe"
-if exist "%PYTHON_EXE%" goto verify_runtime
+call ".venv\Scripts\activate.bat"
+if errorlevel 1 (
+  echo [ERROR] Failed to activate .venv.
+  popd
+  exit /b 1
+)
 
-set "PYTHON_EXE=python"
-where python >nul 2>nul
-if %errorlevel%==0 goto verify_runtime
+if exist "pyproject.toml" (
+  echo [INFO] Installing dependencies from pyproject.toml...
+  uv sync
+  if errorlevel 1 (
+    echo [ERROR] uv sync failed.
+    popd
+    exit /b 1
+  )
+) else (
+  if exist "requirements.txt" (
+    echo [INFO] Installing dependencies from requirements.txt...
+    uv pip install -r requirements.txt
+    if errorlevel 1 (
+      echo [ERROR] requirements installation failed.
+      popd
+      exit /b 1
+    )
+  ) else (
+    echo [INFO] No dependency manifest was found. Environment only was prepared.
+  )
+)
 
-set "PYTHON_EXE=py -3"
-where py >nul 2>nul
-if %errorlevel%==0 goto verify_runtime
-
-echo [ERROR] Python runtime not found in workspace .venv or PATH
-exit /b 3
-
-:verify_runtime
-%PYTHON_EXE% -c "from pathlib import Path; path = Path(r'%CIDLS_SCRIPT%'); print('[OK] CIDLS runtime ready: ' + str(path.exists()))"
-exit /b %errorlevel%
+echo [OK] Environment is ready.
+popd
+exit /b 0

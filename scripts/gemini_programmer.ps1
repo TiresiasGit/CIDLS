@@ -7,7 +7,7 @@
 .PARAMETER Task
     Task description (English or Japanese)
 .PARAMETER WorkDir
-    Working directory (default: repository root inferred from this script)
+    Working directory (default: D:\CIDLS)
 .PARAMETER YoloMode
     Deprecated compatibility switch. The controller always uses --approval-mode yolo.
 .PARAMETER Model
@@ -19,7 +19,7 @@
 #>
 param(
     [string]$Task = "",
-    [string]$WorkDir = "",
+    [string]$WorkDir = "D:\CIDLS",
     [switch]$YoloMode,
     [string]$Model = "gemini-2.5-pro",
     [switch]$CheckOnly
@@ -27,10 +27,6 @@ param(
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
-
-if (-not $WorkDir) {
-    $WorkDir = Split-Path -Parent $PSScriptRoot
-}
 
 $LOG_DIR  = Join-Path $WorkDir "logs\gemini_programmer"
 $TS_FILE  = Get-Date -Format "yyyyMMdd_HHmmss"

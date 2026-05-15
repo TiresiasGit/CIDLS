@@ -21,7 +21,7 @@ except ImportError:
     print("[ERROR] openpyxl not found. Run: uv pip install openpyxl")
     sys.exit(1)
 
-OUTPUT_DIR = Path(os.environ.get("CIDLS_DOCS_OUTPUT_DIR", "reports/sw_docs"))
+OUTPUT_DIR = Path("D:/CIDLS")
 TODAY = date.today().isoformat()
 VERSION = "1.0.0"
 PROJECT = "CIDLS (CI/DL System)"
@@ -420,9 +420,9 @@ def gen_基本設計書(path):
     set_widths(ws3, [20, 56])
     hcell(ws3, 1, 1, "項目"); hcell(ws3, 1, 2, "値・説明")
     devrag_info = [
-        ("バイナリ", r"%LOCALAPPDATA%\devrag\devrag.exe v1.4.4"),
+        ("バイナリ", r"%LOCALAPPDATA%\devrag\devrag.exe"),
         ("モデル", "multilingual-e5-small (384次元)"),
-        ("DB", r"<CIDLS_REPO>\.devrag\vectors.db (sqlite-vec v0.1.6)"),
+        ("DB", r"D:\CIDLS\.devrag\vectors.db (sqlite-vec v0.1.6)"),
         ("インデックス件数", "38件(.mdファイル)"),
         ("インデックス精度", "similarity 0.91〜0.94 (5クエリ全件count>=3)"),
         ("index-code", "[絶対禁止] ゼロベクトル混入により検索破壊のため"),
@@ -451,7 +451,7 @@ def gen_詳細設計書(path):
     for j, h in enumerate(["モジュール名", "入力", "出力・処理"], 1):
         hcell(ws, 1, j, h)
     mods = [
-        ("generate_sw_docs_xlsx.py", "なし(定数設定)", "SW納品13種+成果物3種xlsx → <CIDLS_REPO>/"),
+        ("generate_sw_docs_xlsx.py", "なし(定数設定)", "SW納品13種+成果物3種xlsx → D:/CIDLS/"),
         ("generate_graph_project_mindmap.py", "--add-entry --cycle N --summary ...", "graph_project_mindmap.html 更新"),
         ("generate_cidls_platform_overview.py", "なし", "cidls_platform_overview.html 生成"),
         ("generate_commercial_delivery_pack.py", "なし", "reports/commercial_delivery/*.xlsx 生成"),
@@ -516,7 +516,7 @@ def gen_DB設計書(path):
         ("vectors.db", "SQLite(sqlite-vec)", r".devrag\vectors.db", "devragベクトルインデックス"),
         ("DuckDB(将来)", "DuckDB", r"data\local.duckdb", "分析・集計クエリ用"),
         ("Parquet(将来)", "Parquet", r"data\*.parquet", "大量データ効率保存"),
-        ("kanban_project.html", "HTML(SPA)", "<CIDLS_REPO>/", "タスク+マインドマップSoT"),
+        ("kanban_project.html", "HTML(SPA)", "D:/CIDLS/", "タスク+マインドマップSoT"),
         ("daily_context_latest.md", "Markdown", "logs/daily_self_evolution/", "日次進化サマリ"),
     ]
     for i, row in enumerate(stores, 2):
@@ -607,7 +607,7 @@ def gen_結合テスト仕様書(path):
         ("IT-001", "devrag検索精度", "vectors.db 38件インデックス済み",
          "CAPDkA検索でcount>=3 similarity>=0.91", "Pass"),
         ("IT-002", "xlsx生成完結性", "generate_sw_docs_xlsx.py実行",
-         "16ファイルが <CIDLS_REPO>/ に生成される", "Pass"),
+         "16ファイルが D:/CIDLS/ に生成される", "Pass"),
         ("IT-003", "kanban更新連携", "タスク完了時にkanban_project.html更新",
          "Doneカードが追加される", "Pass"),
         ("IT-004", "日次ループ結合", "Task Scheduler起動→run_daily_self_evolution.cmd実行",
@@ -698,10 +698,10 @@ def gen_運用手順書(path):
     for j, h in enumerate(["No.", "手順", "コマンド/操作"], 1):
         hcell(ws, 1, j, h)
     startup = [
-        ("1", "venv起動", r"<PYTHON_VENV>\Scripts\Activate.ps1"),
-        ("2", "CWD確認", "cd <CIDLS_REPO>"),
+        ("1", "venv起動", r"D:\production\.venv\Scripts\Activate.ps1"),
+        ("2", "CWD確認", "cd D:/CIDLS"),
         ("3", "devrag動作確認", r'$BIN search --top-k 2 --config devrag-config.json "CAPDkA"'),
-        ("4", "kanban確認", "ブラウザで <CIDLS_REPO>/project_kanban.html を開く"),
+        ("4", "kanban確認", "ブラウザで D:/CIDLS/project_kanban.html を開く"),
     ]
     for i, row in enumerate(startup, 2):
         bg = C_ALT if i % 2 == 0 else None
@@ -730,9 +730,9 @@ def gen_運用手順書(path):
     for j, h in enumerate(["No.", "手順", "コマンド"], 1):
         hcell(ws3, 1, j, h)
     xlsteps = [
-        ("1", "venv有効化", r"<PYTHON_VENV>\Scripts\Activate.ps1"),
+        ("1", "venv有効化", r"D:\production\.venv\Scripts\Activate.ps1"),
         ("2", "スクリプト実行", "python scripts/generate_sw_docs_xlsx.py"),
-        ("3", "生成ファイル確認", "Get-ChildItem <CIDLS_REPO> -Filter *.xlsx | Sort LastWriteTime"),
+        ("3", "生成ファイル確認", "Get-ChildItem D:/CIDLS -Filter *.xlsx | Sort LastWriteTime"),
         ("4", "エラー時", "openpyxl未インストール → uv pip install openpyxl"),
     ]
     for i, row in enumerate(xlsteps, 2):
@@ -776,7 +776,7 @@ def gen_移行計画書(path):
         ("devrag移行", "setup_devrag.ps1を新環境で実行→自動再構築"),
         ("データ移行", "vectors.dbは再構築(バイナリ移行不要)"),
         ("設定移行", "devrag-config.jsonのパスを新環境に更新"),
-        ("ロールバック", "AGENTS.md.bakから復元可能"),
+        ("ロールバック", "git revert で復元可能"),
         ("移行判定", "5クエリでsimilarity>=0.91を確認"),
     ]
     for i, (k, v) in enumerate(policy, 2):
@@ -791,7 +791,7 @@ def gen_移行計画書(path):
         hcell(ws2, 1, j, h)
     schedule = [
         ("準備", "環境確認", "Python3.11/uv/Git 動作確認", "0.5"),
-        ("準備", "リポジトリクローン", "<CIDLS_REPO>/ にファイル展開", "0.5"),
+        ("準備", "リポジトリクローン", "D:/CIDLS/ にファイル展開", "0.5"),
         ("セットアップ", "devrag初期化", "setup_devrag.ps1実行", "0.5"),
         ("セットアップ", "インデックス構築", "devrag index md 実行+検索確認", "0.5"),
         ("検証", "動作確認", "5クエリsimilarity確認+xlsx生成確認", "1.0"),
@@ -822,7 +822,7 @@ def gen_保守運用計画書(path):
         ("週次保守", "devrag検索精度確認(5クエリ) + xlsx生成確認"),
         ("月次保守", "AGENTS.mdルール見直し + documents/更新"),
         ("バージョン管理", "git commit(ソース+テスト+設定のみ。データ/ログ除外)"),
-        ("ロールバック", "git revert / AGENTS.md.bakから復元"),
+        ("ロールバック", "git revert で復元"),
         ("セキュリティ更新", "依存ライブラリCVE確認→uv update"),
     ]
     for i, (k, v) in enumerate(policy, 2):
@@ -920,12 +920,12 @@ def gen_画面設計書(path):
     for j, h in enumerate(["画面ID", "画面名", "URL/ファイルパス", "ステータス"], 1):
         hcell(ws, 1, j, h)
     screens = [
-        ("SCR-001", "ダッシュボード", "<CIDLS_REPO>/index.html", "Done"),
-        ("SCR-002", "カンバンボード", "<CIDLS_REPO>/project_kanban.html", "Done"),
-        ("SCR-003", "グラフマインドマップ", "<CIDLS_REPO>/graph_project_mindmap.html", "Done"),
-        ("SCR-004", "プラットフォーム概要", "<CIDLS_REPO>/cidls_platform_overview.html", "Done"),
-        ("SCR-005", "コンセプトスライド", "<CIDLS_REPO>/コンセプトスライド.html", "Done"),
-        ("SCR-006", "STORYビジュアル", "<CIDLS_REPO>/STORY.html", "Done"),
+        ("SCR-001", "ダッシュボード", "D:/CIDLS/index.html", "Done"),
+        ("SCR-002", "カンバンボード", "D:/CIDLS/project_kanban.html", "Done"),
+        ("SCR-003", "グラフマインドマップ", "D:/CIDLS/graph_project_mindmap.html", "Done"),
+        ("SCR-004", "プラットフォーム概要", "D:/CIDLS/cidls_platform_overview.html", "Done"),
+        ("SCR-005", "コンセプトスライド", "D:/CIDLS/コンセプトスライド.html", "Done"),
+        ("SCR-006", "STORYビジュアル", "D:/CIDLS/STORY.html", "Done"),
     ]
     for i, row in enumerate(screens, 2):
         bg = C_DONE if row[3] == "Done" else C_WIP

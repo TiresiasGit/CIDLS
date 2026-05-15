@@ -318,6 +318,44 @@ footer { text-align: center; padding: 24px 0 16px; color: var(--muted); font-siz
     <div class="step-block"><h4>テストシナリオ兼結果チェックリスト.html</h4><p>テスト計画・シナリオ・結果チェックを体系化。定期チェック/ログ/DB/リソース/性能/テストデータ/判定基準を含む。</p></div>
     <div class="step-block"><h4>ユーザーマニュアル.html</h4><p>操作方法・利用手順・FAQを網羅。初心者でも3クリック以内で主機能到達できる設計。</p></div>
     <div class="step-block"><h4>ドキュメント一覧.html</h4><p>全ドキュメントの索引・一覧・ナビゲーション。検索・フィルタ・カテゴリ別ナビを提供。</p></div>
+    <h3>6.3 外部発報フロー (n8n 統合アーキテクチャ) [N8N]</h3>
+    <div style="display:flex;align-items:flex-start;gap:4px;flex-wrap:wrap;background:rgba(0,0,0,0.2);border:1px solid rgba(99,102,241,0.15);border-radius:10px;padding:20px;margin:14px 0;">
+      <div style="background:rgba(99,102,241,0.12);border:1px solid rgba(99,102,241,0.4);border-radius:8px;padding:14px 18px;text-align:center;min-width:130px;">
+        <div style="color:#a5b4fc;font-weight:700;font-size:0.88rem;">APP</div>
+        <div style="color:#64748b;font-size:0.7rem;margin-top:4px;">バックエンドサーバー</div>
+        <div style="color:#475569;font-size:0.65rem;margin-top:3px;line-height:1.4;">httpx.post(<br>N8N_WEBHOOK_URL)</div>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:88px;padding-top:6px;">
+        <div style="font-size:0.64rem;color:#64748b;text-align:center;line-height:1.4;margin-bottom:4px;">POST /webhook<br>X-Idempotency-Key</div>
+        <div style="width:64px;height:2px;background:rgba(99,102,241,0.5);position:relative;">
+          <div style="position:absolute;right:-7px;top:-5px;color:rgba(99,102,241,0.85);font-size:13px;">&#9658;</div>
+        </div>
+      </div>
+      <div style="background:rgba(16,185,129,0.1);border:2px solid rgba(16,185,129,0.55);border-radius:8px;padding:14px 18px;text-align:center;min-width:155px;">
+        <div style="color:#10b981;font-weight:800;font-size:0.95rem;">n8n</div>
+        <div style="color:#64748b;font-size:0.7rem;margin-top:4px;">localhost:5678</div>
+        <div style="color:#475569;font-size:0.65rem;margin-top:4px;line-height:1.5;">Credentials管理<br>リトライ / 冪等性</div>
+        <div style="margin-top:6px;background:rgba(16,185,129,0.1);color:#6ee7b7;font-size:0.63rem;padding:2px 6px;border-radius:4px;">[N8N.2] Secret管理</div>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:56px;padding-top:6px;">
+        <div style="font-size:0.64rem;color:#64748b;text-align:center;margin-bottom:4px;">振り分け</div>
+        <div style="width:40px;height:2px;background:rgba(16,185,129,0.5);position:relative;">
+          <div style="position:absolute;right:-7px;top:-5px;color:rgba(16,185,129,0.85);font-size:13px;">&#9658;</div>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:6px;justify-content:center;padding-top:4px;">
+        <div style="background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.3);border-radius:6px;padding:7px 16px;font-size:0.78rem;color:#fcd34d;min-width:175px;">Slack</div>
+        <div style="background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.3);border-radius:6px;padding:7px 16px;font-size:0.78rem;color:#fcd34d;">メール (SMTP)</div>
+        <div style="background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.3);border-radius:6px;padding:7px 16px;font-size:0.78rem;color:#fcd34d;">Teams / LINE / Discord</div>
+        <div style="background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.3);border-radius:6px;padding:7px 16px;font-size:0.78rem;color:#fcd34d;">HTTP Webhook (外部API)</div>
+      </div>
+    </div>
+    <div style="background:rgba(16,185,129,0.05);border-left:3px solid rgba(16,185,129,0.4);border-radius:0 6px 6px 0;padding:12px 16px;margin-bottom:10px;font-size:0.78rem;color:#94a3b8;line-height:1.6;">
+      <strong style="color:#10b981;">[N8N.2] 設計原則:</strong>
+      アプリは環境変数 <code style="background:rgba(0,0,0,0.4);padding:1px 6px;border-radius:4px;color:#a5b4fc;">N8N_WEBHOOK_URL</code> のみ参照する。
+      SMTP認証情報・Slack API Key 等の Secret は n8n Credentials のみに格納し、アプリコードへの混入は禁止。
+      発報先変更・追加はワークフロー修正だけで完結し、アプリ再デプロイは不要。
+    </div>
   </div>
 </div>
 

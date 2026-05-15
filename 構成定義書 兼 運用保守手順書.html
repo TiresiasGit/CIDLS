@@ -145,6 +145,42 @@ footer { text-align: center; padding: 24px 0 16px; color: var(--muted); font-siz
       <h4>[Layer 5] 出力・配布層</h4>
       <p>index.html (クイックアクセス) / シームレス生成ドキュメント5種 / LP.html (商用)<br>エンドユーザー・顧客が最終成果物にアクセスする層</p>
     </div>
+    <div class="step-block">
+      <h4>[Layer 6] 外部発報層 [N8N]</h4>
+      <p>n8n (localhost:5678) — Slack / メール(SMTP) / Teams / LINE / HTTP Webhook 等<br>
+      アプリは n8n Webhook エンドポイントへ POST するだけ。発報先・Secret 管理・リトライはすべて n8n が担う。<br>
+      ワークフロー定義は <code>n8n_workflows/*.json</code> でバージョン管理する。Credentials はアプリコードに混入しない。</p>
+    </div>
+    <h3>2.1.1 n8n 外部発報アーキテクチャ概要 [N8N]</h3>
+    <div style="display:flex;align-items:center;gap:4px;flex-wrap:wrap;background:rgba(0,0,0,0.2);border:1px solid rgba(16,185,129,0.15);border-radius:10px;padding:20px;margin:12px 0;">
+      <div style="background:rgba(99,102,241,0.1);border:1px solid rgba(99,102,241,0.38);border-radius:8px;padding:14px;min-width:140px;">
+        <div style="color:#a5b4fc;font-weight:700;font-size:0.82rem;margin-bottom:8px;">CIDLS App Stack</div>
+        <div style="font-size:0.68rem;color:#64748b;line-height:1.8;">Layer1: 入力層<br>Layer2: 知識層<br>Layer3: AI実行層<br>Layer4: 生成・保存層<br>Layer5: 出力・配布層</div>
+      </div>
+      <div style="padding:0 8px;text-align:center;">
+        <div style="font-size:0.64rem;color:#64748b;margin-bottom:3px;">イベント発火<br>POST /webhook</div>
+        <div style="width:48px;height:2px;background:rgba(99,102,241,0.5);position:relative;margin:auto;">
+          <div style="position:absolute;right:-7px;top:-5px;color:rgba(99,102,241,0.85);font-size:13px;">&#9658;</div>
+        </div>
+      </div>
+      <div style="background:rgba(16,185,129,0.1);border:2px solid rgba(16,185,129,0.55);border-radius:10px;padding:14px 18px;text-align:center;min-width:155px;">
+        <div style="color:#10b981;font-weight:800;font-size:1rem;">n8n</div>
+        <div style="font-size:0.7rem;color:#64748b;margin-top:4px;">localhost:5678</div>
+        <div style="font-size:0.65rem;color:#475569;margin-top:4px;line-height:1.5;">Credentials管理<br>ワークフロー実行<br>リトライ / 冪等性</div>
+      </div>
+      <div style="padding:0 8px;text-align:center;">
+        <div style="font-size:0.64rem;color:#64748b;margin-bottom:3px;">振り分け送信</div>
+        <div style="width:40px;height:2px;background:rgba(16,185,129,0.5);position:relative;margin:auto;">
+          <div style="position:absolute;right:-7px;top:-5px;color:rgba(16,185,129,0.85);font-size:13px;">&#9658;</div>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:5px;">
+        <div style="background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.3);border-radius:5px;padding:6px 14px;font-size:0.75rem;color:#fcd34d;">Slack</div>
+        <div style="background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.3);border-radius:5px;padding:6px 14px;font-size:0.75rem;color:#fcd34d;">メール (SMTP)</div>
+        <div style="background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.3);border-radius:5px;padding:6px 14px;font-size:0.75rem;color:#fcd34d;">Teams / LINE</div>
+        <div style="background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.3);border-radius:5px;padding:6px 14px;font-size:0.75rem;color:#fcd34d;">HTTP Webhook</div>
+      </div>
+    </div>
     <h3>2.2 主要コンポーネント一覧</h3>
     <table>
       <tr><th>コンポーネント</th><th>役割</th><th>場所</th></tr>
@@ -302,12 +338,13 @@ powershell -ExecutionPolicy Bypass -File scripts\register_daily_self_evolution_t
     <h3>7.2 AGENTS.mdのロールバック</h3>
     <div class="err-block">
       <h4>重要: AGENTS.md変更は慎重に</h4>
-      <p>AGENTS.md はSoTであるため、変更前にAGENTS.md.bakを必ず作成すること。ロールバック時は .bak をリネームして復元する。</p>
+      <p>AGENTS.md はSoTであるため、変更前に git commit でバージョン管理すること。ロールバック時は git revert または git checkout で復元する。</p>
     </div>
-    <div class="code-block"># バックアップ作成
-copy D:\CIDLS\AGENTS.md D:\CIDLS\AGENTS.md.bak
+    <div class="code-block"># 変更前にコミット
+git add AGENTS.md
+git commit -m "backup: AGENTS.md before edit"
 # ロールバック
-copy D:\CIDLS\AGENTS.md.bak D:\CIDLS\AGENTS.md</div>
+git revert HEAD</div>
     <h3>7.3 仮想環境の再構築</h3>
     <div class="step-block"><h4>venv破損時</h4><p>.venv フォルダを削除後、セットアップ手順Step 2を再実行する。</p></div>
     <div class="code-block">cd D:\production
@@ -352,7 +389,7 @@ uv pip install openpyxl duckdb pandas pyarrow</div>
     <h3>9.1 バックアップ対象</h3>
     <table>
       <tr><th>対象</th><th>優先度</th><th>頻度</th><th>保管場所</th></tr>
-      <tr><td>AGENTS.md</td><td><span class="badge badge-error">最高</span></td><td>変更毎</td><td>AGENTS.md.bak (同ディレクトリ)</td></tr>
+      <tr><td>AGENTS.md</td><td><span class="badge badge-error">最高</span></td><td>変更毎</td><td>git (commit / revert)</td></tr>
       <tr><td>project_kanban.html</td><td><span class="badge badge-error">最高</span></td><td>変更毎</td><td>git / 外部ストレージ</td></tr>
       <tr><td>シームレスドキュメント5種</td><td><span class="badge badge-warn">高</span></td><td>日次</td><td>git / 外部ストレージ</td></tr>
       <tr><td>scripts/*.py</td><td><span class="badge badge-warn">高</span></td><td>変更毎</td><td>git</td></tr>

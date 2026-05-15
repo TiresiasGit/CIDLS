@@ -14,7 +14,8 @@
 
 param(
     [string]$RepoRoot = $PSScriptRoot,
-    [string]$ProxyUrl = ""
+    [string]$ProxyUrl = "",
+    [string]$DeployHooksTo = ""
 )
 
 Set-StrictMode -Version Latest
@@ -151,14 +152,24 @@ Write-Host ""
 Write-Host "[STEP 4] 動作確認 (RAG検索テスト)"
 $q = "フォールバック禁止ルール"
 Write-Host "  検索クエリ: '$q'"
+$prevEAP = $ErrorActionPreference; $ErrorActionPreference = "SilentlyContinue"
 & $BINARY search $q --config $CONFIG --output text 2>&1
+$ErrorActionPreference = $prevEAP
 Write-Host ""
 
 # ================================================================
-Write-Host "[STEP 5] .mcp.json を現在のパスで更新"
+Write-Host "[STEP 5] .mcp.json を更新 (devrag-cidls + devrag-local 2サーバー構成)"
+# CIDLS(グローバルルール) + ローカル(プロジェクト固有知識) の2サーバー構成
+$cidlsRoot   = if ($env:COPILOT_ENH_ROOT -and (Test-Path $env:COPILOT_ENH_ROOT)) { $env:COPILOT_ENH_ROOT } else { $PSScriptRoot }
+$cidlsConfig = Join-Path $cidlsRoot "devrag-config.json"
 $mcpActual = [ordered]@{
     mcpServers = [ordered]@{
-        devrag = [ordered]@{
+        "devrag-cidls" = [ordered]@{
+            type    = "stdio"
+            command = $BINARY
+            args    = @("--config", $cidlsConfig)
+        }
+        "devrag-local" = [ordered]@{
             type    = "stdio"
             command = $BINARY
             args    = @("--config", $CONFIG)
@@ -166,7 +177,8 @@ $mcpActual = [ordered]@{
     }
 }
 $mcpActual | ConvertTo-Json -Depth 5 | Set-Content -Path $MCP_JSON -Encoding UTF8
-Write-Host "  [OK] $MCP_JSON を更新しました"
+Write-Host "  [OK] devrag-cidls: $cidlsConfig"
+Write-Host "  [OK] devrag-local:  $CONFIG"
 
 # ================================================================
 Write-Host ""
@@ -199,6 +211,71 @@ if (Test-Path $vsSettings) {
     }
 } else {
     Write-Host "  [WARN] settings.json 未存在: $vsSettings"
+}
+
+# ================================================================
+Write-Host ""
+Write-Host "[STEP 8] 他リポジトリへの CIDLS hook 展開"
+if ($DeployHooksTo -ne "") {
+    $srcBase = $PSScriptRoot
+    $dstBase = $DeployHooksTo
+    Write-Host "  CIDLS ルール -> $dstBase"
+
+    # .github 以下の各サブフォルダをコピー
+    $targets = @("hooks", "instructions", "agents", "prompts", "skills")
+    foreach ($t in $targets) {
+        $src = Join-Path $srcBase ".github\$t"
+        $dst = Join-Path $dstBase ".github\$t"
+        if (Test-Path $src) {
+            New-Item -ItemType Directory -Path $dst -Force | Out-Null
+            Copy-Item "$src\*" $dst -Recurse -Force
+            Write-Host "  [OK] .github\$t\ -> $dst"
+        }
+    }
+
+    # copilot-instructions.md をコピー
+    $srcInstr = Join-Path $srcBase ".github\copilot-instructions.md"
+    $dstGithub = Join-Path $dstBase ".github"
+    if (Test-Path $srcInstr) {
+        New-Item -ItemType Directory -Path $dstGithub -Force | Out-Null
+        Copy-Item $srcInstr $dstGithub -Force
+        Write-Host "  [OK] .github\copilot-instructions.md -> $dstGithub"
+    }
+
+    # 展開先の .mcp.json を2サーバー構成で生成
+    $dstConfig = Join-Path $dstBase "devrag-config.json"
+    $dstMcp    = Join-Path $dstBase ".mcp.json"
+    $mcpDual = [ordered]@{
+        mcpServers = [ordered]@{
+            "devrag-cidls" = [ordered]@{
+                type    = "stdio"
+                command = $BINARY
+                args    = @("--config", (Join-Path $srcBase "devrag-config.json"))
+            }
+            "devrag-local" = [ordered]@{
+                type    = "stdio"
+                command = $BINARY
+                args    = @("--config", $dstConfig)
+            }
+        }
+    }
+    $mcpDual | ConvertTo-Json -Depth 5 | Set-Content -Path $dstMcp -Encoding UTF8
+    Write-Host "  [OK] .mcp.json 2サーバー構成 (devrag-cidls: CIDLSルール + devrag-local: $dstBase)"
+
+    # setup_devrag.ps1 自体もコピー (展開先でセットアップスクリプトを使えるよう自動展開)
+    $srcPs1 = Join-Path $srcBase "setup_devrag.ps1"
+    $dstPs1 = Join-Path $dstBase "setup_devrag.ps1"
+    if (Test-Path $srcPs1) {
+        Copy-Item $srcPs1 $dstPs1 -Force
+        Write-Host "  [OK] setup_devrag.ps1 -> $dstBase"
+    }
+
+    Write-Host "  [OK] hook 展開完了: $dstBase"
+    Write-Host "  次は以下を実行してください:"
+    Write-Host "    .\setup_devrag.ps1 -RepoRoot '$dstBase'"
+} else {
+    Write-Host "  [SKIP] -DeployHooksTo 未指定"
+    Write-Host "  他リポジトリへ展開する場合: .\setup_devrag.ps1 -DeployHooksTo 'D:\OtherProject'"
 }
 
 # ================================================================
@@ -284,7 +361,7 @@ Write-Host "  対象: documents/ + .github/**/*.md + AGENTS.md"
 Write-Host "  初回はembeddingモデル(約450MB)を %LOCALAPPDATA%\devrag\models に自動DL"
 Write-Host ""
 
-Set-Location $SCRIPT_ROOT
+Set-Location $RepoRoot
 & $BINARY list --config $CONFIG
 if ($LASTEXITCODE -ne 0) {
     Write-Host "[WARN] list コマンドがエラー終了。手動で確認してください。"
@@ -298,7 +375,9 @@ Write-Host ""
 
 $q = "フォールバック禁止ルール"
 Write-Host "  検索クエリ: '$q'"
+$prevEAP = $ErrorActionPreference; $ErrorActionPreference = "SilentlyContinue"
 & $BINARY search $q --config $CONFIG --output text 2>&1
+$ErrorActionPreference = $prevEAP
 Write-Host ""
 
 Write-Host "================================================================"

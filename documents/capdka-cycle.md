@@ -1,20 +1,41 @@
-# AGENTS.md - CAPDkAサイクル定義 [P2.1, CY]
+# AGENTS.md - CAPDkAサイクル定義 [P2.1, CY, HCAPDKA]
 
-> **SoT参照**: 定義のSource of Truthは `AGENTS.md [P2.1, CY]`。
+> **SoT参照**: 定義のSource of Truthは `AGENTS.md [P2.1, CY, HCAPDKA]`。
 > このファイルはdevrag RAG用実装ステップ・コード例を収録。
 
 ## CAPDkAサイクルとは (定義: AGENTS.md [P2.1])
 
-PDCAではなくC(Check)から開始する永久循環型の開発サイクル。
+基本: **階層型CAPDkA** (Hierarchical CAPDkA)
+PDCAでなくC(Check)から開始する永久循環型の開発サイクル。
 kA完了→即C(Check)開始 (永久停止なし)
 
 ```
 C(Check/評価)      → As-Is現状把握 + Why×5根本原因特定
-A(ActionPlan/計画) → MECE発散 → ECRS収束 → ToBe定義
+A(ActionPlan/計画) → MECE発散 → ECRS収折 → ToBe定義
 P(Plan/設計)       → アーキテクチャ + DFD + 依存関係
 D(Do/実装)         → TDD(Red→Green→Refactor) + 段階的修正
+[RECEゲート]         → 根源的(∧)具体的(∧)明確(∧)要素的 全Yesまで展開
 kA(Knowledge蓄積)  → kanban_project.htmlへ蓄積 → 即C回帰
 ```
+
+## 階層型CAPDkAの4階層構造 [HCAPDKA]
+
+```
+Level0_PJ              ← ビジョン・目的・全体アーキテクチャ
+  Level1_Feature       ← 機能・要件定義
+    Level2_Task        ← 実装タスク単位
+      Level3 ...       ← 必要に応じて追加
+        LevelN_Impl    ← MDL最小単位(これ以上分解不可)まで無制限に展開
+```
+
+**階層数N はRECEゲートが全Yes になるまで無制限に増やす。事前固定禁止。**
+
+**RECEゲート**: kA移行前に必須チェック
+- **R(根源的)**: Why×5 L4以深の根本原因に因果対応しているか
+- **C(具体的)**: 抽象語ゼロ・数値/コード/手順で表現済みか
+- **Cl(明確)**: TBD/要確認/不明ゼロ・全分岐明示済みか
+- **E(要素的)**: MDL原理で最小分解済みか
+全Yes → kAへ進む | いずれかNo → Level+1のCAPDkAを自動展開(N階層上限なし)
 
 ## S1. C(Check): As-Is現状把握
 

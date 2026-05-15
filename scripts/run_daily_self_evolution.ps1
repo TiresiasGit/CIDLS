@@ -5,21 +5,25 @@ param(
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
 
+# [FIX] PowerShell 5.1 encoding fix: prevent garbled Japanese in context file and transcript
+$OutputEncoding = [System.Text.Encoding]::UTF8
+[Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+[Console]::InputEncoding  = [System.Text.Encoding]::UTF8
+$env:PYTHONIOENCODING    = 'utf-8'
+
 $repoRootPath = (Resolve-Path $RepoRoot).Path
 $codeCli = "C:\Program Files\Microsoft VS Code\bin\code.cmd"
 $agentsPath = Join-Path $repoRootPath "AGENTS.md"
 $logDir = Join-Path $repoRootPath "logs\daily_self_evolution"
 $promptFilePath = Join-Path $PSScriptRoot "daily_self_evolution_prompt.txt"
-$expectedArtifacts = @(
+# [FIX] ASCII names only in static list to avoid PS5.1 Japanese literal encoding issues.
+# Japanese-named artifacts are discovered dynamically via Get-ChildItem.
+$expectedArtifactsStatic = @(
     "project_kanban.html",
     "cidls_platform_overview.html",
     "reports\cidls_pipeline_output\cidls_platform_overview.html",
-    "CIDLSパイプラインマインドマップ.html",
     "graph_project_mindmap.html",
     "STORY.html",
-    "要求定義書.html",
-    "要求仕様書.html",
-    "コンセプトスライド.html",
     "scripts\generate_graph_project_mindmap.py",
     "scripts\generate_cidls_platform_overview.py",
     "scripts\generate_commercial_delivery_pack.py",
@@ -27,6 +31,21 @@ $expectedArtifacts = @(
     "scripts\generate_sw_docs_xlsx.py",
     "reports\commercial_delivery"
 )
+$jaPatterns = @(
+    "*マインドマップ*.html",
+    "*要求定義書*.html",
+    "*要求仕様書*.html",
+    "*コンセプトスライド*.html"
+)
+$expectedArtifacts = [System.Collections.Generic.List[string]]$expectedArtifactsStatic
+foreach ($pat in $jaPatterns) {
+    $hit = Get-ChildItem -LiteralPath $repoRootPath -Filter $pat -File -ErrorAction SilentlyContinue | Select-Object -First 1
+    if ($hit) {
+        $expectedArtifacts.Add($hit.Name)
+    } else {
+        $expectedArtifacts.Add("MISSING_PATTERN:$pat")
+    }
+}
 
 function Get-ArtifactStatusLines {
     param(
@@ -164,12 +183,15 @@ try {
     Write-Host "  loop   : collect -> compare -> analyze -> execute -> learn"
 
     # [STEP-1] generate_*.py による成果物自動更新
-    $pythonCmd = if ($env:CIDLS_PYTHON) { $env:CIDLS_PYTHON } else { Join-Path $repoRootPath ".venv\Scripts\python.exe" }
+    # [FIX] Capture subprocess output explicitly to prevent Start-Transcript double-write
+    $pythonCmd = "D:\production\.venv\Scripts\python.exe"
     if (Test-Path $pythonCmd) {
         Write-Host "[STEP-1] Running generate_cidls_platform_overview.py --bump-patch"
-        & $pythonCmd (Join-Path $PSScriptRoot "generate_cidls_platform_overview.py") --bump-patch
+        $step1a = & $pythonCmd (Join-Path $PSScriptRoot "generate_cidls_platform_overview.py") --bump-patch 2>&1
+        $step1a | ForEach-Object { Write-Host $_ }
         Write-Host "[STEP-1] Running generate_commercial_delivery_pack.py"
-        & $pythonCmd (Join-Path $PSScriptRoot "generate_commercial_delivery_pack.py")
+        $step1b = & $pythonCmd (Join-Path $PSScriptRoot "generate_commercial_delivery_pack.py") 2>&1
+        $step1b | ForEach-Object { Write-Host $_ }
     } else {
         Write-Host "[WARN] python venv not found at $pythonCmd - skipping generate_*.py steps"
     }

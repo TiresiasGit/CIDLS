@@ -40,7 +40,7 @@ AGENTS.md の [GEM] ルールに従い、GeminiCLI 優先・Copilot フォール
 
 ### Phase 2: Green (最小限実装) ← **GeminiCLI に実行させる**
 1. GeminiCLI へのタスク仕様を策定 (CIDLS制約を必ず含める)
-2. `gemini_programmer.ps1 -Task "..."` で実行する。GeminiCLIは既定で `--approval-mode yolo` を使い、Gemini側の承認プロンプトを出さない。
+2. `gemini_programmer.ps1 -Task "..." -YoloMode` で実行
 3. GeminiCLI の出力をレビューし、問題があれば指示を修正して再実行
 
 ### Phase 3: Refactor (品質向上) ← **GeminiCLI に実行させる**
@@ -53,7 +53,7 @@ AGENTS.md の [GEM] ルールに従い、GeminiCLI 優先・Copilot フォール
 ```
 [CIDLS TASK]
 目的: <何を実現するか>
-対象ファイル: <CIDLS_REPO>\xxx.py
+対象ファイル: <D:\CIDLS\xxx.py>
 変更内容: <具体的な変更仕様>
 制約:
   - pip禁止 (uv専用)

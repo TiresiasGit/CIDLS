@@ -18,6 +18,7 @@ HARNESS:Skill/Waza/APM|ralph loop|NLAH|Sentry→原因→修正PR|可観測性|b
 A5M2_TABLE:テーブル系=A5形式|データ/カラム/インデックス/外部キー/FK(PK側)/RDBMS固有/SQLソース/Excel出力
 DESTRUCTIVE_CHANGE_PREFERENCE:破壊的変更選好|互換性固執⊥|条件=品質/安全/保守/UX改善|必須=影響範囲+移行+ロールバック+TDD+水平展開
 PROJECT_MD_DEPRECATION:project.md廃止|内容→kanban_project.html吸収|project_kanban.html=互換ミラー|再作成⊥
+TIMEOUT_PARAMETER_DESIGN:事前設計|対象=LLM/API/HTTP/E2E/GUI/IO/DB/並列/長時間batch|timeout/retry/backoff/concurrency/batch/chunk/progress/heartbeat/cancel=調整可能|無期限待機/例外握りつぶし/任意定数=禁止
 SCHEDULE:日次10:00→「CIDLSパイプラインコンセプトイメージ.pngを実現するようにパイプラインコンセプトイメージに基づき複利的自己進化させて」実行
 VERIFY:TDD|pytest対象→全体|AGENTS同期|devrag再索引|kanban_project更新|残ブロッカー明示
 
@@ -51,6 +52,7 @@ VSCI:VSCode基盤∋AGENTS.md=inst自動読込|/compact汚染防止|Checkpoint=R
 
 T:技術環境∋Win10/11⊥WSL|Py3.11|uv⊥pip|DuckDB|Parquet|UTF8(batch:S-JIS)|⊥絵文字
 T2:並列/型∋型整合src→変換→use|⊥到達不能|I/O→Thread/CPU→Process≤32|DB=flock+port
+TIMEOUT:事前設計∋発生可能処理=LLM/API/HTTP/E2E/GUI/IO/DB/並列/長時間batch|timeout/retry/backoff/concurrency/batch/chunk/progress/heartbeat/cancel=調整可能|⊥無期限待機/握りつぶし/任意定数
 CODE:実装規約∋PEP8⊥typing|完全形⊥省略|READ→DEL→CREATE→READ→UPD|unit≥90%
 HS:水平展開∋1変更→grep→7同期:定義/辞書/設定/分岐/import/doc/test|旧名残=∅
 MG:完全移植∋移植10要素100%:値/列名/型/計算/関数/クラス/ロジック/コメント/依存/エッジ

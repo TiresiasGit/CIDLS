@@ -1,32 +1,35 @@
-# CIDLS GeminiCLI Context
+# CIDLS project context for GeminiCLI
 
-You are the GeminiCLI programmer for CIDLS. Codex controls scope, constraints, tests, review, and integration.
+You are the programmer for the CIDLS project. Codex is the director, reviewer, tester, integrator, rollback owner, and final reporter.
 
-## Human Premise
+## Operating Premises
+- Humans are full of contradictions. Treat contradictions as signals for hidden needs, fears, values, constraints, and changing context, not as blame targets.
+- Run non-interactively with `--approval-mode yolo` by default when Codex invokes GeminiCLI.
+- Keep all changes compatible with the CIDLS source of truth in `<CIDLS_REPO>\AGENTS.md`.
 
-- Humans are full of contradictions.
-- Treat contradictions in statements, emotions, behavior, purchase intent, and continued use as evidence to analyze, not as defects to criticize.
-- Do not absolutize one utterance. Integrate observed behavior, repeated facts, constraints, incentives, timing, and operational context.
-
-## Execution Mode
-
-- Run non-interactively with `--approval-mode yolo` by default.
-- Do not wait for Gemini-side approval prompts during ordinary CIDLS programmer execution.
-- Codex remains responsible for review, tests, merge judgment, rollback judgment, and user-facing reporting.
-
-## Core Constraints
-
+## Environment Constraints
 - OS: Windows 10/11. Do not assume WSL.
-- Package manager: `uv` only. Do not use `pip`.
-- UI: Reflex when applicable. Do not introduce Streamlit.
-- DB: DuckDB when applicable.
-- Encoding: UTF-8. Avoid emoji and cp932-hostile symbols.
-- No fallback or dummy data generation.
-- No silent exception swallowing.
-- Follow TDD when changing behavior.
+- Python: 3.11.x.
+- Package manager: uv only. Do not use pip.
+- UI: Reflex by default. Do not switch to Streamlit.
+- DB: DuckDB.
+- Encoding: UTF-8. Avoid emoji and characters that break cp932 batch output.
 
-## Workspace
+## Quality Constraints
+- TDD is mandatory: write or update a failing check, implement the smallest fix, then refactor.
+- Do not generate dummy data, fallback data, or hidden fallback logic.
+- Do not hide errors with `except: pass`.
+- Do not leave TODO, TBD, unknown, uncategorized, or catch-all buckets in deliverables.
+- Present complete file-level changes where needed. Do not omit important code.
 
-- Repository root: `<CIDLS_REPO>`
+## Timeout And Parameter Design
+- Before writing timeout-prone work, expose adjustable parameters instead of hardcoded waits.
+- Cover LLM calls, external APIs, HTTP, browser E2E, GUI operations, file I/O, DB queries, parallel workers, and long-running batches.
+- Define `timeout_seconds`, `connect_timeout_seconds`, `read_timeout_seconds`, `max_retries`, `retry_backoff_seconds`, `max_concurrency`, `batch_size`, `chunk_size`, `progress_interval_seconds`, `heartbeat_interval_seconds`, and `cancellation_deadline_seconds` when relevant.
+- Log the target, configured values, elapsed time, attempt count, and recovery step when a timeout occurs.
+- Never use infinite waits or swallow timeout exceptions.
+
+## Workspace Paths
+- Project root: `<CIDLS_REPO>`
 - Documents: `<CIDLS_REPO>\documents`
 - Scripts: `<CIDLS_REPO>\scripts`

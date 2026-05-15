@@ -3,8 +3,6 @@ gemini_programmer.ps1 を UTF-8 BOM 付きで生成する。
 PowerShell 5.1 は BOM なし UTF-8 を cp932 として読むため BOM が必須。
 """
 
-from pathlib import Path
-
 script = """\
 #Requires -Version 5.1
 # -*- coding: utf-8 -*-
@@ -15,7 +13,7 @@ script = """\
 .PARAMETER Task
     Task description (English or Japanese)
 .PARAMETER WorkDir
-    Working directory (default: repository root inferred from this script)
+    Working directory (default: D:\\CIDLS)
 .PARAMETER YoloMode
     Deprecated compatibility switch. The controller always uses --approval-mode yolo.
 .PARAMETER Model
@@ -27,7 +25,7 @@ script = """\
 #>
 param(
     [string]$Task = "",
-    [string]$WorkDir = "",
+    [string]$WorkDir = "D:\\CIDLS",
     [switch]$YoloMode,
     [string]$Model = "gemini-2.5-pro",
     [switch]$CheckOnly
@@ -35,10 +33,6 @@ param(
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
-
-if (-not $WorkDir) {
-    $WorkDir = Split-Path -Parent $PSScriptRoot
-}
 
 $LOG_DIR  = Join-Path $WorkDir "logs\\gemini_programmer"
 $TS_FILE  = Get-Date -Format "yyyyMMdd_HHmmss"
@@ -173,7 +167,7 @@ if (Test-GeminiAvailable) {
 }
 """
 
-out_path = str(Path(__file__).resolve().parent / "gemini_programmer.ps1")
+out_path = r"D:\CIDLS\scripts\gemini_programmer.ps1"
 # UTF-8 BOM 付きで書き込む (PowerShell 5.1 が正しく読むため)
 with open(out_path, "w", encoding="utf-8-sig") as f:
     f.write(script)

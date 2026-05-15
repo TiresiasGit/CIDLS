@@ -27,5 +27,13 @@ AsIs分析:
   L4.根本原因: <>
   L5.メタ原因: <>
 根拠: <>
-次ステップ: ActionPlanフェーズへ
+
+RECEゲート [HCAPDKA]:  # kA移行前に必須チェック
+  R(根源的): L4以深に届いているか → <Yes/No>
+  C(具体的): 抽象語ゼロ・数値/コード/手順で表現済みか → <Yes/No>
+  Cl(明確): TBD/要確認/不明ゼロ・全分岐明示済みか → <Yes/No>
+  E(要素的): MDL原理で最小分解済みか → <Yes/No>
+  判定: 全Yes→kAへ | いずれかNo→展開Levelと展開フェーズを明示
+
+次ステップ: RECE全Yes → ActionPlanフェーズへ / いずれかNo → 下位Level CAPDkA展開
 ```

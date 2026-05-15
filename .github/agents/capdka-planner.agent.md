@@ -59,6 +59,32 @@ Want:   [検討要件 — 余裕があれば]
 見直条件: <>
 ```
 
+### RECEゲートチェック [HCAPDKA]
+ActionPlanの出力として、必ずRECE全件を確認する:
+```yaml
+RECE判定:
+  R(根源的):
+    根本原因(L4以深)への対応: <Why×5 L4のテキストと解の因果連鎖>
+    判定: Yes / No
+    No時: Level+1 C(Check)フェーズを生成して根本原因を再掘削
+  C(具体的):
+    抽象語残存確認: grep 高速|改善|強化|向上|効率 = 0件
+    判定: Yes / No
+    No時: Level+1 A(ActionPlan)で具体化
+  Cl(明確):
+    TBD/要確認/不明残存: grep TBD|要確認|不明 = 0件
+    else暗黙キャッチ: 0件
+    判定: Yes / No
+    No時: Level+1 A(ActionPlan)で明確化
+  E(要素的):
+    1解=1原子タスク確認: <変更ファイル数・変更関数数>
+    MDL原理: これ以上分解不要な最小単位か
+    判定: Yes / No
+    No時: Level+1 D(Do)フェーズで原子分解
+全Yes → implementerへHandoff
+いずれかNo → 対応する下位Level CAPDkAを生成し再実行
+```
+
 ## 禁止事項 [G1, DC]
 - 「未分類」「その他」バケツへの投入: 禁止
 - else/defaultによる暗黙キャッチオール: 禁止

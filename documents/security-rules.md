@@ -33,7 +33,7 @@ conn.execute("SELECT * FROM users WHERE name = ?", [user_input])
 ### A02: 秘密情報の管理
 ```python
 # 禁止: ハードコード
-API_KEY = "<SECRET_VALUE>"  # 禁止
+API_KEY = "sk-abc123..."  # 禁止
 
 # OK: 環境変数から読み込み
 import os

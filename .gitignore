@@ -26,18 +26,3 @@ devrag
 # 出力データ (コミット不要)
 *.parquet
 vectors.db
-
-# バイナリ・外部プロジェクト (コミット不要)
-*.pdf
-*.zip
-*.onnx
-*.duckdb
-cerememory-main/
-36_1_1/
-.pytest_tmp/
-add_diagrams.py
-devrag-main.zip
-models/
-data/
-state/
-desktop.ini

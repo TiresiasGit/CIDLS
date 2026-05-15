@@ -251,6 +251,69 @@ API/処理順 → sequenceDiagram:
 
 ---
 
+## devrag RAG知識ベース [GR] (定義: AGENTS.md [GR])
+
+> **SoT参照**: 定義のSource of Truthは `AGENTS.md [GR]`。
+> このファイルはdevrag固有の運用ノウハウ・バグ対策を収録。
+
+### セットアップ手順
+
+```powershell
+# 最短手順: 任意リポジトリで実行するだけ (管理者権限不要)
+.\setup_devrag.ps1
+
+# プロキシ環境
+.\setup_devrag.ps1 -ProxyUrl 'http://proxy.example.com:8080'
+
+# 他リポジトリへ CIDLS hook + setup_devrag.ps1 を展開
+.\setup_devrag.ps1 -DeployHooksTo 'D:\OtherProject'
+# 展開後、展開先でdevragを有効化
+.\setup_devrag.ps1 -RepoRoot 'D:\OtherProject'
+```
+
+### 2サーバー構成 (.mcp.json)
+
+```yaml
+devrag-cidls: COPILOT_ENH_ROOT の devrag-config.json (CIDLSグローバルルール)
+devrag-local: 作業リポジトリルートの devrag-config.json (プロジェクト固有知識)
+バイナリ:     %LOCALAPPDATA%\devrag\devrag.exe (全リポジトリで共有)
+```
+
+### -DeployHooksTo 展開内容
+
+```
+.github/hooks/          hooks (agents-guard.json 等)
+.github/instructions/   言語別コーディング規約
+.github/agents/         CAPDkAエージェント定義
+.github/prompts/        スラッシュコマンド
+.github/skills/         RAG・品質ゲート等スキル
+.github/copilot-instructions.md  グローバル指示書
+setup_devrag.ps1        セットアップスクリプト自体 (展開先で再実行可能)
+.mcp.json               2サーバー構成 (devrag-cidls + devrag-local)
+```
+
+### 既知バグ対策
+
+```powershell
+# [BUG] $ErrorActionPreference = "Stop" + devrag stderr 出力 = NativeCommandError
+# devrag は起動時に stderr へ "[INFO] DevRag v1.4.4" を出力する。
+# PowerShell の $ErrorActionPreference = "Stop" 環境下でこれを実行すると
+# NativeCommandError が発生してスクリプトが停止する。
+# 解決: devrag 呼び出し直前に SilentlyContinue に切り替え、完了後に元に戻す。
+
+$prevEAP = $ErrorActionPreference
+$ErrorActionPreference = "SilentlyContinue"
+$result = & $BINARY search $q --config $CONFIG --output text 2>&1
+$ErrorActionPreference = $prevEAP
+
+# [BUG] $SCRIPT_ROOT 未定義
+# setup_devrag.ps1 内では $PSScriptRoot が正しい変数名。$SCRIPT_ROOT は未定義。
+# Set-Location $SCRIPT_ROOT  -> NG
+# Set-Location $RepoRoot     -> OK (パラメータ変数を使用)
+```
+
+---
+
 ## 外部発報オーケストレーター [N8N] (定義: AGENTS.md [N8N])
 
 > **SoT参照**: 定義のSource of Truthは `AGENTS.md [N8N]`。
